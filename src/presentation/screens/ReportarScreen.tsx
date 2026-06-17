@@ -1,0 +1,167 @@
+import { View, ScrollView, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { BAColors } from '../constants/colors';
+import { CURRENT_USER_ID } from '../constants/currentUser';
+import { useReporteController } from '../../application/controllers/useReporteController';
+import { SectionCard } from '../components/layout/SectionCard';
+import { SectionBadge } from '../components/atomic/SectionBadge';
+import { CategoryButton } from '../components/atomic/CategoryButton';
+import { EvidenceCapture } from '../components/molecules/EvidenceCapture';
+import { DescriptionSelector } from '../components/molecules/DescriptionSelector';
+import { PRESETS_DE_REPORTE } from '../../infrastructure/presets/reportePresets';
+
+export function ReportarScreen() {
+  const ctrl = useReporteController(CURRENT_USER_ID);
+
+  return (
+    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+      <SectionCard>
+        <SectionBadge label="Mecanismo Rápido" color="green" />
+        <Text style={styles.title}>Reporte de Incidente en Línea</Text>
+        <Text style={styles.description}>
+          La categorización mediante opciones predeterminadas optimiza los tiempos de respuesta y
+          evita la saturación de los canales.
+        </Text>
+
+        {/* Categorías */}
+        <View style={styles.categoriesSection}>
+          <Text style={styles.label}>Selecciona la Categoría del Suceso</Text>
+          <View style={styles.categoriesGrid}>
+            {ctrl.categorias.map((cat) => (
+              <CategoryButton
+                key={cat.id}
+                iconName={cat.icono_referencia}
+                label={cat.nombre}
+                selected={ctrl.selectedCategory === cat.id}
+                onPress={() => ctrl.handleSelectCategory(cat.id)}
+              />
+            ))}
+          </View>
+        </View>
+
+        {/* Formulario dinámico */}
+        {ctrl.selectedCategory && (
+          <View style={styles.formContainer}>
+            <EvidenceCapture
+              attached={ctrl.evidenceAttached}
+              photoUrl={ctrl.mockPhotoUrl}
+              onCapture={ctrl.triggerMockPhotoCapture}
+              onRemove={ctrl.removeEvidence}
+            />
+
+            {(() => {
+              const preset = PRESETS_DE_REPORTE[ctrl.selectedCategory];
+              return preset ? (
+                <DescriptionSelector
+                  descriptions={preset.descripciones}
+                  selected={ctrl.selectedDescription}
+                  onSelect={ctrl.setSelectedDescription}
+                />
+              ) : null;
+            })()}
+          </View>
+        )}
+
+        {/* Acciones */}
+        <View style={styles.actions}>
+          <TouchableOpacity
+            onPress={ctrl.saveIncidentReport}
+            disabled={!ctrl.selectedCategory || !ctrl.evidenceAttached}
+            style={[styles.submitButton, (!ctrl.selectedCategory || !ctrl.evidenceAttached) && styles.submitDisabled]}
+          >
+            <Text style={[styles.submitText, (!ctrl.selectedCategory || !ctrl.evidenceAttached) && styles.submitTextDisabled]}>
+              Transmitir Alerta Comunitaria
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={ctrl.cancel} style={styles.cancelButton}>
+            <Text style={styles.cancelText}>Cancelar</Text>
+          </TouchableOpacity>
+        </View>
+      </SectionCard>
+    </ScrollView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: BAColors.bg,
+  },
+  content: {
+    padding: 16,
+  },
+  title: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: BAColors.textPrimary,
+    marginTop: 12,
+  },
+  description: {
+    fontSize: 12,
+    color: BAColors.textMuted,
+    marginTop: 4,
+  },
+
+  categoriesSection: {
+    marginTop: 24,
+  },
+  label: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: BAColors.textTertiary,
+    marginBottom: 12,
+  },
+  categoriesGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+  },
+
+  formContainer: {
+    marginTop: 24,
+    padding: 20,
+    backgroundColor: BAColors.surfaceLight,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: BAColors.border,
+    gap: 20,
+  },
+
+  actions: {
+    flexDirection: 'row',
+    gap: 12,
+    marginTop: 24,
+  },
+  submitButton: {
+    flex: 1,
+    backgroundColor: BAColors.green,
+    paddingVertical: 12,
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  submitDisabled: {
+    opacity: 0.2,
+  },
+  submitText: {
+    fontWeight: '800',
+    fontSize: 12,
+    color: BAColors.bg,
+  },
+  submitTextDisabled: {
+    color: BAColors.bg,
+  },
+  cancelButton: {
+    backgroundColor: BAColors.border,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: BAColors.surfaceBorder,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  cancelText: {
+    fontWeight: '700',
+    fontSize: 12,
+    color: BAColors.textTertiary,
+  },
+});
