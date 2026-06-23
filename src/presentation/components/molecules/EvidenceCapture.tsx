@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, Image, StyleSheet } from 'react-native';
+import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { BAColors } from '../../constants/colors';
 import { IconRenderer } from '../atomic/IconRenderer';
 
@@ -51,7 +51,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+    backgroundColor: BAColors.surfaceDark, // antes: 'rgba(0, 0, 0, 0.4)'
   },
   placeholderText: {
     fontSize: 12,
@@ -62,7 +62,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     overflow: 'hidden',
     borderWidth: 1,
-    borderColor: 'rgba(0, 230, 118, 0.3)',
+    borderColor: BAColors.greenBorder, 
     position: 'relative',
   },
   previewImage: {
