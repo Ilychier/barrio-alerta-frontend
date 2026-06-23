@@ -1,13 +1,13 @@
-import { View, ScrollView, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useReporteController } from '../../application/controllers/useReporteController';
+import { PRESETS_DE_REPORTE } from '../../infrastructure/presets/reportePresets';
+import { CategoryButton } from '../components/atomic/CategoryButton';
+import { SectionBadge } from '../components/atomic/SectionBadge';
+import { SectionCard } from '../components/layout/SectionCard';
+import { DescriptionSelector } from '../components/molecules/DescriptionSelector';
+import { EvidenceCapture } from '../components/molecules/EvidenceCapture';
 import { BAColors } from '../constants/colors';
 import { CURRENT_USER_ID } from '../constants/currentUser';
-import { useReporteController } from '../../application/controllers/useReporteController';
-import { SectionCard } from '../components/layout/SectionCard';
-import { SectionBadge } from '../components/atomic/SectionBadge';
-import { CategoryButton } from '../components/atomic/CategoryButton';
-import { EvidenceCapture } from '../components/molecules/EvidenceCapture';
-import { DescriptionSelector } from '../components/molecules/DescriptionSelector';
-import { PRESETS_DE_REPORTE } from '../../infrastructure/presets/reportePresets';
 
 export function ReportarScreen() {
   const ctrl = useReporteController(CURRENT_USER_ID);
@@ -133,7 +133,7 @@ const styles = StyleSheet.create({
   },
   submitButton: {
     flex: 1,
-    backgroundColor: BAColors.green,
+    backgroundColor: BAColors.red, // antes: BAColors.green
     paddingVertical: 12,
     borderRadius: 12,
     alignItems: 'center',
@@ -142,13 +142,13 @@ const styles = StyleSheet.create({
     opacity: 0.2,
   },
   submitText: {
-    fontWeight: '800',
-    fontSize: 12,
-    color: BAColors.bg,
-  },
-  submitTextDisabled: {
-    color: BAColors.bg,
-  },
+  fontWeight: '800',
+  fontSize: 12,
+  color: BAColors.textPrimary, // antes: BAColors.bg
+},
+submitTextDisabled: {
+  color: BAColors.textPrimary, // antes: BAColors.bg
+},
   cancelButton: {
     backgroundColor: BAColors.border,
     paddingVertical: 12,

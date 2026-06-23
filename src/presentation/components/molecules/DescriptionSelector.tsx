@@ -53,11 +53,11 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     borderWidth: 1,
     borderColor: 'transparent',
-    backgroundColor: 'rgba(0, 0, 0, 0.35)',
+    backgroundColor: BAColors.surface, // antes: 'rgba(0, 0, 0, 0.35)'
   },
   optionSelected: {
-    backgroundColor: BAColors.bg,
-    borderColor: 'rgba(0, 230, 118, 0.4)',
+    backgroundColor: BAColors.greenBg,    // antes: BAColors.bg
+    borderColor: BAColors.greenBorder,    // antes: 'rgba(0, 230, 118, 0.4)'
   },
   radio: {
     width: 16,
