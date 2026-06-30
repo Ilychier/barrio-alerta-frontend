@@ -12,7 +12,7 @@ import { AlertCard } from '../components/molecules/AlertCard';
 import { IconRenderer } from '../components/atomic/IconRenderer';
 
 export function DashboardScreen() {
-  const [, forceUpdate] = useState(0);
+  const [focusCount, forceUpdate] = useState(0);
 
   // Refresca los datos del repositorio cada vez que el tab obtiene foco
   useFocusEffect(
@@ -21,7 +21,7 @@ export function DashboardScreen() {
     }, []),
   );
 
-  const { alertas, barrio, cuadrante } = useDashboardController(CURRENT_USER_ID);
+  const { alertas, barrio, cuadrante } = useDashboardController(CURRENT_USER_ID, focusCount);
   const sos = useSOSController(CURRENT_USER_ID);
 
   return (

@@ -8,7 +8,7 @@ const INITIAL_ALERTAS: Alerta[] = [
     'Robo de autopartes detectado en la calle 15',
     false,
     '2026-06-10T14:30:00Z',
-    501,
+    1,
     11,
   ),
   new Alerta(
@@ -34,7 +34,7 @@ export class InMemoryAlertaRepository implements IAlertaRepository {
   private alertas: Alerta[] = [...INITIAL_ALERTAS];
   private evidencias: Evidencia[] = [...INITIAL_EVIDENCIAS];
 
-  crearAlerta(alerta: Alerta, evidencias?: Evidencia[]): Alerta {
+  async crearAlerta(alerta: Alerta, evidencias?: Evidencia[]): Promise<Alerta> {
     this.alertas = [alerta, ...this.alertas];
     if (evidencias && evidencias.length > 0) {
       this.evidencias = [...this.evidencias, ...evidencias];
@@ -42,15 +42,15 @@ export class InMemoryAlertaRepository implements IAlertaRepository {
     return alerta;
   }
 
-  obtenerTodas(): Alerta[] {
+  async obtenerTodas(): Promise<Alerta[]> {
     return this.alertas;
   }
 
-  obtenerPorId(id: number): Alerta | undefined {
+  async obtenerPorId(id: number): Promise<Alerta | undefined> {
     return this.alertas.find((a) => a.id === id);
   }
 
-  obtenerEvidencias(alertaId: number): Evidencia[] {
+  async obtenerEvidencias(alertaId: number): Promise<Evidencia[]> {
     return this.evidencias.filter((e) => e.alerta_id === alertaId);
   }
 }

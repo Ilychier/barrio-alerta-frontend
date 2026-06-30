@@ -24,9 +24,11 @@ export class ObtenerAlertasUseCase {
     private readonly referenciaRepo: IReferenciaRepository,
   ) {}
 
-  execute(usuarioId: number): ObtenerAlertasResponse {
-    const config = this.configRepo.obtenerPorUsuarioId(usuarioId);
-    const todas = this.alertaRepo.obtenerTodas();
+  async execute(usuarioId: number): Promise<ObtenerAlertasResponse> {
+    const [config, todas] = await Promise.all([
+      this.configRepo.obtenerPorUsuarioId(usuarioId),
+      this.alertaRepo.obtenerTodas(),
+    ]);
 
     const filtradas = todas.filter((a) => {
       // Las alertas SOS siempre se muestran
@@ -41,12 +43,21 @@ export class ObtenerAlertasUseCase {
       (a, b) => new Date(b.fecha_hora).getTime() - new Date(a.fecha_hora).getTime(),
     );
 
-    const alertasConDatos: AlertaConDatos[] = ordenadas.map((a) => ({
-      alerta: a,
-      categoria: this.referenciaRepo.getCategoriaById(a.categoria_id),
-      usuario: this.referenciaRepo.getUsuarioById(a.usuario_id),
-      evidencias: this.alertaRepo.obtenerEvidencias(a.id),
-    }));
+    const alertasConDatos: AlertaConDatos[] = await Promise.all(
+      ordenadas.map(async (a) => {
+        const [categoria, usuario, evidencias] = await Promise.all([
+          this.referenciaRepo.getCategoriaById(a.categoria_id),
+          this.referenciaRepo.getUsuarioById(a.usuario_id),
+          this.alertaRepo.obtenerEvidencias(a.id),
+        ]);
+        return {
+          alerta: a,
+          categoria,
+          usuario,
+          evidencias,
+        };
+      })
+    );
 
     return { alertas: alertasConDatos };
   }

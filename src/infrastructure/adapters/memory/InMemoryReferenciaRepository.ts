@@ -15,7 +15,7 @@ const INITIAL_BARRIOS: Barrio[] = [
 ];
 
 const INITIAL_USUARIOS: Usuario[] = [
-  new Usuario(501, 'Carlos Mendoza', 'carlos.mendoza@email.com', 1),
+  new Usuario(32, 'Carlos Mendoza', 'carlos.mendoza@email.com', 1),
   new Usuario(502, 'Ana María Silva', 'ana.silva@email.com', 1),
 ];
 
@@ -32,23 +32,23 @@ export class InMemoryReferenciaRepository implements IReferenciaRepository {
   private readonly usuarios: Usuario[] = INITIAL_USUARIOS;
   private readonly categorias: Categoria[] = INITIAL_CATEGORIAS;
 
-  getUsuarioById(id: number): Usuario | undefined {
+  async getUsuarioById(id: number): Promise<Usuario | undefined> {
     return this.usuarios.find((u) => u.id === id);
   }
 
-  getBarrioById(id: number): Barrio | undefined {
+  async getBarrioById(id: number): Promise<Barrio | undefined> {
     return this.barrios.find((b) => b.id === id);
   }
 
-  getCuadranteById(id: number): Cuadrante | undefined {
+  async getCuadranteById(id: number): Promise<Cuadrante | undefined> {
     return this.cuadrantes.find((c) => c.id === id);
   }
 
-  getCategorias(): Categoria[] {
+  async getCategorias(): Promise<Categoria[]> {
     return this.categorias;
   }
 
-  getCategoriaById(id: number): Categoria | undefined {
+  async getCategoriaById(id: number): Promise<Categoria | undefined> {
     return this.categorias.find((c) => c.id === id);
   }
 }

@@ -17,7 +17,7 @@ export interface ReportarIncidenteResponse {
 export class ReportarIncidenteUseCase {
   constructor(private readonly alertaRepo: IAlertaRepository) {}
 
-  execute(request: ReportarIncidenteRequest): ReportarIncidenteResponse {
+  async execute(request: ReportarIncidenteRequest): Promise<ReportarIncidenteResponse> {
     const newAlertId = Math.floor(Math.random() * 1000) + 1000;
 
     const incidentAlert = new Alerta(
@@ -41,7 +41,7 @@ export class ReportarIncidenteUseCase {
       );
     }
 
-    this.alertaRepo.crearAlerta(incidentAlert, evidencia ? [evidencia] : undefined);
+    await this.alertaRepo.crearAlerta(incidentAlert, evidencia ? [evidencia] : undefined);
 
     return { alerta: incidentAlert, evidencia };
   }

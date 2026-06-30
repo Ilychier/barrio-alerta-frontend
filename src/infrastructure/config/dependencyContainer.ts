@@ -5,6 +5,9 @@ import { IReferenciaRepository } from '../../domain/ports/IReferenciaRepository'
 import { InMemoryAlertaRepository } from '../adapters/memory/InMemoryAlertaRepository';
 import { InMemoryConfiguracionRepository } from '../adapters/memory/InMemoryConfiguracionRepository';
 import { InMemoryReferenciaRepository } from '../adapters/memory/InMemoryReferenciaRepository';
+import { ApiReferenciaRepository } from '../adapters/api/ApiReferenciaRepository';
+import { HttpAlertaRepository } from '../adapters/api/HttpAlertaRepository';
+import { HttpConfiguracionRepository } from '../adapters/api/HttpConfiguracionRepository';
 
 import { DispararSOSUseCase } from '../../application/usecases/DispararSOSUseCase';
 import { ReportarIncidenteUseCase } from '../../application/usecases/ReportarIncidenteUseCase';
@@ -24,16 +27,17 @@ export class DependencyContainer {
     const repoType = getRepositoryType();
 
     switch (repoType) {
+      case 'api':
+        this._alertaRepo = new HttpAlertaRepository();
+        this._configRepo = new HttpConfiguracionRepository();
+        this._referenciaRepo = new ApiReferenciaRepository();
+        break;
       case 'memory':
       default:
         this._alertaRepo = new InMemoryAlertaRepository();
         this._configRepo = new InMemoryConfiguracionRepository();
         this._referenciaRepo = new InMemoryReferenciaRepository();
         break;
-      // case 'api':
-      //   this._alertaRepo = new ApiAlertaRepository();
-      //   ...
-      //   break;
     }
   }
 

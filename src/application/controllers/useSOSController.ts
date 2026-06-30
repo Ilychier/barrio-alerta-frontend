@@ -13,15 +13,13 @@ export function useSOSController(currentUserId: number) {
   // Ref para evitar stale closure en el intervalo (se actualiza en efecto)
   const triggerSOSRef = useRef<() => void>(() => {});
 
-  const triggerSOSFinal = useCallback(() => {
+  const triggerSOSFinal = useCallback(async () => {
     const start = Date.now();
-    useCase.execute({ usuarioId: currentUserId });
+    await useCase.execute({ usuarioId: currentUserId });
 
-    setTimeout(() => {
-      const latency = Date.now() - start;
-      setPerformanceTracker(`${latency}ms`);
-      setSosStep(2);
-    }, 100);
+    const latency = Date.now() - start;
+    setPerformanceTracker(`${latency}ms`);
+    setSosStep(2);
   }, [currentUserId, useCase]);
 
   useEffect(() => {

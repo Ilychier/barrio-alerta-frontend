@@ -14,8 +14,8 @@ export interface ActualizarConfiguracionResponse {
 export class ActualizarConfiguracionUseCase {
   constructor(private readonly configRepo: IConfiguracionRepository) {}
 
-  execute(request: ActualizarConfiguracionRequest): ActualizarConfiguracionResponse {
-    const actual = this.configRepo.obtenerPorUsuarioId(request.usuarioId);
+  async execute(request: ActualizarConfiguracionRequest): Promise<ActualizarConfiguracionResponse> {
+    const actual = await this.configRepo.obtenerPorUsuarioId(request.usuarioId);
 
     if (!actual) {
       throw new Error(`Configuración no encontrada para el usuario ${request.usuarioId}`);
@@ -28,7 +28,7 @@ export class ActualizarConfiguracionUseCase {
       request.campo === 'modo_silencioso' ? request.valor : actual.modo_silencioso,
     );
 
-    this.configRepo.actualizar(actualizada);
+    await this.configRepo.actualizar(actualizada);
 
     return { configuracion: actualizada };
   }

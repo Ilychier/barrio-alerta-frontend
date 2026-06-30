@@ -1,17 +1,42 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { DependencyContainer } from '../../infrastructure/config/dependencyContainer';
 import { PRESETS_DE_REPORTE } from '../../infrastructure/presets/reportePresets';
 import { Categoria } from '../../domain/entities/categoria';
 
 export function useReporteController(currentUserId: number) {
+  const [categorias, setCategorias] = useState<Categoria[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
   const [selectedDescription, setSelectedDescription] = useState('');
   const [evidenceAttached, setEvidenceAttached] = useState(false);
   const [mockPhotoUrl, setMockPhotoUrl] = useState('');
+  const [loading, setLoading] = useState(true);
 
   const container = DependencyContainer.getInstance();
-  const categorias: Categoria[] = container.getReferenciaRepository().getCategorias();
   const reportarUseCase = container.getReportarIncidenteUseCase();
+
+  useEffect(() => {
+    let active = true;
+    async function loadCategorias() {
+      try {
+        setLoading(true);
+        const repo = DependencyContainer.getInstance().getReferenciaRepository();
+        const res = await repo.getCategorias();
+        if (active) {
+          setCategorias(res);
+        }
+      } catch (error) {
+        console.error('Error loading categories:', error);
+      } finally {
+        if (active) {
+          setLoading(false);
+        }
+      }
+    }
+    loadCategorias();
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const handleSelectCategory = useCallback((catId: number) => {
     const preset = PRESETS_DE_REPORTE[catId];
@@ -31,10 +56,10 @@ export function useReporteController(currentUserId: number) {
     setEvidenceAttached(false);
   }, []);
 
-  const saveIncidentReport = useCallback((): boolean => {
+  const saveIncidentReport = useCallback(async (): Promise<boolean> => {
     if (!selectedCategory || !evidenceAttached) return false;
 
-    reportarUseCase.execute({
+    await reportarUseCase.execute({
       descripcion: selectedDescription,
       categoriaId: selectedCategory,
       usuarioId: currentUserId,
@@ -67,5 +92,6 @@ export function useReporteController(currentUserId: number) {
     removeEvidence,
     saveIncidentReport,
     cancel,
+    loading,
   };
 }

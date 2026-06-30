@@ -12,7 +12,7 @@ export interface DispararSOSResponse {
 export class DispararSOSUseCase {
   constructor(private readonly alertaRepo: IAlertaRepository) {}
 
-  execute(request: DispararSOSRequest): DispararSOSResponse {
+  async execute(request: DispararSOSRequest): Promise<DispararSOSResponse> {
     const newId = Math.floor(Math.random() * 1000) + 1000;
 
     const sosAlert = new Alerta(
@@ -24,7 +24,7 @@ export class DispararSOSUseCase {
       11, // categoría Robo
     );
 
-    this.alertaRepo.crearAlerta(sosAlert);
+    await this.alertaRepo.crearAlerta(sosAlert);
     return { alerta: sosAlert };
   }
 }
