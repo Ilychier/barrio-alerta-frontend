@@ -1,6 +1,5 @@
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useReporteController } from '../../application/controllers/useReporteController';
-import { PRESETS_DE_REPORTE } from '../../infrastructure/presets/reportePresets';
 import { CategoryButton } from '../components/atomic/CategoryButton';
 import { SectionBadge } from '../components/atomic/SectionBadge';
 import { SectionCard } from '../components/layout/SectionCard';
@@ -16,11 +15,7 @@ export function ReportarScreen() {
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <SectionCard>
         <SectionBadge label="Mecanismo Rápido" color="green" />
-        <Text style={styles.title}>Reporte de Incidente en Línea</Text>
-        <Text style={styles.description}>
-          La categorización mediante opciones predeterminadas optimiza los tiempos de respuesta y
-          evita la saturación de los canales.
-        </Text>
+        <Text style={styles.title}>Reporte de Incidente</Text>
 
         {/* Categorías */}
         <View style={styles.categoriesSection}>
@@ -48,16 +43,13 @@ export function ReportarScreen() {
               onRemove={ctrl.removeEvidence}
             />
 
-            {(() => {
-              const preset = PRESETS_DE_REPORTE[ctrl.selectedCategory];
-              return preset ? (
-                <DescriptionSelector
-                  descriptions={preset.descripciones}
-                  selected={ctrl.selectedDescription}
-                  onSelect={ctrl.setSelectedDescription}
-                />
-              ) : null;
-            })()}
+            {ctrl.descripciones && ctrl.descripciones.length > 0 && (
+              <DescriptionSelector
+                descriptions={ctrl.descripciones.map((d) => d.descripcion)}
+                selected={ctrl.selectedDescription}
+                onSelect={ctrl.handleSelectDescription}
+              />
+            )}
           </View>
         )}
 

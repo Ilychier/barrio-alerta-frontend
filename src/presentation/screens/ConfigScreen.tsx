@@ -1,13 +1,13 @@
-import { View, ScrollView, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { BAColors } from '../constants/colors';
-import { CURRENT_USER_ID } from '../constants/currentUser';
+import { useRouter } from 'expo-router';
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useConfiguracionController } from '../../application/controllers/useConfiguracionController';
 import { useDashboardController } from '../../application/controllers/useDashboardController';
-import { SectionCard } from '../components/layout/SectionCard';
+import { IconRenderer } from '../components/atomic/IconRenderer';
 import { SectionBadge } from '../components/atomic/SectionBadge';
 import { ToggleSwitch } from '../components/atomic/ToggleSwitch';
-import { IconRenderer } from '../components/atomic/IconRenderer';
-import { useRouter } from 'expo-router';
+import { SectionCard } from '../components/layout/SectionCard';
+import { BAColors } from '../constants/colors';
+import { CURRENT_USER_ID } from '../constants/currentUser';
 
 export function ConfigScreen() {
   const router = useRouter();
@@ -18,11 +18,7 @@ export function ConfigScreen() {
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <SectionCard>
         <SectionBadge label="Personalización" color="purple" />
-        <Text style={styles.title}>Ajustes y Filtros de Comunicación</Text>
-        <Text style={styles.description}>
-          Administra qué tipo de alertas deseas recibir en tiempo real para personalizar los flujos
-          hópicos y de pantalla (RF3).
-        </Text>
+        <Text style={styles.title}>Ajustes</Text>
 
         <View style={styles.togglesSection}>
           <ToggleSwitch
