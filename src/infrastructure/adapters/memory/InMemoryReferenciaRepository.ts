@@ -3,6 +3,7 @@ import { Usuario } from '../../../domain/entities/usuario';
 import { Barrio } from '../../../domain/entities/barrio';
 import { Cuadrante } from '../../../domain/entities/cuadrante';
 import { Categoria } from '../../../domain/entities/categoria';
+import { CategoriaDescripcion } from '../../../domain/entities/categoriaDescripcion';
 
 const INITIAL_CUADRANTES: Cuadrante[] = [
   new Cuadrante(101, 'CAI Soacha Centro', '+57 310 555 0123'),
@@ -50,5 +51,36 @@ export class InMemoryReferenciaRepository implements IReferenciaRepository {
 
   async getCategoriaById(id: number): Promise<Categoria | undefined> {
     return this.categorias.find((c) => c.id === id);
+  }
+
+  async getDescripcionesPorCategoria(categoriaId: number): Promise<CategoriaDescripcion[]> {
+    const presets: Record<number, { descripciones: string[]; imagen: string }> = {
+      10: {
+        descripciones: ['Persona merodeando negocios', 'Vehículo sin placas sospechoso', 'Intento de intrusión vecinal'],
+        imagen: 'https://images.unsplash.com/photo-1509248961158-e54f6934749c?w=500&auto=format&fit=crop',
+      },
+      11: {
+        descripciones: ['Asalto a mano armada', 'Hurto de autopartes', 'Robo a vivienda en proceso'],
+        imagen: 'https://images.unsplash.com/photo-1541872703-74c5e44368f9?w=500&auto=format&fit=crop',
+      },
+      12: {
+        descripciones: ['Accidente de tránsito grave', 'Persona inconsciente', 'Crisis de salud en vía pública'],
+        imagen: 'https://images.unsplash.com/photo-1516574187841-cb9cc2ca948b?w=500&auto=format&fit=crop',
+      },
+      13: {
+        descripciones: ['Fuego en vivienda vecinal', 'Cortocircuito de cableado público', 'Fuga de gas con llamas'],
+        imagen: 'https://images.unsplash.com/photo-1508873699372-7aeab60b44ab?w=500&auto=format&fit=crop',
+      },
+    };
+
+    const preset = presets[categoriaId];
+    if (!preset) return [];
+
+    return preset.descripciones.map((desc, idx) => ({
+      id: categoriaId * 100 + idx,
+      descripcion: desc,
+      categoriaId,
+      imagenUrl: preset.imagen,
+    }));
   }
 }

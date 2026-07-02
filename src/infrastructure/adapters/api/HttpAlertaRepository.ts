@@ -36,7 +36,7 @@ export class HttpAlertaRepository implements IAlertaRepository {
         for (const ev of evidencias) {
           try {
             await this.http.post('/evidencias', {
-              archivoUrl: ev.url_archivo || (ev as any).url || ev.archivoUrl,
+              archivoUrl: ev.url_archivo || (ev as any).url || (ev as any).archivoUrl,
               alertaId: createdAlerta.id,
             });
           } catch (evError) {

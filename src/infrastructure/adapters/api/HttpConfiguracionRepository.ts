@@ -14,13 +14,14 @@ export class HttpConfiguracionRepository implements IConfiguracionRepository {
 
   async obtenerPorUsuarioId(usuarioId: number): Promise<Configuracion | undefined> {
     try {
-      const response = await this.http.get<Configuracion>(`${this.endpoints.configuraciones}/${usuarioId}`);
+      const response = await this.http.get<any>(`${this.endpoints.configuraciones}/${usuarioId}`);
       if (response.data) {
+        const raw = response.data;
         return new Configuracion(
-          response.data.id,
-          response.data.usuario_id,
-          response.data.recibir_notificaciones,
-          response.data.modo_silencioso
+          raw.id,
+          raw.usuarioId !== undefined ? raw.usuarioId : raw.usuario_id,
+          raw.recibirNotificaciones !== undefined ? raw.recibirNotificaciones : raw.recibir_notificaciones,
+          raw.modoSilencioso !== undefined ? raw.modoSilencioso : raw.modo_silencioso
         );
       }
       return undefined;
@@ -38,11 +39,25 @@ export class HttpConfiguracionRepository implements IConfiguracionRepository {
 
   async actualizar(config: Configuracion): Promise<Configuracion> {
     try {
-      const response = await this.http.put<Configuracion>(
+      const payload = {
+        usuarioId: config.usuario_id,
+        recibirNotificaciones: config.recibir_notificaciones,
+        modoSilencioso: config.modo_silencioso,
+      };
+      const response = await this.http.put<any>(
         `${this.endpoints.configuraciones}/${config.usuario_id}`,
-        config
+        payload
       );
-      return response.data;
+      if (response.data) {
+        const raw = response.data;
+        return new Configuracion(
+          raw.id,
+          raw.usuarioId !== undefined ? raw.usuarioId : raw.usuario_id,
+          raw.recibirNotificaciones !== undefined ? raw.recibirNotificaciones : raw.recibir_notificaciones,
+          raw.modoSilencioso !== undefined ? raw.modoSilencioso : raw.modo_silencioso
+        );
+      }
+      return config;
     } catch (error) {
       if (isAxiosError(error)) {
         console.warn(

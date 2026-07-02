@@ -1,10 +1,10 @@
+import { Alerta } from '../../domain/entities/alerta';
+import { Categoria } from '../../domain/entities/categoria';
+import { Evidencia } from '../../domain/entities/evidencia';
+import { Usuario } from '../../domain/entities/usuario';
 import { IAlertaRepository } from '../../domain/ports/IAlertaRepository';
 import { IConfiguracionRepository } from '../../domain/ports/IConfiguracionRepository';
 import { IReferenciaRepository } from '../../domain/ports/IReferenciaRepository';
-import { Alerta } from '../../domain/entities/alerta';
-import { Categoria } from '../../domain/entities/categoria';
-import { Usuario } from '../../domain/entities/usuario';
-import { Evidencia } from '../../domain/entities/evidencia';
 
 export interface AlertaConDatos {
   alerta: Alerta;
@@ -33,8 +33,13 @@ export class ObtenerAlertasUseCase {
     const filtradas = todas.filter((a) => {
       // Las alertas SOS siempre se muestran
       if (a.es_sos) return true;
-      // Si el usuario desactivó notificaciones, ocultar las que no son SOS
-      if (!config?.recibir_notificaciones) return false;
+      
+      // Si el modo silencioso está activado (Filtro S.O.S), ocultar las que no son SOS
+      if (config?.modo_silencioso === true) return false;
+
+      // Si el usuario desactivó explícitamente recibir notificaciones de vecinos, ocultar las que no son SOS
+      if (config?.recibir_notificaciones === false) return false;
+
       return true;
     });
 
