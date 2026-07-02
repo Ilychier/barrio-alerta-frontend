@@ -24,7 +24,7 @@ export function ConfigScreen() {
           <ToggleSwitch
             value={config?.recibir_notificaciones ?? true}
             onToggle={(val) => handleUpdate('recibir_notificaciones', val)}
-            label="Alertas Comunitarias de Vecinos"
+            label="Recibir Notificaciones"
             description="Recibir incidencias de baja y media criticidad."
           />
 
