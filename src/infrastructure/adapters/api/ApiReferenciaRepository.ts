@@ -4,6 +4,7 @@ import { Usuario } from '../../../domain/entities/usuario';
 import { Barrio } from '../../../domain/entities/barrio';
 import { Cuadrante } from '../../../domain/entities/cuadrante';
 import { Categoria } from '../../../domain/entities/categoria';
+import { CategoriaDescripcion } from '../../../domain/entities/categoriaDescripcion';
 import { InMemoryReferenciaRepository } from '../memory/InMemoryReferenciaRepository';
 import { HttpGenericService } from './HttpGenericService';
 
@@ -15,24 +16,11 @@ export class ApiReferenciaRepository implements IReferenciaRepository {
     try {
       const response = await this.http.get<any>(`/usuarios/${id}`);
       if (response.data) {
-        // Resolve the user's barrio relationship from the new /usuarios-barrios endpoint
-        let barrioId = 1; // Default fallback as used in mock data
-        try {
-          const ubResponse = await this.http.get<any>('/usuarios-barrios');
-          const list = ubResponse.data?.content || [];
-          const association = list.find((item: any) => item.usuario?.id === id);
-          if (association && association.barrio) {
-            barrioId = association.barrio.id;
-          }
-        } catch (ubError) {
-          console.warn('[ApiReferenciaRepository] Failed to fetch user-barrio association, falling back to default 1:', ubError);
-        }
-
         return new Usuario(
           response.data.id,
           response.data.name || response.data.nombre || 'Usuario',
           response.data.email,
-          barrioId
+          response.data.barrioId || response.data.barrio_id || 1
         );
       }
       return undefined;
@@ -136,6 +124,31 @@ export class ApiReferenciaRepository implements IReferenciaRepository {
         console.warn(`[ApiReferenciaRepository] Failed to getCategoriaById(${id}). Falling back to local data:`, error);
       }
       return this.fallback.getCategoriaById(id);
+    }
+  }
+
+  async getDescripcionesPorCategoria(categoriaId: number): Promise<CategoriaDescripcion[]> {
+    try {
+      const response = await this.http.get<any>(`/categoria-descripciones?categoriaId=${categoriaId}`);
+      const data = response.data && response.data.content ? response.data.content : response.data;
+      if (Array.isArray(data)) {
+        return data.map((item: any) => ({
+          id: item.id,
+          descripcion: item.descripcion,
+          categoriaId: item.categoriaId,
+          imagenUrl: item.imagenUrl || item.imagen_url || '',
+        }));
+      }
+      return [];
+    } catch (error) {
+      if (isAxiosError(error)) {
+        console.warn(
+          `[ApiReferenciaRepository] Failed to getDescripcionesPorCategoria(${categoriaId}) [Status: ${error.response?.status}]. Falling back to local data.`
+        );
+      } else {
+        console.warn(`[ApiReferenciaRepository] Failed to getDescripcionesPorCategoria(${categoriaId}). Falling back to local data:`, error);
+      }
+      return this.fallback.getDescripcionesPorCategoria(categoriaId);
     }
   }
 }
