@@ -1,15 +1,14 @@
-import { useState, useCallback } from 'react';
-import { View, ScrollView, Text, StyleSheet } from 'react-native';
 import { useFocusEffect } from 'expo-router';
-import { BAColors } from '../constants/colors';
-import { CURRENT_USER_ID } from '../constants/currentUser';
+import { useCallback, useState } from 'react';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useDashboardController } from '../../application/controllers/useDashboardController';
 import { useSOSController } from '../../application/controllers/useSOSController';
-import { SectionCard } from '../components/layout/SectionCard';
 import { SectionBadge } from '../components/atomic/SectionBadge';
-import { SOSButton } from '../components/molecules/SOSButton';
+import { SectionCard } from '../components/layout/SectionCard';
 import { AlertCard } from '../components/molecules/AlertCard';
-import { IconRenderer } from '../components/atomic/IconRenderer';
+import { SOSButton } from '../components/molecules/SOSButton';
+import { BAColors } from '../constants/colors';
+import { CURRENT_USER_ID } from '../constants/currentUser';
 
 export function DashboardScreen() {
   const [focusCount, forceUpdate] = useState(0);
@@ -29,10 +28,9 @@ export function DashboardScreen() {
       {/* Bloque SOS (izquierda en web, arriba en mobile) */}
       <SectionCard style={styles.sosBlock}>
         <SectionBadge label="Acceso Crítico" color="red" />
-        <Text style={styles.sosTitle}>Activación Botón de Pánico S.O.S</Text>
+        <Text style={styles.sosTitle}>Botón de Pánico S.O.S</Text>
         <Text style={styles.sosDescription}>
-          Enlace de emergencia directa con el cuadrante {cuadrante?.nombre_unidad}. Requiere doble
-          confirmación táctil para evitar falsos positivos (RF1, RNF4).
+          Contacto con el cuadrante {cuadrante?.nombre_unidad} en caso de emergencia.
         </Text>
 
         <SOSButton
@@ -47,8 +45,7 @@ export function DashboardScreen() {
 
         <View style={styles.sosFooter}>
           <View style={styles.sosFooterLeft}>
-            <IconRenderer name="Clock" size={14} color={BAColors.textDim} />
-            <Text style={styles.sosFooterText}>Monitoreo Continuo 24/7</Text>
+            <Text style={styles.sosFooterText}>cuadrante: {cuadrante?.nombre_unidad}</Text>
           </View>
           {cuadrante?.telefono_emergencia && (
             <Text style={styles.phoneNumber}>{cuadrante.telefono_emergencia}</Text>
