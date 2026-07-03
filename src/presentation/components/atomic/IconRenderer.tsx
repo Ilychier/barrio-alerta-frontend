@@ -15,6 +15,7 @@ const ICON_MAP: Record<string, string> = {
   Radio: '📡',
   Check: '✓',
   X: '✕',
+  Menu: '☰',
 };
 
 interface IconRendererProps {
