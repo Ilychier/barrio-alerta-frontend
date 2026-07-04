@@ -1,5 +1,5 @@
-import { IAlertaRepository } from '../../domain/ports/IAlertaRepository';
 import { Alerta } from '../../domain/entities/alerta';
+import { IAlertaRepository } from '../../domain/ports/IAlertaRepository';
 
 export interface DispararSOSRequest {
   usuarioId: number;
@@ -17,11 +17,10 @@ export class DispararSOSUseCase {
 
     const sosAlert = new Alerta(
       newId,
-      '¡ALERTA S.O.S ACTIVA! Emergencia reportada en el sector Soacha Centro.',
+      '¡ALERTA S.O.S ACTIVA!',
       true,
       new Date().toISOString(),
       request.usuarioId,
-      11, // categoría Robo
     );
 
     await this.alertaRepo.crearAlerta(sosAlert);
