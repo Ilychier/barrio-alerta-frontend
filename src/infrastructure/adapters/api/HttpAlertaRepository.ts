@@ -1,9 +1,9 @@
 import { isAxiosError } from 'axios';
-import { IAlertaRepository } from '../../../domain/ports/IAlertaRepository';
 import { Alerta } from '../../../domain/entities/alerta';
 import { Evidencia } from '../../../domain/entities/evidencia';
-import { HttpGenericService } from './HttpGenericService';
+import { IAlertaRepository } from '../../../domain/ports/IAlertaRepository';
 import { InMemoryAlertaRepository } from '../memory/InMemoryAlertaRepository';
+import { HttpGenericService } from './HttpGenericService';
 
 export class HttpAlertaRepository implements IAlertaRepository {
   private readonly fallback = new InMemoryAlertaRepository();
@@ -12,6 +12,7 @@ export class HttpAlertaRepository implements IAlertaRepository {
   private readonly endpoints = {
     alertas: '/alertas',
     evidencias: '/evidencias',
+    email: '/email/send-email',
   };
 
   async crearAlerta(alerta: Alerta, evidencias?: Evidencia[]): Promise<Alerta> {
@@ -29,8 +30,20 @@ export class HttpAlertaRepository implements IAlertaRepository {
         response.data.esSos !== undefined ? response.data.esSos : response.data.es_sos,
         response.data.fechaHora || response.data.fecha_hora || new Date().toISOString(),
         response.data.usuarioId || response.data.usuario_id,
-        response.data.categoria?.id || response.data.categoriaId || response.data.categoria_id || 10
+        response.data.categoria?.id || response.data.categoriaId || response.data.categoria_id
       );
+
+      if (alerta.es_sos) {
+        try {
+          await this.http.post(this.endpoints.email, {
+            toEmail: "jherreraah93@gmail.com",
+            subject: "¡ALERTA S.O.S GENERADA!",
+            body: `Se ha activado un botón de S.O.S. Descripción de la alerta: ${createdAlerta.descripcion}`,
+          });
+        } catch (emailError) {
+          console.warn('[HttpAlertaRepository] Failed to send email notification for SOS alert:', emailError);
+        }
+      }
 
       if (evidencias && evidencias.length > 0) {
         for (const ev of evidencias) {
@@ -47,6 +60,18 @@ export class HttpAlertaRepository implements IAlertaRepository {
 
       return createdAlerta;
     } catch (error) {
+      if (alerta.es_sos) {
+        try {
+          await this.http.post(this.endpoints.email, {
+            toEmail: "jherreraah93@gmail.com",
+            subject: "¡ALERTA S.O.S GENERADA!",
+            body: `Se ha activado un botón de S.O.S. Descripción de la alerta: ${alerta.descripcion}`,
+          });
+        } catch (emailError) {
+          console.warn('[HttpAlertaRepository] Failed to send fallback email notification for SOS alert:', emailError);
+        }
+      }
+
       if (isAxiosError(error)) {
         console.warn(
           `[HttpAlertaRepository] Failed to crearAlerta [Status: ${error.response?.status}]. Falling back to local data.`
