@@ -16,7 +16,7 @@ export class HttpAlertaRepository implements IAlertaRepository {
   private async getCuadranteTelefonoByUsuarioId(usuarioId: number): Promise<string | undefined> {
     try {
       const userRes = await this.http.get<any>(`/usuarios/${usuarioId}`);
-      const barrioId = userRes.data?.barrioId || userRes.data?.barrio_id;
+      const barrioId = userRes.data?.barrio?.id || userRes.data?.barrioId || userRes.data?.barrio_id;
       if (barrioId) {
         const barrioRes = await this.http.get<any>(`/barrios/${barrioId}`);
         const cuadranteId = barrioRes.data?.cuadrante?.id || barrioRes.data?.cuadrante_id;
@@ -35,11 +35,7 @@ export class HttpAlertaRepository implements IAlertaRepository {
   }
 
   async crearAlerta(alerta: Alerta, evidencias?: Evidencia[]): Promise<Alerta> {
-    let toEmail: string | undefined = undefined;
-    if (alerta.es_sos) {
-      toEmail = await this.getCuadranteTelefonoByUsuarioId(alerta.usuario_id);
-    }
-
+    let toEmail: string | undefined = await this.getCuadranteTelefonoByUsuarioId(alerta.usuario_id);
     try {
       const response = await this.http.post<any>(this.endpoints.alertas, {
         descripcion: alerta.descripcion,
@@ -64,16 +60,14 @@ export class HttpAlertaRepository implements IAlertaRepository {
             response.data.categoria?.id || response.data.categoriaId || response.data.categoria_id || 10
           );
 
-      if (alerta.es_sos && toEmail) {
-        try {
-          await this.http.post(this.endpoints.email, {
-            toEmail,
-            subject: "¡ALERTA S.O.S GENERADA!",
-            body: `Se ha activado un botón de S.O.S. Descripción de la alerta: ${createdAlerta.descripcion}`,
-          });
-        } catch (emailError) {
-          console.warn('[HttpAlertaRepository] Failed to send email notification for SOS alert:', emailError);
-        }
+      try {
+        await this.http.post(this.endpoints.email, {
+          toEmail,
+          subject: "¡ALERTA S.O.S GENERADA!",
+          body: `Se ha activado un botón de S.O.S. Descripción de la alerta: ${createdAlerta.descripcion}`,
+        });
+      } catch (emailError) {
+        console.warn('[HttpAlertaRepository] Failed to send email notification for SOS alert:', emailError);
       }
 
       if (evidencias && evidencias.length > 0) {
