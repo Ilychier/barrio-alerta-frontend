@@ -21,7 +21,9 @@ export function DashboardScreen() {
   );
 
   const { alertas, barrio, cuadrante } = useDashboardController(CURRENT_USER_ID, focusCount);
-  const sos = useSOSController(CURRENT_USER_ID);
+  const sos = useSOSController(CURRENT_USER_ID, () => {
+    forceUpdate((n) => n + 1);
+  });
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
