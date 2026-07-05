@@ -15,10 +15,9 @@ export class DispararSOSUseCase {
   async execute(request: DispararSOSRequest): Promise<DispararSOSResponse> {
     const newId = Math.floor(Math.random() * 1000) + 1000;
 
-    const sosAlert = new Alerta(
+    const sosAlert = Alerta.crearEmergenciaSOS(
       newId,
       '¡ALERTA S.O.S ACTIVA!',
-      true,
       new Date().toISOString(),
       request.usuarioId,
     );

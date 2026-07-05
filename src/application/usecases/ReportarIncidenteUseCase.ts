@@ -20,10 +20,9 @@ export class ReportarIncidenteUseCase {
   async execute(request: ReportarIncidenteRequest): Promise<ReportarIncidenteResponse> {
     const newAlertId = Math.floor(Math.random() * 1000) + 1000;
 
-    const incidentAlert = new Alerta(
+    const incidentAlert = Alerta.crearDesdeFormulario(
       newAlertId,
       request.descripcion,
-      false,
       new Date().toISOString(),
       request.usuarioId,
       request.categoriaId,
