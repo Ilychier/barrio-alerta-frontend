@@ -51,7 +51,7 @@ export class ObtenerAlertasUseCase {
     const alertasConDatos: AlertaConDatos[] = await Promise.all(
       ordenadas.map(async (a) => {
         const [categoria, usuario, evidencias] = await Promise.all([
-          this.referenciaRepo.getCategoriaById(a.categoria_id),
+          a.categoria_id !== undefined ? this.referenciaRepo.getCategoriaById(a.categoria_id) : Promise.resolve(undefined),
           this.referenciaRepo.getUsuarioById(a.usuario_id),
           this.alertaRepo.obtenerEvidencias(a.id),
         ]);

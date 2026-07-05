@@ -3,7 +3,7 @@ import { DependencyContainer } from '../../infrastructure/config/dependencyConta
 
 export type SOSStep = 0 | 1 | 2;
 
-export function useSOSController(currentUserId: number) {
+export function useSOSController(currentUserId: number, onSuccess?: () => void) {
   const [sosStep, setSosStep] = useState<SOSStep>(0);
   const [sosCountdown, setSosCountdown] = useState(3);
   const [performanceTracker, setPerformanceTracker] = useState<string | null>(null);
@@ -20,7 +20,10 @@ export function useSOSController(currentUserId: number) {
     const latency = Date.now() - start;
     setPerformanceTracker(`${latency}ms`);
     setSosStep(2);
-  }, [currentUserId, useCase]);
+    if (onSuccess) {
+      onSuccess();
+    }
+  }, [currentUserId, useCase, onSuccess]);
 
   useEffect(() => {
     triggerSOSRef.current = triggerSOSFinal;

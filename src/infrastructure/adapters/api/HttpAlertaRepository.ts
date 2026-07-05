@@ -1,20 +1,41 @@
 import { isAxiosError } from 'axios';
-import { IAlertaRepository } from '../../../domain/ports/IAlertaRepository';
 import { Alerta } from '../../../domain/entities/alerta';
 import { Evidencia } from '../../../domain/entities/evidencia';
+import { IAlertaRepository } from '../../../domain/ports/IAlertaRepository';
 import { HttpGenericService } from './HttpGenericService';
-import { InMemoryAlertaRepository } from '../memory/InMemoryAlertaRepository';
 
 export class HttpAlertaRepository implements IAlertaRepository {
-  private readonly fallback = new InMemoryAlertaRepository();
   private readonly http = HttpGenericService.getInstance().getClient();
   
   private readonly endpoints = {
     alertas: '/alertas',
     evidencias: '/evidencias',
+    email: '/email/send-email',
   };
 
+  private async getCuadranteTelefonoByUsuarioId(usuarioId: number): Promise<string | undefined> {
+    try {
+      const userRes = await this.http.get<any>(`/usuarios/${usuarioId}`);
+      const barrioId = userRes.data?.barrio?.id || userRes.data?.barrioId || userRes.data?.barrio_id;
+      if (barrioId) {
+        const barrioRes = await this.http.get<any>(`/barrios/${barrioId}`);
+        const cuadranteId = barrioRes.data?.cuadrante?.id || barrioRes.data?.cuadrante_id;
+        if (cuadranteId) {
+          const cuadranteRes = await this.http.get<any>(`/cuadrantes/${cuadranteId}`);
+          const tel = cuadranteRes.data?.telefonoEmergencia || cuadranteRes.data?.telefono_emergencia;
+          if (tel) {
+            return tel;
+          }
+        }
+      }
+    } catch (error) {
+      console.warn('[HttpAlertaRepository] Failed to resolve cuadrante telefono_emergencia:', error);
+    }
+    return undefined;
+  }
+
   async crearAlerta(alerta: Alerta, evidencias?: Evidencia[]): Promise<Alerta> {
+    let toEmail: string | undefined = await this.getCuadranteTelefonoByUsuarioId(alerta.usuario_id);
     try {
       const response = await this.http.post<any>(this.endpoints.alertas, {
         descripcion: alerta.descripcion,
@@ -23,14 +44,31 @@ export class HttpAlertaRepository implements IAlertaRepository {
         categoriaId: alerta.categoria_id,
       });
 
-      const createdAlerta = new Alerta(
-        response.data.id,
-        response.data.descripcion,
-        response.data.esSos !== undefined ? response.data.esSos : response.data.es_sos,
-        response.data.fechaHora || response.data.fecha_hora || new Date().toISOString(),
-        response.data.usuarioId || response.data.usuario_id,
-        response.data.categoria?.id || response.data.categoriaId || response.data.categoria_id || 10
-      );
+      const isSos = response.data.esSos !== undefined ? response.data.esSos : response.data.es_sos;
+      const createdAlerta = isSos
+        ? Alerta.crearEmergenciaSOS(
+            response.data.id,
+            response.data.descripcion,
+            response.data.fechaHora || response.data.fecha_hora || new Date().toISOString(),
+            response.data.usuarioId || response.data.usuario_id
+          )
+        : Alerta.crearDesdeFormulario(
+            response.data.id,
+            response.data.descripcion,
+            response.data.fechaHora || response.data.fecha_hora || new Date().toISOString(),
+            response.data.usuarioId || response.data.usuario_id,
+            response.data.categoria?.id || response.data.categoriaId || response.data.categoria_id || 10
+          );
+
+      try {
+        await this.http.post(this.endpoints.email, {
+          toEmail,
+          subject: "¡ALERTA S.O.S GENERADA!",
+          body: `Se ha activado un botón de S.O.S. Descripción de la alerta: ${createdAlerta.descripcion}`,
+        });
+      } catch (emailError) {
+        console.warn('[HttpAlertaRepository] Failed to send email notification for SOS alert:', emailError);
+      }
 
       if (evidencias && evidencias.length > 0) {
         for (const ev of evidencias) {
@@ -47,14 +85,26 @@ export class HttpAlertaRepository implements IAlertaRepository {
 
       return createdAlerta;
     } catch (error) {
+      if (alerta.es_sos && toEmail) {
+        try {
+          await this.http.post(this.endpoints.email, {
+            toEmail,
+            subject: "¡ALERTA S.O.S GENERADA!",
+            body: `Se ha activado un botón de S.O.S. Descripción de la alerta: ${alerta.descripcion}`,
+          });
+        } catch (emailError) {
+          console.warn('[HttpAlertaRepository] Failed to send fallback email notification for SOS alert:', emailError);
+        }
+      }
+
       if (isAxiosError(error)) {
         console.warn(
-          `[HttpAlertaRepository] Failed to crearAlerta [Status: ${error.response?.status}]. Falling back to local data.`
+          `[HttpAlertaRepository] Failed to crearAlerta [Status: ${error.response?.status}].`
         );
       } else {
-        console.warn('[HttpAlertaRepository] Failed to crearAlerta. Falling back to local data:', error);
+        console.warn('[HttpAlertaRepository] Failed to crearAlerta:', error);
       }
-      return this.fallback.crearAlerta(alerta, evidencias);
+      throw error;
     }
   }
 
@@ -63,27 +113,34 @@ export class HttpAlertaRepository implements IAlertaRepository {
       const response = await this.http.get<any>(this.endpoints.alertas);
       const data = response.data && response.data.content ? response.data.content : response.data;
       if (Array.isArray(data)) {
-        return data.map(
-          (a) => new Alerta(
-            a.id,
-            a.descripcion,
-            a.esSos !== undefined ? a.esSos : a.es_sos,
-            a.fechaHora || a.fecha_hora,
-            a.usuarioId || a.usuario_id,
-            a.categoria?.id || a.categoriaId || a.categoria_id || 10
-          )
-        );
+        return data.map((a) => {
+          const isSos = a.esSos !== undefined ? a.esSos : a.es_sos;
+          return isSos
+            ? Alerta.crearEmergenciaSOS(
+                a.id,
+                a.descripcion,
+                a.fechaHora || a.fecha_hora,
+                a.usuarioId || a.usuario_id
+              )
+            : Alerta.crearDesdeFormulario(
+                a.id,
+                a.descripcion,
+                a.fechaHora || a.fecha_hora,
+                a.usuarioId || a.usuario_id,
+                a.categoria?.id || a.categoriaId || a.categoria_id || 10
+              );
+        });
       }
       return [];
     } catch (error) {
       if (isAxiosError(error)) {
         console.warn(
-          `[HttpAlertaRepository] Failed to obtenerTodas [Status: ${error.response?.status}]. Falling back to local data.`
+          `[HttpAlertaRepository] Failed to obtenerTodas [Status: ${error.response?.status}].`
         );
       } else {
-        console.warn('[HttpAlertaRepository] Failed to obtenerTodas. Falling back to local data:', error);
+        console.warn('[HttpAlertaRepository] Failed to obtenerTodas:', error);
       }
-      return this.fallback.obtenerTodas();
+      throw error;
     }
   }
 
@@ -92,25 +149,32 @@ export class HttpAlertaRepository implements IAlertaRepository {
       const response = await this.http.get<any>(`${this.endpoints.alertas}/${id}`);
       if (response.data) {
         const a = response.data;
-        return new Alerta(
-          a.id,
-          a.descripcion,
-          a.esSos !== undefined ? a.esSos : a.es_sos,
-          a.fechaHora || a.fecha_hora,
-          a.usuarioId || a.usuario_id,
-          a.categoria?.id || a.categoriaId || a.categoria_id || 10
-        );
+        const isSos = a.esSos !== undefined ? a.esSos : a.es_sos;
+        return isSos
+          ? Alerta.crearEmergenciaSOS(
+              a.id,
+              a.descripcion,
+              a.fechaHora || a.fecha_hora,
+              a.usuarioId || a.usuario_id
+            )
+          : Alerta.crearDesdeFormulario(
+              a.id,
+              a.descripcion,
+              a.fechaHora || a.fecha_hora,
+              a.usuarioId || a.usuario_id,
+              a.categoria?.id || a.categoriaId || a.categoria_id || 10
+            );
       }
       return undefined;
     } catch (error) {
       if (isAxiosError(error)) {
         console.warn(
-          `[HttpAlertaRepository] Failed to obtenerPorId(${id}) [Status: ${error.response?.status}]. Falling back to local data.`
+          `[HttpAlertaRepository] Failed to obtenerPorId(${id}) [Status: ${error.response?.status}].`
         );
       } else {
-        console.warn(`[HttpAlertaRepository] Failed to obtenerPorId(${id}). Falling back to local data:`, error);
+        console.warn(`[HttpAlertaRepository] Failed to obtenerPorId(${id}):`, error);
       }
-      return this.fallback.obtenerPorId(id);
+      throw error;
     }
   }
 
@@ -127,12 +191,12 @@ export class HttpAlertaRepository implements IAlertaRepository {
     } catch (error) {
       if (isAxiosError(error)) {
         console.warn(
-          `[HttpAlertaRepository] Failed to obtenerEvidencias(${alertaId}) [Status: ${error.response?.status}]. Falling back to local data.`
+          `[HttpAlertaRepository] Failed to obtenerEvidencias(${alertaId}) [Status: ${error.response?.status}].`
         );
       } else {
-        console.warn(`[HttpAlertaRepository] Failed to obtenerEvidencias(${alertaId}). Falling back to local data:`, error);
+        console.warn(`[HttpAlertaRepository] Failed to obtenerEvidencias(${alertaId}):`, error);
       }
-      return this.fallback.obtenerEvidencias(alertaId);
+      throw error;
     }
   }
 }
