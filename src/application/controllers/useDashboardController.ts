@@ -14,6 +14,23 @@ export function useDashboardController(currentUserId: number, refreshTrigger?: n
   const [config, setConfig] = useState<Configuracion | undefined>(undefined);
   const [loading, setLoading] = useState(true);
 
+  const [fechaSeleccionada, setFechaSeleccionada] = useState<Date>(new Date());
+
+  const formatearFechaISO = (fecha: Date): string => {
+    const yyyy = fecha.getFullYear();
+    const mm = String(fecha.getMonth() + 1).padStart(2, '0');
+    const dd = String(fecha.getDate()).padStart(2, '0');
+    return `${yyyy}-${mm}-${dd}`;
+  };
+
+  const cambiarDia = (dias: number) => {
+    setFechaSeleccionada((prev) => {
+      const nuevaFecha = new Date(prev);
+      nuevaFecha.setDate(nuevaFecha.getDate() + dias);
+      return nuevaFecha;
+    });
+  };
+
   useEffect(() => {
     let active = true;
     const container = DependencyContainer.getInstance();
@@ -25,7 +42,7 @@ export function useDashboardController(currentUserId: number, refreshTrigger?: n
       try {
         setLoading(true);
         const [alertasRes, userRes] = await Promise.all([
-          obtenerAlertas.execute(currentUserId),
+          obtenerAlertas.execute(currentUserId, formatearFechaISO(fechaSeleccionada)),
           referenciaRepo.getUsuarioById(currentUserId),
         ]);
 
@@ -62,7 +79,17 @@ export function useDashboardController(currentUserId: number, refreshTrigger?: n
     return () => {
       active = false;
     };
-  }, [currentUserId, refreshTrigger]);
+  }, [currentUserId, refreshTrigger, fechaSeleccionada]);
 
-  return { alertas, usuario, barrio, cuadrante, config, loading };
+  return {
+    alertas,
+    usuario,
+    barrio,
+    cuadrante,
+    config,
+    loading,
+    fechaSeleccionada,
+    cambiarDia,
+    formatearFechaISO,
+  };
 }
