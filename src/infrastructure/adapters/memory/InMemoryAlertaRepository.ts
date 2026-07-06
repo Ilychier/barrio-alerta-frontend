@@ -55,7 +55,19 @@ export class InMemoryAlertaRepository implements IAlertaRepository {
     return alerta;
   }
 
-  async obtenerTodas(): Promise<Alerta[]> {
+  async obtenerTodas(fecha?: string): Promise<Alerta[]> {
+    if (fecha) {
+      return this.alertas.filter((a) => {
+        try {
+          const datePart = a.fecha_hora.includes('T')
+            ? a.fecha_hora.split('T')[0]
+            : new Date(a.fecha_hora).toISOString().split('T')[0];
+          return datePart === fecha;
+        } catch {
+          return false;
+        }
+      });
+    }
     return this.alertas;
   }
 

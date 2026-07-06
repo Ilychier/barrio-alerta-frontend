@@ -108,9 +108,10 @@ export class HttpAlertaRepository implements IAlertaRepository {
     }
   }
 
-  async obtenerTodas(): Promise<Alerta[]> {
+  async obtenerTodas(fecha?: string): Promise<Alerta[]> {
     try {
-      const response = await this.http.get<any>(this.endpoints.alertas);
+      const url = fecha ? `${this.endpoints.alertas}?fecha=${fecha}` : this.endpoints.alertas;
+      const response = await this.http.get<any>(url);
       const data = response.data && response.data.content ? response.data.content : response.data;
       if (Array.isArray(data)) {
         return data.map((a) => {
