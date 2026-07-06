@@ -24,10 +24,10 @@ export class ObtenerAlertasUseCase {
     private readonly referenciaRepo: IReferenciaRepository,
   ) {}
 
-  async execute(usuarioId: number): Promise<ObtenerAlertasResponse> {
+  async execute(usuarioId: number, fecha?: string): Promise<ObtenerAlertasResponse> {
     const [config, todas] = await Promise.all([
       this.configRepo.obtenerPorUsuarioId(usuarioId),
-      this.alertaRepo.obtenerTodas(),
+      this.alertaRepo.obtenerTodas(fecha),
     ]);
 
     const filtradas = todas.filter((a) => {
