@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { DependencyContainer } from '../../infrastructure/config/dependencyContainer';
+import { Alerta } from '../../domain/entities/alerta';
 
 export type SOSStep = 0 | 1 | 2;
 
@@ -63,10 +64,27 @@ export function useSOSController(currentUserId: number, onSuccess?: () => void) 
     setSosStep(0);
   }, []);
 
-  const dismissSOS = useCallback(() => {
+  const dismissSOS = useCallback(async () => {
     setSosStep(0);
     setPerformanceTracker(null);
-  }, []);
+
+    const newId = Math.floor(Math.random() * 1000) + 1000;
+    const fineAlert = Alerta.crearDesdeFormulario(
+      newId,
+      '¡Todo está bien ahora! Emergencia finalizada.',
+      new Date().toISOString(),
+      currentUserId,
+      5
+    );
+    try {
+      await DependencyContainer.getInstance().getAlertaRepository().crearAlerta(fineAlert);
+      if (onSuccess) {
+        onSuccess();
+      }
+    } catch (err) {
+      console.warn('[useSOSController] Failed to create stop emergency alert:', err);
+    }
+  }, [currentUserId, onSuccess]);
 
   return {
     sosStep,
