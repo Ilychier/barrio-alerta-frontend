@@ -1,6 +1,6 @@
 import { useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 import { useDashboardController } from '../../application/controllers/useDashboardController';
 import { useSOSController } from '../../application/controllers/useSOSController';
 import { SectionBadge } from '../components/atomic/SectionBadge';
@@ -20,7 +20,16 @@ export function DashboardScreen() {
     }, []),
   );
 
-  const { alertas, barrio, cuadrante } = useDashboardController(CURRENT_USER_ID, focusCount);
+  const {
+    alertas,
+    barrio,
+    cuadrante,
+    fechaSeleccionada,
+    cambiarDia,
+    formatearFechaISO,
+  } = useDashboardController(CURRENT_USER_ID, focusCount);
+
+  const esHoy = formatearFechaISO(fechaSeleccionada) === formatearFechaISO(new Date());
   const sos = useSOSController(CURRENT_USER_ID, () => {
     forceUpdate((n) => n + 1);
   });
@@ -69,6 +78,24 @@ export function DashboardScreen() {
         </Text>
 
         <View style={styles.alertList}>
+          <View style={styles.dateSelectorContainer}>
+            <TouchableOpacity onPress={() => cambiarDia(-1)} style={styles.dateButton}>
+              <Text style={styles.dateButtonText}>◀ Ayer</Text>
+            </TouchableOpacity>
+            
+            <Text style={styles.dateText}>
+              {esHoy ? 'Hoy' : formatearFechaISO(fechaSeleccionada)}
+            </Text>
+            
+            <TouchableOpacity
+              onPress={() => cambiarDia(1)}
+              disabled={esHoy}
+              style={[styles.dateButton, esHoy && styles.disabledButton]}
+            >
+              <Text style={[styles.dateButtonText, esHoy && styles.disabledButtonText]}>Mañana ▶</Text>
+            </TouchableOpacity>
+          </View>
+
           {alertas.length === 0 ? (
             <Text style={styles.emptyText}>No se registran eventos activos en el sector.</Text>
           ) : (
@@ -165,5 +192,41 @@ const styles = StyleSheet.create({
     paddingVertical: 48,
     fontSize: 12,
     color: BAColors.textDim,
+  },
+  dateSelectorContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: BAColors.surface,
+    borderColor: BAColors.surfaceBorder,
+    borderWidth: 1,
+    borderRadius: 8,
+    padding: 8,
+    marginBottom: 16,
+  },
+  dateButton: {
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 6,
+    backgroundColor: BAColors.surfaceLight,
+    borderColor: BAColors.border,
+    borderWidth: 1,
+  },
+  disabledButton: {
+    backgroundColor: 'transparent',
+    borderColor: 'transparent',
+  },
+  dateButtonText: {
+    fontSize: 14,
+    color: BAColors.green,
+    fontWeight: '600',
+  },
+  disabledButtonText: {
+    color: BAColors.textMuted,
+  },
+  dateText: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: BAColors.textPrimary,
   },
 });
