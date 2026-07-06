@@ -17,20 +17,28 @@ export function AlertCard({ item }: AlertCardProps) {
     minute: '2-digit',
   });
 
+  const isFine = alerta.categoria_id === 5;
+
   return (
-    <View style={[styles.card, isSos ? styles.cardSos : styles.cardNormal]}>
+    <View style={[styles.card, isSos ? styles.cardSos : (isFine ? styles.cardFine : styles.cardNormal)]}>
       {/* Header */}
       <View style={styles.header}>
         <View style={styles.headerLeft}>
           {isSos ? (
             <IconRenderer name="ShieldAlert" size={16} color={BAColors.red} />
+          ) : isFine ? (
+            <IconRenderer name="Check" size={16} color={BAColors.green} />
           ) : (
             categoria && (
               <IconRenderer name={categoria.icono_referencia} size={16} color={BAColors.textTertiary} />
             )
           )}
-          <Text style={[styles.categoryName, isSos && styles.categoryNameSos]}>
-            {isSos ? 'BOTÓN DE PÁNICO ACTIVADO' : categoria?.nombre || 'Incidente'}
+          <Text style={[
+            styles.categoryName,
+            isSos && styles.categoryNameSos,
+            isFine && styles.categoryNameFine
+          ]}>
+            {isSos ? 'BOTÓN DE PÁNICO ACTIVADO' : isFine ? 'EMERGENCIA FINALIZADA' : (categoria?.nombre || 'Incidente')}
           </Text>
         </View>
         <Text style={styles.time}>{time}</Text>
@@ -69,6 +77,10 @@ const styles = StyleSheet.create({
     backgroundColor: BAColors.redBg,
     borderColor: 'rgba(255, 51, 51, 0.4)',
   },
+  cardFine: {
+    backgroundColor: BAColors.greenBg,
+    borderColor: BAColors.greenBorder,
+  },
   cardNormal: {
     backgroundColor: BAColors.surfaceLight,
     borderColor: BAColors.border,
@@ -91,6 +103,9 @@ const styles = StyleSheet.create({
   },
   categoryNameSos: {
     color: BAColors.red,
+  },
+  categoryNameFine: {
+    color: BAColors.green,
   },
   time: {
     fontSize: 10,
