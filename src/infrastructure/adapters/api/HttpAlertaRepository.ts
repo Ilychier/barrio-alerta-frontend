@@ -41,7 +41,7 @@ export class HttpAlertaRepository implements IAlertaRepository {
         descripcion: alerta.descripcion,
         esSos: alerta.es_sos,
         usuarioId: alerta.usuario_id,
-        categoriaId: alerta.categoria_id,
+        categoriaId: alerta.es_sos ? 4 : alerta.categoria_id,
       });
 
       const isSos = response.data.esSos !== undefined ? response.data.esSos : response.data.es_sos;
@@ -57,7 +57,7 @@ export class HttpAlertaRepository implements IAlertaRepository {
             response.data.descripcion,
             response.data.fechaHora || response.data.fecha_hora || new Date().toISOString(),
             response.data.usuarioId || response.data.usuario_id,
-            response.data.categoria?.id || response.data.categoriaId || response.data.categoria_id || 10
+            response.data.categoria?.id || response.data.categoriaId || response.data.categoria_id || 4
           );
 
       try {
@@ -128,7 +128,7 @@ export class HttpAlertaRepository implements IAlertaRepository {
                 a.descripcion,
                 a.fechaHora || a.fecha_hora,
                 a.usuarioId || a.usuario_id,
-                a.categoria?.id || a.categoriaId || a.categoria_id || 10
+                a.categoria?.id || a.categoriaId || a.categoria_id || 4
               );
         });
       }
