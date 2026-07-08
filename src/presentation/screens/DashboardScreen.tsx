@@ -54,7 +54,7 @@ export function DashboardScreen() {
 
         <View style={styles.sosFooter}>
           <View style={styles.sosFooterLeft}>
-            <Text style={styles.sosFooterText}>cuadrante: {cuadrante?.nombre_unidad}</Text>
+            <Text style={styles.sosFooterText}>CAI: {cuadrante?.nombre_unidad}</Text>
           </View>
           {cuadrante?.telefono_emergencia && (
             <Text style={styles.phoneNumber}>{cuadrante.telefono_emergencia}</Text>
