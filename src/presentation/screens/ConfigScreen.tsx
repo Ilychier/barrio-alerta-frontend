@@ -38,15 +38,15 @@ export function ConfigScreen() {
         <View style={styles.cuadranteCard}>
           <Text style={styles.cuadranteTitle}>
             <IconRenderer name="Shield" size={14} color={BAColors.red} />
-            {'  '}Cuadrante Asignado por Localidad
+            {'  '}CAI y Barrio Asignado
           </Text>
 
           <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>Unidad</Text>
+            <Text style={styles.infoLabel}>CAI</Text>
             <Text style={styles.infoValue}>{cuadrante?.nombre_unidad}</Text>
           </View>
           <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>Línea Directa del Cuadrante:</Text>
+            <Text style={styles.infoLabel}>Línea Directa del Cai:</Text>
             <Text style={styles.infoValueGreen}>{cuadrante?.telefono_emergencia}</Text>
           </View>
           <View style={[styles.infoRow, styles.infoRowLast]}>

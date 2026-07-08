@@ -1,7 +1,15 @@
-import { View, Text, StyleSheet } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { BAColors } from '../../constants/colors';
 
 const ICON_MAP: Record<string, string> = {
+  ShieldAlertOutline: '🚨',
+  EyeOutline: '👀',
+  MedicalBag: '🚑',
+  Fire: '🔥',
+  WrenchOutline: '🔧',
+  PawOutline: '🐾',
+
+  // Iconos del sistema base
   AlertTriangle: '⚠',
   ShieldAlert: '🚨',
   Activity: '❤',
