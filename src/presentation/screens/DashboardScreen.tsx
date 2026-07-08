@@ -1,9 +1,8 @@
 import { useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { ScrollView, StyleSheet, Text, View, TouchableOpacity } from 'react-native';
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useDashboardController } from '../../application/controllers/useDashboardController';
 import { useSOSController } from '../../application/controllers/useSOSController';
-import { SectionBadge } from '../components/atomic/SectionBadge';
 import { SectionCard } from '../components/layout/SectionCard';
 import { AlertCard } from '../components/molecules/AlertCard';
 import { SOSButton } from '../components/molecules/SOSButton';
@@ -38,7 +37,6 @@ export function DashboardScreen() {
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       {/* Bloque SOS (izquierda en web, arriba en mobile) */}
       <SectionCard style={styles.sosBlock}>
-        <SectionBadge label="Acceso Crítico" color="red" />
         <Text style={styles.sosTitle}>Botón de Pánico S.O.S</Text>
         <Text style={styles.sosDescription}>
           Contacto con el cuadrante {cuadrante?.nombre_unidad} en caso de emergencia.
@@ -68,7 +66,6 @@ export function DashboardScreen() {
       <SectionCard style={styles.alertsBlock}>
         <View style={styles.alertsHeader}>
           <View>
-            <SectionBadge label="En Vivo" color="green" />
             <Text style={styles.alertsTitle}>Canal de Alertas del Sector</Text>
           </View>
           <View style={styles.liveDot} />
