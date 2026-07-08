@@ -1,6 +1,6 @@
 import { useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { ScrollView, StyleSheet, Text, View, TouchableOpacity } from 'react-native';
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useDashboardController } from '../../application/controllers/useDashboardController';
 import { useSOSController } from '../../application/controllers/useSOSController';
 import { SectionBadge } from '../components/atomic/SectionBadge';
@@ -69,7 +69,7 @@ export function DashboardScreen() {
         <View style={styles.alertsHeader}>
           <View>
             <SectionBadge label="En Vivo" color="green" />
-            <Text style={styles.alertsTitle}>Canal de Alertas del Sector</Text>
+            <Text style={styles.alertsTitle}>Alertas del Sector</Text>
           </View>
           <View style={styles.liveDot} />
         </View>
