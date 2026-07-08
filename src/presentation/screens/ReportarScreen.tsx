@@ -21,15 +21,17 @@ export function ReportarScreen() {
         <View style={styles.categoriesSection}>
           <Text style={styles.label}>Selecciona la Categoría del Suceso</Text>
           <View style={styles.categoriesGrid}>
-            {ctrl.categorias.map((cat) => (
-              <CategoryButton
-                key={cat.id}
-                iconName={cat.icono_referencia}
-                label={cat.nombre}
-                selected={ctrl.selectedCategory === cat.id}
-                onPress={() => ctrl.handleSelectCategory(cat.id)}
-              />
-            ))}
+            {ctrl.categorias
+              .filter((cat) => cat.id !== 4 && cat.id !== 5)
+              .map((cat) => (
+                <CategoryButton
+                  key={cat.id}
+                  iconName={cat.icono_referencia}
+                  label={cat.nombre}
+                  selected={ctrl.selectedCategory === cat.id}
+                  onPress={() => ctrl.handleSelectCategory(cat.id)}
+                />
+              ))}
           </View>
         </View>
 
