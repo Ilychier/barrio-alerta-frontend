@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { BAColors } from '../../constants/colors';
 import { IconRenderer } from '../atomic/IconRenderer';
 
@@ -31,7 +31,7 @@ export function Header({
         <View>
           <Text style={styles.title}>Barrio Alerta</Text>
           <Text style={styles.subtitle}>
-            {isMobile ? 'Red de Apoyo' : 'Red de Apoyo Técnico Digital'}
+            {isMobile ? 'Red de Apoyo' : 'Red de Apoyo'}
           </Text>
         </View>
         {!isMobile && barrioNombre && cuadranteNombre && (
