@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { BAColors } from '../../constants/colors';
 
 interface DescriptionSelectorProps {
@@ -10,7 +10,7 @@ interface DescriptionSelectorProps {
 export function DescriptionSelector({ descriptions, selected, onSelect }: DescriptionSelectorProps) {
   return (
     <View>
-      <Text style={styles.label}>Descripción del Suceso (Opciones Estructuradas)</Text>
+      <Text style={styles.label}>Descripción del Suceso</Text>
       <View style={styles.list}>
         {descriptions.map((desc, idx) => {
           const isSelected = selected === desc;

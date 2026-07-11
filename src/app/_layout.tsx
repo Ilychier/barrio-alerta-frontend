@@ -1,13 +1,13 @@
+import { Slot, usePathname, useRouter } from 'expo-router';
 import { useState } from 'react';
-import { View, StyleSheet, useWindowDimensions, Pressable, Text, TouchableOpacity, Animated } from 'react-native';
-import { Slot, useRouter, usePathname } from 'expo-router';
+import { Animated, Pressable, StyleSheet, Text, TouchableOpacity, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { BAColors } from '@/presentation/constants/colors';
-import { Header } from '@/presentation/components/layout/Header';
 import { useDashboardController } from '@/application/controllers/useDashboardController';
-import { CURRENT_USER_ID } from '@/presentation/constants/currentUser';
 import { IconRenderer } from '@/presentation/components/atomic/IconRenderer';
+import { Header } from '@/presentation/components/layout/Header';
+import { BAColors } from '@/presentation/constants/colors';
+import { CURRENT_USER_ID } from '@/presentation/constants/currentUser';
 
 export default function TabLayout() {
   const { width } = useWindowDimensions();
@@ -131,9 +131,9 @@ export default function TabLayout() {
                   <View style={styles.drawerLocationBadge}>
                     <IconRenderer name="MapPin" size={14} color={BAColors.green} />
                     <View style={styles.locationTextContainer}>
-                      <Text style={styles.drawerLocationTitle}>Barrio / Cuadrante</Text>
+                      <Text style={styles.drawerLocationTitle}>Barrio / CAI</Text>
                       <Text style={styles.drawerLocationText}>{barrio.nombre}</Text>
-                      <Text style={styles.drawerCuadranteText}>Unidad: {cuadrante.nombre_unidad}</Text>
+                      <Text style={styles.drawerCuadranteText}>CAI: {cuadrante.nombre_unidad}</Text>
                     </View>
                   </View>
                 )}
@@ -170,7 +170,7 @@ export default function TabLayout() {
                   color={isRouteActive('/reportar') ? BAColors.textPrimary : BAColors.textMuted}
                 />
                 <Text style={[styles.navLinkText, isRouteActive('/reportar') && styles.navLinkTextActive]}>
-                  Reportar Incidencia
+                  Reportar
                 </Text>
               </TouchableOpacity>
 
@@ -185,15 +185,15 @@ export default function TabLayout() {
                   color={isRouteActive('/config') ? BAColors.textPrimary : BAColors.textMuted}
                 />
                 <Text style={[styles.navLinkText, isRouteActive('/config') && styles.navLinkTextActive]}>
-                  Ajustes Canal
+                  Configuración (Notificaciones)
                 </Text>
               </TouchableOpacity>
             </View>
 
             {/* Footer */}
             <View style={styles.drawerFooter}>
-              <Text style={styles.footerText}>Resiliencia Comunitaria</Text>
-              <Text style={styles.footerSubtext}>v1.0.0 — Red de Apoyo</Text>
+              <Text style={styles.footerText}>Barrio Alerta</Text>
+              <Text style={styles.footerSubtext}>v1.0.0 — Ing. Software I</Text>
             </View>
           </Animated.View>
         </View>

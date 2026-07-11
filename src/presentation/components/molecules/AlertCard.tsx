@@ -1,7 +1,7 @@
-import { View, Text, Image, StyleSheet } from 'react-native';
+import { Image, StyleSheet, Text, View } from 'react-native';
+import { AlertaConDatos } from '../../../application/usecases/ObtenerAlertasUseCase';
 import { BAColors } from '../../constants/colors';
 import { IconRenderer } from '../atomic/IconRenderer';
-import { AlertaConDatos } from '../../../application/usecases/ObtenerAlertasUseCase';
 
 interface AlertCardProps {
   item: AlertaConDatos;
@@ -59,7 +59,6 @@ export function AlertCard({ item }: AlertCardProps) {
         <Text style={styles.reporter}>Reportado por: {usuario?.nombre || 'Anónimo'}</Text>
         <View style={styles.channelBadge}>
           <View style={styles.channelDot} />
-          <Text style={styles.channelText}>Canal Directo</Text>
         </View>
       </View>
     </View>
