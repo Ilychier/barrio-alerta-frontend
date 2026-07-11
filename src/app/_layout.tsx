@@ -170,7 +170,7 @@ export default function TabLayout() {
                   color={isRouteActive('/reportar') ? BAColors.textPrimary : BAColors.textMuted}
                 />
                 <Text style={[styles.navLinkText, isRouteActive('/reportar') && styles.navLinkTextActive]}>
-                  Reportar Incidencia
+                  Reportar
                 </Text>
               </TouchableOpacity>
 
@@ -185,15 +185,15 @@ export default function TabLayout() {
                   color={isRouteActive('/config') ? BAColors.textPrimary : BAColors.textMuted}
                 />
                 <Text style={[styles.navLinkText, isRouteActive('/config') && styles.navLinkTextActive]}>
-                  Ajustes Canal
+                  Configuración (Notificaciones)
                 </Text>
               </TouchableOpacity>
             </View>
 
             {/* Footer */}
             <View style={styles.drawerFooter}>
-              <Text style={styles.footerText}>Resiliencia Comunitaria</Text>
-              <Text style={styles.footerSubtext}>v1.0.0 — Red de Apoyo</Text>
+              <Text style={styles.footerText}>Barrio Alerta</Text>
+              <Text style={styles.footerSubtext}>v1.0.0 — Ing. Software I</Text>
             </View>
           </Animated.View>
         </View>
