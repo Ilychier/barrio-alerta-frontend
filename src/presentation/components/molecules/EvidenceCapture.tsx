@@ -12,7 +12,7 @@ interface EvidenceCaptureProps {
 export function EvidenceCapture({ attached, photoUrl, onCapture, onRemove }: EvidenceCaptureProps) {
   return (
     <View>
-      <Text style={styles.label}>Evidencia Multimedia (Obligatorio)</Text>
+      <Text style={styles.label}>Evidencia Multimedia</Text>
 
       {!attached ? (
         <TouchableOpacity onPress={onCapture} activeOpacity={0.7} style={styles.placeholder}>
