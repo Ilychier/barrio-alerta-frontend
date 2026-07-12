@@ -17,7 +17,7 @@ export class DispararSOSUseCase {
 
     const sosAlert = Alerta.crearEmergenciaSOS(
       newId,
-      '¡ALERTA S.O.S ACTIVA!',
+      'Alerta S.O.S Activada',
       new Date().toISOString(),
       request.usuarioId,
     );

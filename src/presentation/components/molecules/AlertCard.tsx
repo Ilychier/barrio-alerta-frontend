@@ -41,7 +41,7 @@ export function AlertCard({ item }: AlertCardProps) {
             isSos && styles.categoryNameSos,
             isFine && styles.categoryNameFine
           ]}>
-            {isSos ? 'BOTÓN DE PÁNICO ACTIVADO' : isFine ? 'EMERGENCIA FINALIZADA' : (categoria?.nombre || 'Incidente')}
+            {isSos ? 'Botón de Pánico Activado' : isFine ? 'Emergencia Finalizada' : (categoria?.nombre || 'Incidente')}
           </Text>
         </View>
         <Text style={styles.time}>{time}</Text>
@@ -62,7 +62,6 @@ const getStyles = (theme: AppTheme) => StyleSheet.create({
   card: {
     padding: 16,
     borderRadius: 16,
-    borderWidth: 1,
     marginBottom: 12,
   },
   cardSos: {
