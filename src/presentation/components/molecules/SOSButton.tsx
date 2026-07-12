@@ -2,7 +2,6 @@ import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SOSStep } from '../../../application/controllers/useSOSController';
 import { AppTheme, useAppTheme } from '../../theme/ThemeContext';
 import Icon from '../atomic/Icon';
-import { IconRenderer } from '../atomic/IconRenderer';
 
 interface SOSButtonProps {
   step: SOSStep;
@@ -39,7 +38,6 @@ export function SOSButton({
       {step === 1 && (
         <View style={styles.confirmCard}>
           <View style={styles.confirmHeader}>
-            <View style={styles.pulseDot} />
             <Text style={styles.confirmTitle}>Confirmación S.O.S Requerida</Text>
           </View>
           <Text style={styles.countdown}>{countdown}</Text>
@@ -60,19 +58,12 @@ export function SOSButton({
       {step === 2 && (
         <View style={styles.activeCard}>
           <View style={styles.activeIconContainer}>
-            <IconRenderer name="ShieldAlert" size={20} color={theme.colors.textPrimary} />
+            <Icon name="ShieldAlert" size={24} color={theme.colors.bg} />
           </View>
           <Text style={styles.activeTitle}>Señal SOS Emitida</Text>
           <Text style={styles.activeDesc}>
             El CAI del sector ha recibido tu geolocalización. Despachando patrulla.
           </Text>
-          {performanceTracker && (
-            <View style={styles.performanceBadge}>
-              <Text style={styles.performanceText}>
-                Propagación: {performanceTracker} (RNF1 Cumplido)
-              </Text>
-            </View>
-          )}
           <TouchableOpacity onPress={onDismiss} style={styles.dismissButton}>
             <Text style={styles.dismissButtonText}>Terminar Alerta S.O.S</Text>
           </TouchableOpacity>
@@ -208,10 +199,7 @@ const getStyles = (theme: AppTheme) => StyleSheet.create({
   // --- Estado Activo (step 2) ---
   activeCard: {
     width: '100%',
-    maxWidth: 320,
     backgroundColor: theme.colors.redBg,
-    borderWidth: 1,
-    borderColor: 'rgba(220, 38, 38, 0.5)',
     borderRadius: 16,
     padding: 20,
     alignItems: 'center',
