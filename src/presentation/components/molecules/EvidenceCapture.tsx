@@ -1,5 +1,5 @@
-import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { useAppTheme, AppTheme } from '../../theme/ThemeContext';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { AppTheme, useAppTheme } from '../../theme/ThemeContext';
 import { IconRenderer } from '../atomic/IconRenderer';
 
 interface EvidenceCaptureProps {
@@ -24,7 +24,6 @@ export function EvidenceCapture({ attached, photoUrl, onCapture, onRemove }: Evi
         </TouchableOpacity>
       ) : (
         <View style={styles.previewContainer}>
-          <Image source={{ uri: photoUrl }} style={styles.previewImage} />
           <View style={styles.checkBadge}>
             <IconRenderer name="Check" size={14} color={theme.colors.green} />
             <Text style={styles.checkText}>Foto Vinculada</Text>

@@ -31,7 +31,7 @@ export function SOSButton({
       {step === 0 && (
         <TouchableOpacity onPress={onStart} activeOpacity={0.8} style={styles.sosButton}>
           <View style={styles.sosRing} />
-          <Icon name="ShieldAlert" size={72} color={theme.colors.white} style={{ marginTop: 0 }}/>
+          <Icon name="ShieldAlert" size={72} color={theme.colors.bg} style={{ marginTop: 0 }}/>
           <Text style={styles.sosHint}>Tocar para Iniciar</Text>
         </TouchableOpacity>
       )}
@@ -125,7 +125,7 @@ const getStyles = (theme: AppTheme) => StyleSheet.create({
     width: 80,
     textAlign: 'center',
     letterSpacing: 1,
-    color: theme.colors.white,
+    color: theme.colors.bg,
     textTransform: 'uppercase',
     marginTop: 6,
   },
