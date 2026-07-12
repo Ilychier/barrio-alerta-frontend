@@ -137,6 +137,7 @@ function TabLayout() {
             {/* Header inside Menu */}
             <View style={styles.drawerHeader}>
               <View style={styles.drawerLogoContainer}>
+                <Icon name="ShieldAlert" size={24} style={{ marginTop: 2 }} color={theme.colors.textPrimary} />
                 <Text style={styles.drawerLogoText}>Barrio Alerta</Text>
               </View>
               <TouchableOpacity onPress={closeMenu} style={styles.closeButton} activeOpacity={0.7}>
@@ -184,6 +185,21 @@ function TabLayout() {
                 />
                 <Text style={[styles.navLinkText, isRouteActive('/') && styles.navLinkTextActive]}>
                   Dashboard
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={() => handleNavigate('/alertas-sector')}
+                style={[styles.navLink, isRouteActive('/alertas-sector') && styles.navLinkActive]}
+                activeOpacity={0.7}
+              >
+                <Icon
+                  name="Bell"
+                  size={16}
+                  color={isRouteActive('/alertas-sector') ? theme.colors.textPrimary : theme.colors.textMuted}
+                />
+                <Text style={[styles.navLinkText, isRouteActive('/alertas-sector') && styles.navLinkTextActive]}>
+                  Alertas del Sector
                 </Text>
               </TouchableOpacity>
 
@@ -301,10 +317,9 @@ const getStyles = (theme: AppTheme) => StyleSheet.create({
     borderBottomColor: theme.colors.border,
   },
   drawerUserTitle: {
-    fontSize: 9,
+    fontSize: 12,
     color: theme.colors.textMuted,
     fontWeight: '600',
-    textTransform: 'uppercase',
   },
   drawerUserName: {
     fontSize: 13,
@@ -323,10 +338,9 @@ const getStyles = (theme: AppTheme) => StyleSheet.create({
     gap: 2,
   },
   drawerLocationTitle: {
-    fontSize: 9,
+    fontSize: 12,
     color: theme.colors.textMuted,
     fontWeight: '600',
-    textTransform: 'uppercase',
   },
   drawerLocationText: {
     fontSize: 12,

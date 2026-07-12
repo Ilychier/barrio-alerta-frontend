@@ -11,9 +11,8 @@ export function AlertCard({ item }: AlertCardProps) {
   const { theme } = useAppTheme();
   const styles = getStyles(theme);
 
-  const { alerta, categoria, usuario, evidencias } = item;
+  const { alerta, categoria, usuario } = item;
   const isSos = alerta.es_sos;
-  const firstEvidence = evidencias.length > 0 ? evidencias[0] : null;
   const icono = categoria?.icono_referencia || 'AlertCircle';
 
   const time = new Date(alerta.fecha_hora).toLocaleTimeString([], {

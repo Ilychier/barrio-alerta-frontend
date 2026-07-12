@@ -1,5 +1,6 @@
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { AppTheme, useAppTheme } from '../../theme/ThemeContext';
+import Icon from '../atomic/Icon';
 import { IconRenderer } from '../atomic/IconRenderer';
 
 interface HeaderProps {
@@ -17,7 +18,7 @@ export function Header({
   isMobile = false,
   onMenuPress,
 }: HeaderProps) {
-  const { theme } = useAppTheme();
+  const { theme, themeType, toggleTheme } = useAppTheme();
   const styles = getStyles(theme);
 
   return (
@@ -28,9 +29,12 @@ export function Header({
             <IconRenderer name="Menu" size={22} color={theme.colors.textPrimary} />
           </TouchableOpacity>
         )}
+        <View style={styles.logoContainer}>
+          <Icon name="ShieldAlert" size={24} style={{ marginTop: 2 }} color={theme.colors.textPrimary} />
+        </View>
         <View>
           <Text style={styles.title}>Barrio Alerta</Text>
-          <Text style={styles.subtitle}>Red de Apoyo Comunitario</Text>
+          <Text style={styles.subtitle}>Red de Apoyo</Text>
         </View>
         {!isMobile && barrioNombre && cuadranteNombre && (
           <View style={styles.locationBadge}>
@@ -42,12 +46,22 @@ export function Header({
         )}
       </View>
 
-      {!isMobile && usuarioNombre && (
-        <View style={styles.userBadge}>
-          <IconRenderer name="User" size={14} color={theme.colors.green} />
-          <Text style={styles.userName}>{usuarioNombre}</Text>
-        </View>
-      )}
+      <View style={styles.rightGroup}>
+        <TouchableOpacity onPress={toggleTheme} style={styles.themeToggle} activeOpacity={0.7}>
+          <Icon
+            name={themeType === 'dark' ? 'Sun' : 'Moon'}
+            size={21}
+            color={theme.colors.textPrimary}
+          />
+        </TouchableOpacity>
+
+        {!isMobile && usuarioNombre && (
+          <View style={styles.userBadge}>
+            <IconRenderer name="User" size={14} color={theme.colors.green} />
+            <Text style={styles.userName}>{usuarioNombre}</Text>
+          </View>
+        )}
+      </View>
     </View>
   );
 }
@@ -74,11 +88,8 @@ const getStyles = (theme: AppTheme) => StyleSheet.create({
     borderRadius: 8,
   },
   logoContainer: {
-    backgroundColor: theme.colors.redBg,
     padding: 8,
     borderRadius: 12,
-    borderWidth: 1,
-    borderColor: theme.colors.redBorder,
   },
   title: {
     fontSize: 14,
@@ -104,6 +115,18 @@ const getStyles = (theme: AppTheme) => StyleSheet.create({
   locationText: {
     fontSize: 11,
     color: theme.colors.textTertiary,
+  },
+  rightGroup: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  themeToggle: {
+    padding: 6,
+    borderRadius: 32,
+    backgroundColor: theme.colors.surfaceLight,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   userBadge: {
     flexDirection: 'row',
