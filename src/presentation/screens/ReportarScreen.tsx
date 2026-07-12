@@ -1,7 +1,6 @@
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useReporteController } from '../../application/controllers/useReporteController';
 import { CategoryButton } from '../components/atomic/CategoryButton';
-import { SectionBadge } from '../components/atomic/SectionBadge';
 import { SectionCard } from '../components/layout/SectionCard';
 import { DescriptionSelector } from '../components/molecules/DescriptionSelector';
 import { EvidenceCapture } from '../components/molecules/EvidenceCapture';
@@ -15,12 +14,11 @@ export function ReportarScreen() {
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <SectionCard>
-        <SectionBadge label="Mecanismo Rápido" color="green" />
         <Text style={styles.title}>Reporte de Incidente</Text>
 
         {/* Categorías */}
         <View style={styles.categoriesSection}>
-          <Text style={styles.label}>Selecciona la Categoría del Suceso</Text>
+          <Text style={styles.label}>Selecciona la Categoría de la Alerta</Text>
           <View style={styles.categoriesGrid}>
             {ctrl.categorias
               .filter((cat) => cat.id !== 4 && cat.id !== 5)
@@ -64,7 +62,7 @@ export function ReportarScreen() {
             style={[styles.submitButton, (!ctrl.selectedCategory || !ctrl.evidenceAttached) && styles.submitDisabled]}
           >
             <Text style={[styles.submitText, (!ctrl.selectedCategory || !ctrl.evidenceAttached) && styles.submitTextDisabled]}>
-              Transmitir Alerta Comunitaria
+              Enviar Reporte
             </Text>
           </TouchableOpacity>
           <TouchableOpacity onPress={ctrl.cancel} style={styles.cancelButton}>
