@@ -1,11 +1,11 @@
 import { useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View, ActivityIndicator } from 'react-native';
+import { ActivityIndicator, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useSectorAlertsController } from '../../application/controllers/useSectorAlertsController';
 import { SectionCard } from '../components/layout/SectionCard';
 import { AlertCard } from '../components/molecules/AlertCard';
 import { useAuth } from '../context/AuthContext';
-import { useAppTheme, AppTheme } from '../theme/ThemeContext';
+import { AppTheme, useAppTheme } from '../theme/ThemeContext';
 
 export function SectorAlertReportsScreen() {
   const [focusCount, forceUpdate] = useState(0);
@@ -39,7 +39,6 @@ export function SectorAlertReportsScreen() {
           <View>
             <Text style={styles.alertsTitle}>Canal de Alertas del Sector</Text>
           </View>
-          <View style={styles.liveDot} />
         </View>
         <Text style={styles.alertsSubtitle}>
           Reportes recientes emitidos por los residentes del sector {barrio?.nombre || 'de tu barrio'}.
@@ -54,7 +53,7 @@ export function SectorAlertReportsScreen() {
           <View style={styles.alertList}>
             <View style={styles.dateSelectorContainer}>
               <TouchableOpacity onPress={() => cambiarDia(-1)} style={styles.dateButton}>
-                <Text style={styles.dateButtonText}>◀ Ayer</Text>
+                <Text style={styles.dateButtonText}>◀</Text>
               </TouchableOpacity>
               
               <Text style={styles.dateText}>
@@ -66,7 +65,7 @@ export function SectorAlertReportsScreen() {
                 disabled={esHoy}
                 style={[styles.dateButton, esHoy && styles.disabledButton]}
               >
-                <Text style={[styles.dateButtonText, esHoy && styles.disabledButtonText]}>Mañana ▶</Text>
+                <Text style={[styles.dateButtonText, esHoy && styles.disabledButtonText]}>▶</Text>
               </TouchableOpacity>
             </View>
 

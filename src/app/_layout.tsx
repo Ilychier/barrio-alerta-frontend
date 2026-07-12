@@ -171,7 +171,7 @@ function TabLayout() {
 
             {/* Navigation list */}
             <View style={styles.navLinks}>
-              <Text style={styles.sectionLabel}>NAVEGACIÓN</Text>
+              <Text style={styles.sectionLabel}>Navegación</Text>
               
               <TouchableOpacity
                 onPress={() => handleNavigate('/')}
@@ -295,10 +295,6 @@ const getStyles = (theme: AppTheme) => StyleSheet.create({
   },
   closeButton: {
     padding: 6,
-    borderRadius: 8,
-    backgroundColor: theme.colors.surfaceLight,
-    borderWidth: 1,
-    borderColor: theme.colors.surfaceBorder,
   },
   drawerSection: {
     gap: 12,
@@ -356,7 +352,7 @@ const getStyles = (theme: AppTheme) => StyleSheet.create({
     gap: 8,
   },
   sectionLabel: {
-    fontSize: 10,
+    fontSize: 12,
     fontWeight: '700',
     color: theme.colors.textMuted,
     letterSpacing: 1,
@@ -368,8 +364,6 @@ const getStyles = (theme: AppTheme) => StyleSheet.create({
     gap: 12,
     paddingVertical: 12,
     paddingHorizontal: 14,
-    borderRadius: 12,
-    borderWidth: 1,
     borderColor: 'transparent',
   },
   navLinkActive: {
