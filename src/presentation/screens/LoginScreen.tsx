@@ -1,9 +1,8 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
-import { useAuth } from '../context/AuthContext';
+import { useState } from 'react';
+import { ActivityIndicator, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { SectionCard } from '../components/layout/SectionCard';
-import { SectionBadge } from '../components/atomic/SectionBadge';
-import { useAppTheme, AppTheme } from '../theme/ThemeContext';
+import { useAuth } from '../context/AuthContext';
+import { AppTheme, useAppTheme } from '../theme/ThemeContext';
 
 interface LoginScreenProps {
   onRegisterPress: () => void;
@@ -38,7 +37,6 @@ export function LoginScreen({ onRegisterPress }: LoginScreenProps) {
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <SectionCard>
-        <SectionBadge label="Seguridad Vecinal" color="red" />
         <Text style={styles.title}>Iniciar Sesión</Text>
         <Text style={styles.subtitle}>Ingresa tus credenciales para ingresar a la red</Text>
 
