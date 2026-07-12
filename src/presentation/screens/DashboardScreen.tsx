@@ -6,7 +6,7 @@ import { useSOSController } from '../../application/controllers/useSOSController
 import { SectionCard } from '../components/layout/SectionCard';
 import { SOSButton } from '../components/molecules/SOSButton';
 import { useAuth } from '../context/AuthContext';
-import { useAppTheme, AppTheme } from '../theme/ThemeContext';
+import { AppTheme, useAppTheme } from '../theme/ThemeContext';
 
 export function DashboardScreen() {
   const [focusCount, forceUpdate] = useState(0);
