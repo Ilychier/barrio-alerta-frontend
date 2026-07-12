@@ -1,4 +1,4 @@
-import { TouchableOpacity, Text, StyleSheet } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity } from 'react-native';
 import { BAColors } from '../../constants/colors';
 import { IconRenderer } from './IconRenderer';
 
@@ -37,6 +37,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
+    flexGrow: 1, 
+    minWidth: 100,
   },
   selected: {
     backgroundColor: BAColors.greenBg,

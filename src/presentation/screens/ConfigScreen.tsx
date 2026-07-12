@@ -3,7 +3,6 @@ import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-nati
 import { useConfiguracionController } from '../../application/controllers/useConfiguracionController';
 import { useDashboardController } from '../../application/controllers/useDashboardController';
 import { IconRenderer } from '../components/atomic/IconRenderer';
-import { SectionBadge } from '../components/atomic/SectionBadge';
 import { ToggleSwitch } from '../components/atomic/ToggleSwitch';
 import { SectionCard } from '../components/layout/SectionCard';
 import { BAColors } from '../constants/colors';
@@ -19,7 +18,6 @@ export function ConfigScreen() {
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <SectionCard>
-        <SectionBadge label="Personalización" color="purple" />
         <Text style={styles.title}>Ajustes</Text>
 
         <View style={styles.togglesSection}>
@@ -27,14 +25,14 @@ export function ConfigScreen() {
             value={config?.recibir_notificaciones ?? true}
             onToggle={(val) => handleUpdate('recibir_notificaciones', val)}
             label="Recibir Notificaciones"
-            description="Recibir incidencias de baja y media criticidad."
+            description="Recibir notificaciones de todas las alertas."
           />
 
           <ToggleSwitch
             value={config?.modo_silencioso ?? false}
             onToggle={(val) => handleUpdate('modo_silencioso', val)}
-            label="Filtro S.O.S (Modo Silencioso Nocturno)"
-            description="Solo recibir notificaciones si un vecino presiona su Botón SOS."
+            label="Modo Silencioso"
+            description="Solo recibir notificaciones de emergencias (Botón SOS)."
           />
         </View>
 
@@ -42,19 +40,19 @@ export function ConfigScreen() {
         <View style={styles.cuadranteCard}>
           <Text style={styles.cuadranteTitle}>
             <IconRenderer name="Shield" size={14} color={BAColors.red} />
-            {'  '}Cuadrante Asignado por Localidad
+            {'  '}CAI y Barrio Asignado
           </Text>
 
           <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>Unidad de Comando:</Text>
+            <Text style={styles.infoLabel}>CAI</Text>
             <Text style={styles.infoValue}>{cuadrante?.nombre_unidad}</Text>
           </View>
           <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>Línea Directa del Cuadrante:</Text>
+            <Text style={styles.infoLabel}>Línea Directa del Cai:</Text>
             <Text style={styles.infoValueGreen}>{cuadrante?.telefono_emergencia}</Text>
           </View>
           <View style={[styles.infoRow, styles.infoRowLast]}>
-            <Text style={styles.infoLabel}>Barrio de Cobertura:</Text>
+            <Text style={styles.infoLabel}>Barrio:</Text>
             <Text style={styles.infoValue}>
               {barrio?.nombre}
             </Text>
