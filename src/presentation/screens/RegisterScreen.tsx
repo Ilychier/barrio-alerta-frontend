@@ -1,11 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
-import { useAuth } from '../context/AuthContext';
-import { SectionCard } from '../components/layout/SectionCard';
-import { SectionBadge } from '../components/atomic/SectionBadge';
-import { DependencyContainer } from '../../infrastructure/config/dependencyContainer';
+import { useEffect, useState } from 'react';
+import { ActivityIndicator, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { Barrio } from '../../domain/entities/barrio';
-import { useAppTheme, AppTheme } from '../theme/ThemeContext';
+import { DependencyContainer } from '../../infrastructure/config/dependencyContainer';
+import { SectionCard } from '../components/layout/SectionCard';
+import { useAuth } from '../context/AuthContext';
+import { AppTheme, useAppTheme } from '../theme/ThemeContext';
 
 interface RegisterScreenProps {
   onLoginPress: () => void;
@@ -61,7 +60,6 @@ export function RegisterScreen({ onLoginPress }: RegisterScreenProps) {
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <SectionCard>
-        <SectionBadge label="Registro Vecinal" color="purple" />
         <Text style={styles.title}>Crear Cuenta</Text>
         <Text style={styles.subtitle}>Regístrate para alertar y proteger a tu barrio</Text>
 
