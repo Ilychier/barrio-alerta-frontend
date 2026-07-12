@@ -4,12 +4,14 @@ interface IconProps {
   name: keyof typeof icons;
   color?: string;
   size?: number;
+  style?: object;
 }
 
-const Icon = ({ name, color, size }: IconProps) => {
+const Icon = ({ name, color, size, style }: IconProps) => {
+  // eslint-disable-next-line import/namespace
   const LucideIcon = icons[name];
 
-  return <LucideIcon color={color} size={size} />;
+  return <LucideIcon color={color} size={size} style={style} />;
 };
 
 export default Icon;

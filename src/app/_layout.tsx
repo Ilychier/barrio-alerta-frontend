@@ -3,23 +3,28 @@ import { useState } from 'react';
 import { ActivityIndicator, Animated, Pressable, StyleSheet, Text, TouchableOpacity, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import Icon from '@/presentation/components/atomic/Icon';
 import { IconRenderer } from '@/presentation/components/atomic/IconRenderer';
 import { Header } from '@/presentation/components/layout/Header';
-import { BAColors } from '@/presentation/constants/colors';
 import { AuthProvider, useAuth } from '@/presentation/context/AuthContext';
 import { LoginScreen } from '@/presentation/screens/LoginScreen';
 import { RegisterScreen } from '@/presentation/screens/RegisterScreen';
+import { AppTheme, ThemeProvider, useAppTheme } from '@/presentation/theme/ThemeContext';
 
 export default function RootLayout() {
   return (
     <AuthProvider>
-      <TabLayout />
+      <ThemeProvider>
+        <TabLayout />
+      </ThemeProvider>
     </AuthProvider>
   );
 }
 
 function TabLayout() {
   const { user, barrio, cuadrante, isAuthenticated, loading, logout } = useAuth();
+  const { theme } = useAppTheme();
+  const styles = getStyles(theme);
   const [showRegister, setShowRegister] = useState(false);
 
   const { width } = useWindowDimensions();
@@ -81,8 +86,8 @@ function TabLayout() {
 
   if (loading) {
     return (
-      <View style={{ flex: 1, backgroundColor: BAColors.bg, justifyContent: 'center', alignItems: 'center' }}>
-        <ActivityIndicator size="large" color={BAColors.green} />
+      <View style={{ flex: 1, backgroundColor: theme.colors.bg, justifyContent: 'center', alignItems: 'center' }}>
+        <ActivityIndicator size="large" color={theme.colors.green} />
       </View>
     );
   }
@@ -132,11 +137,10 @@ function TabLayout() {
             {/* Header inside Menu */}
             <View style={styles.drawerHeader}>
               <View style={styles.drawerLogoContainer}>
-                <IconRenderer name="Shield" size={18} color={BAColors.red} />
                 <Text style={styles.drawerLogoText}>Barrio Alerta</Text>
               </View>
               <TouchableOpacity onPress={closeMenu} style={styles.closeButton} activeOpacity={0.7}>
-                <IconRenderer name="X" size={20} color={BAColors.textPrimary} />
+                <IconRenderer name="X" size={20} color={theme.colors.textPrimary} />
               </TouchableOpacity>
             </View>
 
@@ -145,7 +149,7 @@ function TabLayout() {
               <View style={styles.drawerSection}>
                 {user?.nombre && (
                   <View style={styles.drawerUserBadge}>
-                    <IconRenderer name="User" size={14} color={BAColors.green} />
+                    <Icon name="User" size={14} color={theme.colors.green} />
                     <View>
                       <Text style={styles.drawerUserTitle}>Usuario Activo</Text>
                       <Text style={styles.drawerUserName}>{user.nombre}</Text>
@@ -154,11 +158,10 @@ function TabLayout() {
                 )}
                 {barrio?.nombre && cuadrante?.nombre_unidad && (
                   <View style={styles.drawerLocationBadge}>
-                    <IconRenderer name="MapPin" size={14} color={BAColors.green} />
+                    <Icon name="MapPin" size={14} color={theme.colors.green} />
                     <View style={styles.locationTextContainer}>
                       <Text style={styles.drawerLocationTitle}>Barrio / CAI</Text>
-                      <Text style={styles.drawerLocationText}>{barrio.nombre}</Text>
-                      <Text style={styles.drawerCuadranteText}>CAI: {cuadrante.nombre_unidad}</Text>
+                      <Text style={styles.drawerCuadranteText}>{barrio.nombre} / {cuadrante.nombre_unidad}</Text>
                     </View>
                   </View>
                 )}
@@ -177,7 +180,7 @@ function TabLayout() {
                 <IconRenderer
                   name="Activity"
                   size={16}
-                  color={isRouteActive('/') ? BAColors.textPrimary : BAColors.textMuted}
+                  color={isRouteActive('/') ? theme.colors.textPrimary : theme.colors.textMuted}
                 />
                 <Text style={[styles.navLinkText, isRouteActive('/') && styles.navLinkTextActive]}>
                   Dashboard
@@ -189,11 +192,7 @@ function TabLayout() {
                 style={[styles.navLink, isRouteActive('/reportar') && styles.navLinkActive]}
                 activeOpacity={0.7}
               >
-                <IconRenderer
-                  name="ShieldAlert"
-                  size={16}
-                  color={isRouteActive('/reportar') ? BAColors.textPrimary : BAColors.textMuted}
-                />
+                <Icon name="ClockAlert" size={16} color={isRouteActive('/reportar') ? theme.colors.textPrimary : theme.colors.textMuted} />
                 <Text style={[styles.navLinkText, isRouteActive('/reportar') && styles.navLinkTextActive]}>
                   Reportar
                 </Text>
@@ -204,11 +203,7 @@ function TabLayout() {
                 style={[styles.navLink, isRouteActive('/config') && styles.navLinkActive]}
                 activeOpacity={0.7}
               >
-                <IconRenderer
-                  name="Radio"
-                  size={16}
-                  color={isRouteActive('/config') ? BAColors.textPrimary : BAColors.textMuted}
-                />
+                <Icon name="Settings" size={16} color={isRouteActive('/config') ? theme.colors.textPrimary : theme.colors.textMuted} />
                 <Text style={[styles.navLinkText, isRouteActive('/config') && styles.navLinkTextActive]}>
                   Configuración (Notificaciones)
                 </Text>
@@ -222,12 +217,8 @@ function TabLayout() {
                 style={styles.navLink}
                 activeOpacity={0.7}
               >
-                <IconRenderer
-                  name="LogOut"
-                  size={16}
-                  color={BAColors.red}
-                />
-                <Text style={[styles.navLinkText, { color: BAColors.red }]}>
+                <Icon name="LogOut" size={16} color={theme.colors.red} />
+                <Text style={[styles.navLinkText, { color: theme.colors.red }]}>
                   Cerrar Sesión
                 </Text>
               </TouchableOpacity>
@@ -245,10 +236,10 @@ function TabLayout() {
   );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (theme: AppTheme) => StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: BAColors.bg,
+    backgroundColor: theme.colors.bg,
   },
   content: {
     flex: 1,
@@ -263,9 +254,9 @@ const styles = StyleSheet.create({
     left: 0,
     bottom: 0,
     width: 280,
-    backgroundColor: BAColors.surfaceDark,
+    backgroundColor: theme.colors.surfaceDark,
     borderRightWidth: 1,
-    borderRightColor: BAColors.border,
+    borderRightColor: theme.colors.border,
     padding: 20,
     justifyContent: 'space-between',
     zIndex: 1001,
@@ -284,54 +275,48 @@ const styles = StyleSheet.create({
   drawerLogoText: {
     fontSize: 16,
     fontWeight: '700',
-    color: BAColors.textPrimary,
+    color: theme.colors.textPrimary,
   },
   closeButton: {
     padding: 6,
     borderRadius: 8,
-    backgroundColor: BAColors.surfaceLight,
+    backgroundColor: theme.colors.surfaceLight,
     borderWidth: 1,
-    borderColor: BAColors.surfaceBorder,
+    borderColor: theme.colors.surfaceBorder,
   },
   drawerSection: {
     gap: 12,
     marginBottom: 24,
     borderBottomWidth: 1,
-    borderBottomColor: BAColors.border,
+    borderBottomColor: theme.colors.border,
     paddingBottom: 20,
   },
   drawerUserBadge: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
-    backgroundColor: BAColors.surfaceLight,
     paddingVertical: 10,
     paddingHorizontal: 12,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: BAColors.surfaceBorder,
+    borderBottomWidth: 1,
+    borderBottomColor: theme.colors.border,
   },
   drawerUserTitle: {
     fontSize: 9,
-    color: BAColors.textMuted,
+    color: theme.colors.textMuted,
     fontWeight: '600',
     textTransform: 'uppercase',
   },
   drawerUserName: {
     fontSize: 13,
     fontWeight: '600',
-    color: BAColors.textSecondary,
+    color: theme.colors.textSecondary,
   },
   drawerLocationBadge: {
     flexDirection: 'row',
     alignItems: 'flex-start',
     gap: 10,
-    backgroundColor: BAColors.surfaceLight,
-    paddingVertical: 10,
     paddingHorizontal: 12,
     borderRadius: 12,
-    borderWidth: 1,
-    borderColor: BAColors.surfaceBorder,
   },
   locationTextContainer: {
     flex: 1,
@@ -339,18 +324,18 @@ const styles = StyleSheet.create({
   },
   drawerLocationTitle: {
     fontSize: 9,
-    color: BAColors.textMuted,
+    color: theme.colors.textMuted,
     fontWeight: '600',
     textTransform: 'uppercase',
   },
   drawerLocationText: {
     fontSize: 12,
     fontWeight: '600',
-    color: BAColors.textSecondary,
+    color: theme.colors.textSecondary,
   },
   drawerCuadranteText: {
     fontSize: 11,
-    color: BAColors.textTertiary,
+    color: theme.colors.textTertiary,
   },
   navLinks: {
     flex: 1,
@@ -359,7 +344,7 @@ const styles = StyleSheet.create({
   sectionLabel: {
     fontSize: 10,
     fontWeight: '700',
-    color: BAColors.textMuted,
+    color: theme.colors.textMuted,
     letterSpacing: 1,
     marginBottom: 8,
   },
@@ -374,31 +359,31 @@ const styles = StyleSheet.create({
     borderColor: 'transparent',
   },
   navLinkActive: {
-    backgroundColor: BAColors.surfaceLight,
-    borderColor: BAColors.surfaceBorder,
+    backgroundColor: theme.colors.surfaceLight,
+    borderColor: theme.colors.surfaceBorder,
   },
   navLinkText: {
     fontSize: 13,
     fontWeight: '600',
-    color: BAColors.textMuted,
+    color: theme.colors.textMuted,
   },
   navLinkTextActive: {
-    color: BAColors.textPrimary,
+    color: theme.colors.textPrimary,
   },
   drawerFooter: {
     paddingTop: 16,
     borderTopWidth: 1,
-    borderTopColor: BAColors.border,
+    borderTopColor: theme.colors.border,
     alignItems: 'center',
     gap: 2,
   },
   footerText: {
     fontSize: 11,
     fontWeight: '600',
-    color: BAColors.textTertiary,
+    color: theme.colors.textTertiary,
   },
   footerSubtext: {
     fontSize: 9,
-    color: BAColors.textMuted,
+    color: theme.colors.textMuted,
   },
 });

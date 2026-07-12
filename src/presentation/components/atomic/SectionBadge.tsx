@@ -1,5 +1,5 @@
 import { View, Text, StyleSheet } from 'react-native';
-import { BAColors } from '../../constants/colors';
+import { useAppTheme, AppTheme } from '../../theme/ThemeContext';
 
 type BadgeColor = 'red' | 'green' | 'purple';
 
@@ -8,14 +8,16 @@ interface SectionBadgeProps {
   color: BadgeColor;
 }
 
-const COLOR_MAP: Record<BadgeColor, { text: string; bg: string; border: string }> = {
-  red: { text: BAColors.red, bg: BAColors.redBg, border: BAColors.redBorder },
-  green: { text: BAColors.green, bg: BAColors.greenBg, border: BAColors.greenBorder },
-  purple: { text: BAColors.purple, bg: BAColors.purpleBg, border: BAColors.purpleBorder },
-};
-
 export function SectionBadge({ label, color }: SectionBadgeProps) {
-  const palette = COLOR_MAP[color];
+  const { theme } = useAppTheme();
+  
+  const getColorMap = (t: AppTheme) => ({
+    red: { text: t.colors.red, bg: t.colors.redBg, border: t.colors.redBorder },
+    green: { text: t.colors.green, bg: t.colors.greenBg, border: t.colors.greenBorder },
+    purple: { text: t.colors.purple, bg: t.colors.purpleBg, border: t.colors.purpleBorder },
+  });
+
+  const palette = getColorMap(theme)[color];
 
   return (
     <View style={[styles.badge, { backgroundColor: palette.bg, borderColor: palette.border }]}>

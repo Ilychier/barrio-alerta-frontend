@@ -1,6 +1,7 @@
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SOSStep } from '../../../application/controllers/useSOSController';
-import { BAColors } from '../../constants/colors';
+import { AppTheme, useAppTheme } from '../../theme/ThemeContext';
+import Icon from '../atomic/Icon';
 import { IconRenderer } from '../atomic/IconRenderer';
 
 interface SOSButtonProps {
@@ -22,13 +23,15 @@ export function SOSButton({
   onCancel,
   onDismiss,
 }: SOSButtonProps) {
+  const { theme } = useAppTheme();
+  const styles = getStyles(theme);
+
   return (
     <View style={styles.container}>
       {step === 0 && (
         <TouchableOpacity onPress={onStart} activeOpacity={0.8} style={styles.sosButton}>
           <View style={styles.sosRing} />
-          <IconRenderer name="Radio" size={48} color={BAColors.textPrimary} />
-          <Text style={styles.sosText}>S.O.S</Text>
+          <Icon name="ShieldAlert" size={72} color={theme.colors.white} style={{ marginTop: 0 }}/>
           <Text style={styles.sosHint}>Tocar para Iniciar</Text>
         </TouchableOpacity>
       )}
@@ -57,7 +60,7 @@ export function SOSButton({
       {step === 2 && (
         <View style={styles.activeCard}>
           <View style={styles.activeIconContainer}>
-            <IconRenderer name="ShieldAlert" size={20} color={BAColors.textPrimary} />
+            <IconRenderer name="ShieldAlert" size={20} color={theme.colors.textPrimary} />
           </View>
           <Text style={styles.activeTitle}>Señal SOS Emitida</Text>
           <Text style={styles.activeDesc}>
@@ -81,7 +84,7 @@ export function SOSButton({
 
 const SOS_SIZE = 180;
 
-const styles = StyleSheet.create({
+const getStyles = (theme: AppTheme) => StyleSheet.create({
   container: {
     alignItems: 'center',
     justifyContent: 'center',
@@ -93,12 +96,10 @@ const styles = StyleSheet.create({
     width: SOS_SIZE,
     height: SOS_SIZE,
     borderRadius: SOS_SIZE / 2,
-    backgroundColor: BAColors.red,
+    backgroundColor: theme.colors.red,
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 4,
-    borderColor: BAColors.bg,
-    shadowColor: BAColors.red,
+    shadowColor: theme.colors.red,
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0.35,
     shadowRadius: 50,
@@ -115,23 +116,25 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: '900',
     letterSpacing: 4,
-    color: BAColors.textPrimary,
+    color: theme.colors.textPrimary,
     marginTop: 4,
   },
   sosHint: {
     fontSize: 9,
     fontWeight: '700',
+    width: 80,
+    textAlign: 'center',
     letterSpacing: 1,
-    color: BAColors.red,
+    color: theme.colors.white,
     textTransform: 'uppercase',
-    marginTop: 4,
+    marginTop: 6,
   },
 
   // --- Estado Confirmación (step 1) ---
   confirmCard: {
     width: '100%',
     maxWidth: 320,
-    backgroundColor: BAColors.surfaceLight,
+    backgroundColor: theme.colors.surfaceLight,
     borderWidth: 1,
     borderColor: 'rgba(255, 51, 51, 0.3)',
     borderRadius: 16,
@@ -147,24 +150,24 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: BAColors.red,
+    backgroundColor: theme.colors.red,
   },
   confirmTitle: {
     fontSize: 10,
     fontWeight: '700',
     letterSpacing: 1,
-    color: BAColors.red,
+    color: theme.colors.red,
     textTransform: 'uppercase',
   },
   countdown: {
     fontSize: 48,
     fontWeight: '900',
-    color: BAColors.textPrimary,
+    color: theme.colors.textPrimary,
     marginVertical: 12,
   },
   confirmDesc: {
     fontSize: 12,
-    color: BAColors.textTertiary,
+    color: theme.colors.textTertiary,
     textAlign: 'center',
     marginBottom: 16,
   },
@@ -175,29 +178,29 @@ const styles = StyleSheet.create({
   },
   confirmButton: {
     flex: 1,
-    backgroundColor: BAColors.red,
+    backgroundColor: theme.colors.red,
     paddingVertical: 8,
     paddingHorizontal: 16,
     borderRadius: 12,
     alignItems: 'center',
   },
   confirmButtonText: {
-    color: BAColors.textPrimary,
+    color: theme.colors.textPrimary,
     fontWeight: '700',
     fontSize: 12,
   },
   cancelButton: {
     flex: 1,
-    backgroundColor: BAColors.surfaceBorder,
+    backgroundColor: theme.colors.surfaceBorder,
     paddingVertical: 8,
     paddingHorizontal: 16,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: BAColors.border,
+    borderColor: theme.colors.border,
     alignItems: 'center',
   },
   cancelButtonText: {
-    color: BAColors.textTertiary,
+    color: theme.colors.textTertiary,
     fontWeight: '700',
     fontSize: 12,
   },
@@ -206,7 +209,7 @@ const styles = StyleSheet.create({
   activeCard: {
     width: '100%',
     maxWidth: 320,
-    backgroundColor: BAColors.redBg,
+    backgroundColor: theme.colors.redBg,
     borderWidth: 1,
     borderColor: 'rgba(220, 38, 38, 0.5)',
     borderRadius: 16,
@@ -214,7 +217,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   activeIconContainer: {
-    backgroundColor: BAColors.red,
+    backgroundColor: theme.colors.red,
     padding: 12,
     borderRadius: 100,
     marginBottom: 12,
@@ -222,13 +225,13 @@ const styles = StyleSheet.create({
   activeTitle: {
     fontSize: 14,
     fontWeight: '700',
-    color: BAColors.textPrimary,
+    color: theme.colors.textPrimary,
     textTransform: 'uppercase',
     letterSpacing: 1,
   },
   activeDesc: {
     fontSize: 12,
-    color: BAColors.textSecondary,
+    color: theme.colors.textSecondary,
     textAlign: 'center',
     marginTop: 4,
   },
@@ -244,11 +247,11 @@ const styles = StyleSheet.create({
   performanceText: {
     fontSize: 10,
     fontFamily: 'monospace',
-    color: BAColors.red,
+    color: theme.colors.red,
   },
   dismissButton: {
     marginTop: 16,
-    backgroundColor: BAColors.textPrimary,
+    backgroundColor: theme.colors.textPrimary,
     paddingVertical: 6,
     paddingHorizontal: 16,
     borderRadius: 12,
@@ -256,7 +259,7 @@ const styles = StyleSheet.create({
   dismissButtonText: {
     fontSize: 10,
     fontWeight: '800',
-    color: BAColors.bg,
+    color: theme.colors.bg,
     textTransform: 'uppercase',
     letterSpacing: 1,
   },

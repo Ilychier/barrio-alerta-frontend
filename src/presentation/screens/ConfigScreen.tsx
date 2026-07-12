@@ -5,8 +5,8 @@ import { useDashboardController } from '../../application/controllers/useDashboa
 import { IconRenderer } from '../components/atomic/IconRenderer';
 import { ToggleSwitch } from '../components/atomic/ToggleSwitch';
 import { SectionCard } from '../components/layout/SectionCard';
-import { BAColors } from '../constants/colors';
 import { useAuth } from '../context/AuthContext';
+import { useAppTheme, AppTheme } from '../theme/ThemeContext';
 
 export function ConfigScreen() {
   const router = useRouter();
@@ -14,6 +14,8 @@ export function ConfigScreen() {
   const userId = user?.id ?? 0;
   const { config, handleUpdate } = useConfiguracionController(userId);
   const { barrio, cuadrante } = useDashboardController(userId);
+  const { theme, themeType, toggleTheme } = useAppTheme();
+  const styles = getStyles(theme);
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
@@ -34,12 +36,19 @@ export function ConfigScreen() {
             label="Modo Silencioso"
             description="Solo recibir notificaciones de emergencias (Botón SOS)."
           />
+
+          <ToggleSwitch
+            value={themeType === 'light'}
+            onToggle={toggleTheme}
+            label="Modo Claro"
+            description="Activar el tema visual claro de la interfaz."
+          />
         </View>
 
         {/* Información del Cuadrante */}
         <View style={styles.cuadranteCard}>
           <Text style={styles.cuadranteTitle}>
-            <IconRenderer name="Shield" size={14} color={BAColors.red} />
+            <IconRenderer name="Shield" size={14} color={theme.colors.red} />
             {'  '}CAI y Barrio Asignado
           </Text>
 
@@ -70,10 +79,10 @@ export function ConfigScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (theme: AppTheme) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: BAColors.bg,
+    backgroundColor: theme.colors.bg,
   },
   content: {
     padding: 16,
@@ -81,12 +90,12 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 20,
     fontWeight: '700',
-    color: BAColors.textPrimary,
+    color: theme.colors.textPrimary,
     marginTop: 12,
   },
   description: {
     fontSize: 12,
-    color: BAColors.textMuted,
+    color: theme.colors.textMuted,
     marginTop: 4,
   },
   togglesSection: {
@@ -97,16 +106,16 @@ const styles = StyleSheet.create({
   // Cuadrante info
   cuadranteCard: {
     marginTop: 24,
-    backgroundColor: BAColors.surfaceLight,
+    backgroundColor: theme.colors.surfaceLight,
     padding: 16,
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: BAColors.border,
+    borderColor: theme.colors.border,
   },
   cuadranteTitle: {
     fontSize: 12,
     fontWeight: '700',
-    color: BAColors.textPrimary,
+    color: theme.colors.textPrimary,
     marginBottom: 12,
   },
   infoRow: {
@@ -121,31 +130,31 @@ const styles = StyleSheet.create({
   },
   infoLabel: {
     fontSize: 12,
-    color: BAColors.textTertiary,
+    color: theme.colors.textTertiary,
   },
   infoValue: {
     fontSize: 12,
     fontWeight: '600',
-    color: BAColors.textPrimary,
+    color: theme.colors.textPrimary,
   },
   infoValueGreen: {
     fontSize: 12,
     fontFamily: 'monospace',
-    color: BAColors.green,
+    color: theme.colors.green,
   },
 
   confirmButton: {
     marginTop: 24,
-    backgroundColor: BAColors.border,
+    backgroundColor: theme.colors.border,
     paddingVertical: 10,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: BAColors.surfaceBorder,
+    borderColor: theme.colors.surfaceBorder,
     alignItems: 'center',
   },
   confirmButtonText: {
     fontWeight: '700',
     fontSize: 12,
-    color: BAColors.textPrimary,
+    color: theme.colors.textPrimary,
   },
 });

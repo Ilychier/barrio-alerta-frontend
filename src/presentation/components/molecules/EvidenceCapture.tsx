@@ -1,5 +1,5 @@
 import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { BAColors } from '../../constants/colors';
+import { useAppTheme, AppTheme } from '../../theme/ThemeContext';
 import { IconRenderer } from '../atomic/IconRenderer';
 
 interface EvidenceCaptureProps {
@@ -10,24 +10,27 @@ interface EvidenceCaptureProps {
 }
 
 export function EvidenceCapture({ attached, photoUrl, onCapture, onRemove }: EvidenceCaptureProps) {
+  const { theme } = useAppTheme();
+  const styles = getStyles(theme);
+
   return (
     <View>
       <Text style={styles.label}>Evidencia Multimedia</Text>
 
       {!attached ? (
         <TouchableOpacity onPress={onCapture} activeOpacity={0.7} style={styles.placeholder}>
-          <IconRenderer name="Camera" size={24} color={BAColors.green} />
+          <IconRenderer name="Camera" size={24} color={theme.colors.green} />
           <Text style={styles.placeholderText}>Capturar fotografía de la evidencia</Text>
         </TouchableOpacity>
       ) : (
         <View style={styles.previewContainer}>
           <Image source={{ uri: photoUrl }} style={styles.previewImage} />
           <View style={styles.checkBadge}>
-            <IconRenderer name="Check" size={14} color={BAColors.green} />
+            <IconRenderer name="Check" size={14} color={theme.colors.green} />
             <Text style={styles.checkText}>Foto Vinculada</Text>
           </View>
           <TouchableOpacity onPress={onRemove} style={styles.removeButton}>
-            <IconRenderer name="X" size={16} color={BAColors.textPrimary} />
+            <IconRenderer name="X" size={16} color={theme.colors.textPrimary} />
           </TouchableOpacity>
         </View>
       )}
@@ -35,34 +38,34 @@ export function EvidenceCapture({ attached, photoUrl, onCapture, onRemove }: Evi
   );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (theme: AppTheme) => StyleSheet.create({
   label: {
     fontSize: 12,
     fontWeight: '700',
-    color: BAColors.textTertiary,
+    color: theme.colors.textTertiary,
     marginBottom: 8,
   },
   placeholder: {
     borderWidth: 1,
     borderStyle: 'dashed',
-    borderColor: BAColors.border,
+    borderColor: theme.colors.border,
     borderRadius: 12,
     paddingVertical: 24,
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-    backgroundColor: BAColors.surfaceDark, // antes: 'rgba(0, 0, 0, 0.4)'
+    backgroundColor: theme.colors.surfaceDark,
   },
   placeholderText: {
     fontSize: 12,
     fontWeight: '600',
-    color: BAColors.textTertiary,
+    color: theme.colors.textTertiary,
   },
   previewContainer: {
     borderRadius: 12,
     overflow: 'hidden',
+    borderColor: theme.colors.greenBorder, 
     borderWidth: 1,
-    borderColor: BAColors.greenBorder, 
     position: 'relative',
   },
   previewImage: {
@@ -82,18 +85,18 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: BAColors.border,
+    borderColor: theme.colors.border,
   },
   checkText: {
     fontSize: 12,
     fontFamily: 'monospace',
-    color: BAColors.green,
+    color: theme.colors.green,
   },
   removeButton: {
     position: 'absolute',
     bottom: 8,
     right: 8,
-    backgroundColor: BAColors.red,
+    backgroundColor: theme.colors.red,
     padding: 8,
     borderRadius: 100,
   },
