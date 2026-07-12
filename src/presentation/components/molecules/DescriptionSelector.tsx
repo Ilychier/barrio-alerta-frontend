@@ -1,5 +1,5 @@
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { BAColors } from '../../constants/colors';
+import { useAppTheme, AppTheme } from '../../theme/ThemeContext';
 
 interface DescriptionSelectorProps {
   descriptions: string[];
@@ -8,6 +8,9 @@ interface DescriptionSelectorProps {
 }
 
 export function DescriptionSelector({ descriptions, selected, onSelect }: DescriptionSelectorProps) {
+  const { theme } = useAppTheme();
+  const styles = getStyles(theme);
+
   return (
     <View>
       <Text style={styles.label}>Descripción del Suceso</Text>
@@ -35,11 +38,11 @@ export function DescriptionSelector({ descriptions, selected, onSelect }: Descri
   );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (theme: AppTheme) => StyleSheet.create({
   label: {
     fontSize: 12,
     fontWeight: '700',
-    color: BAColors.textTertiary,
+    color: theme.colors.textTertiary,
     marginBottom: 8,
   },
   list: {
@@ -53,37 +56,37 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     borderWidth: 1,
     borderColor: 'transparent',
-    backgroundColor: BAColors.surface, // antes: 'rgba(0, 0, 0, 0.35)'
+    backgroundColor: theme.colors.surface, 
   },
   optionSelected: {
-    backgroundColor: BAColors.greenBg,    // antes: BAColors.bg
-    borderColor: BAColors.greenBorder,    // antes: 'rgba(0, 230, 118, 0.4)'
+    backgroundColor: theme.colors.greenBg,    
+    borderColor: theme.colors.greenBorder,    
   },
   radio: {
     width: 16,
     height: 16,
     borderRadius: 8,
     borderWidth: 2,
-    borderColor: BAColors.textMuted,
+    borderColor: theme.colors.textMuted,
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: 1,
   },
   radioSelected: {
-    borderColor: BAColors.green,
+    borderColor: theme.colors.green,
   },
   radioInner: {
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: BAColors.green,
+    backgroundColor: theme.colors.green,
   },
   optionText: {
     flex: 1,
     fontSize: 12,
-    color: BAColors.textTertiary,
+    color: theme.colors.textTertiary,
   },
   optionTextSelected: {
-    color: BAColors.textSecondary,
+    color: theme.colors.textSecondary,
   },
 });

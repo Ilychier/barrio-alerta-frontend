@@ -1,5 +1,5 @@
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { BAColors } from '../../constants/colors';
+import { AppTheme, useAppTheme } from '../../theme/ThemeContext';
 import { IconRenderer } from '../atomic/IconRenderer';
 
 interface HeaderProps {
@@ -17,26 +17,24 @@ export function Header({
   isMobile = false,
   onMenuPress,
 }: HeaderProps) {
+  const { theme } = useAppTheme();
+  const styles = getStyles(theme);
+
   return (
     <View style={styles.header}>
       <View style={styles.leftGroup}>
         {onMenuPress && (
           <TouchableOpacity onPress={onMenuPress} style={styles.menuButton} activeOpacity={0.7}>
-            <IconRenderer name="Menu" size={22} color={BAColors.textPrimary} />
+            <IconRenderer name="Menu" size={22} color={theme.colors.textPrimary} />
           </TouchableOpacity>
         )}
-        <View style={styles.logoContainer}>
-          <IconRenderer name="Shield" size={20} color={BAColors.red} />
-        </View>
         <View>
           <Text style={styles.title}>Barrio Alerta</Text>
-          <Text style={styles.subtitle}>
-            {isMobile ? 'Red de Apoyo' : 'Red de Apoyo'}
-          </Text>
+          <Text style={styles.subtitle}>Red de Apoyo Comunitario</Text>
         </View>
         {!isMobile && barrioNombre && cuadranteNombre && (
           <View style={styles.locationBadge}>
-            <IconRenderer name="MapPin" size={12} color={BAColors.green} />
+            <IconRenderer name="MapPin" size={12} color={theme.colors.green} />
             <Text style={styles.locationText}>
               {barrioNombre} — {cuadranteNombre}
             </Text>
@@ -46,7 +44,7 @@ export function Header({
 
       {!isMobile && usuarioNombre && (
         <View style={styles.userBadge}>
-          <IconRenderer name="User" size={14} color={BAColors.green} />
+          <IconRenderer name="User" size={14} color={theme.colors.green} />
           <Text style={styles.userName}>{usuarioNombre}</Text>
         </View>
       )}
@@ -54,7 +52,7 @@ export function Header({
   );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (theme: AppTheme) => StyleSheet.create({
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -62,8 +60,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: BAColors.border,
-    backgroundColor: BAColors.surfaceDark,
+    borderBottomColor: theme.colors.border,
+    backgroundColor: theme.colors.surfaceDark,
   },
   leftGroup: {
     flexDirection: 'row',
@@ -76,51 +74,51 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   logoContainer: {
-    backgroundColor: BAColors.redBg,
+    backgroundColor: theme.colors.redBg,
     padding: 8,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: BAColors.redBorder,
+    borderColor: theme.colors.redBorder,
   },
   title: {
     fontSize: 14,
     fontWeight: '700',
-    color: BAColors.textPrimary,
+    color: theme.colors.textPrimary,
     letterSpacing: -0.3,
   },
   subtitle: {
     fontSize: 11,
-    color: BAColors.textMuted,
+    color: theme.colors.textMuted,
   },
   locationBadge: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    backgroundColor: BAColors.surfaceLight,
+    backgroundColor: theme.colors.surfaceLight,
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: BAColors.surfaceBorder,
+    borderColor: theme.colors.surfaceBorder,
   },
   locationText: {
     fontSize: 11,
-    color: BAColors.textTertiary,
+    color: theme.colors.textTertiary,
   },
   userBadge: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    backgroundColor: BAColors.surfaceLight,
+    backgroundColor: theme.colors.surfaceLight,
     paddingVertical: 6,
     paddingHorizontal: 12,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: BAColors.surfaceBorder,
+    borderColor: theme.colors.surfaceBorder,
   },
   userName: {
     fontSize: 12,
     fontWeight: '500',
-    color: BAColors.textSecondary,
+    color: theme.colors.textSecondary,
   },
 });

@@ -6,13 +6,15 @@ import { useSOSController } from '../../application/controllers/useSOSController
 import { SectionCard } from '../components/layout/SectionCard';
 import { AlertCard } from '../components/molecules/AlertCard';
 import { SOSButton } from '../components/molecules/SOSButton';
-import { BAColors } from '../constants/colors';
 import { useAuth } from '../context/AuthContext';
+import { AppTheme, useAppTheme } from '../theme/ThemeContext';
 
 export function DashboardScreen() {
   const [focusCount, forceUpdate] = useState(0);
   const { user } = useAuth();
   const userId = user?.id ?? 0;
+  const { theme } = useAppTheme();
+  const styles = getStyles(theme);
 
   // Refresca los datos del repositorio cada vez que el tab obtiene foco
   useFocusEffect(
@@ -70,7 +72,6 @@ export function DashboardScreen() {
           <View>
             <Text style={styles.alertsTitle}>Canal de Alertas del Sector</Text>
           </View>
-          <View style={styles.liveDot} />
         </View>
         <Text style={styles.alertsSubtitle}>
           Reportes recientes emitidos por los residentes del sector {barrio?.nombre}.
@@ -79,7 +80,7 @@ export function DashboardScreen() {
         <View style={styles.alertList}>
           <View style={styles.dateSelectorContainer}>
             <TouchableOpacity onPress={() => cambiarDia(-1)} style={styles.dateButton}>
-              <Text style={styles.dateButtonText}>◀ Ayer</Text>
+              <Text style={styles.dateButtonText}>◀</Text>
             </TouchableOpacity>
             
             <Text style={styles.dateText}>
@@ -91,7 +92,7 @@ export function DashboardScreen() {
               disabled={esHoy}
               style={[styles.dateButton, esHoy && styles.disabledButton]}
             >
-              <Text style={[styles.dateButtonText, esHoy && styles.disabledButtonText]}>Mañana ▶</Text>
+              <Text style={[styles.dateButtonText, esHoy && styles.disabledButtonText]}>▶</Text>
             </TouchableOpacity>
           </View>
 
@@ -106,10 +107,10 @@ export function DashboardScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (theme: AppTheme) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: BAColors.bg,
+    backgroundColor: theme.colors.bg,
   },
   content: {
     padding: 16,
@@ -124,12 +125,12 @@ const styles = StyleSheet.create({
   sosTitle: {
     fontSize: 18,
     fontWeight: '700',
-    color: BAColors.textPrimary,
+    color: theme.colors.textPrimary,
     marginTop: 12,
   },
   sosDescription: {
     fontSize: 12,
-    color: BAColors.textMuted,
+    color: theme.colors.textMuted,
     marginTop: 4,
   },
   sosFooter: {
@@ -138,7 +139,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingTop: 12,
     borderTopWidth: 1,
-    borderTopColor: BAColors.bg,
+    borderTopColor: theme.colors.bg,
     marginTop: 16,
   },
   sosFooterLeft: {
@@ -148,13 +149,13 @@ const styles = StyleSheet.create({
   },
   sosFooterText: {
     fontSize: 12,
-    color: BAColors.textMuted,
+    color: theme.colors.textMuted,
   },
   phoneNumber: {
     fontSize: 12,
     fontFamily: 'monospace',
     fontWeight: '700',
-    color: BAColors.green,
+    color: theme.colors.green,
   },
 
   // --- Alertas Block ---
@@ -169,18 +170,18 @@ const styles = StyleSheet.create({
   alertsTitle: {
     fontSize: 18,
     fontWeight: '700',
-    color: BAColors.textPrimary,
+    color: theme.colors.textPrimary,
     marginTop: 12,
   },
   liveDot: {
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: BAColors.green,
+    backgroundColor: theme.colors.green,
   },
   alertsSubtitle: {
     fontSize: 12,
-    color: BAColors.textMuted,
+    color: theme.colors.textMuted,
     marginTop: 4,
   },
   alertList: {
@@ -190,15 +191,13 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     paddingVertical: 48,
     fontSize: 12,
-    color: BAColors.textDim,
+    color: theme.colors.textDim,
   },
   dateSelectorContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: BAColors.surface,
-    borderColor: BAColors.surfaceBorder,
-    borderWidth: 1,
+    backgroundColor: theme.colors.surface,
     borderRadius: 8,
     padding: 8,
     marginBottom: 16,
@@ -207,8 +206,8 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     paddingHorizontal: 12,
     borderRadius: 6,
-    backgroundColor: BAColors.surfaceLight,
-    borderColor: BAColors.border,
+    backgroundColor: theme.colors.surfaceLight,
+    borderColor: theme.colors.border,
     borderWidth: 1,
   },
   disabledButton: {
@@ -217,15 +216,15 @@ const styles = StyleSheet.create({
   },
   dateButtonText: {
     fontSize: 14,
-    color: BAColors.green,
+    color: theme.colors.green,
     fontWeight: '600',
   },
   disabledButtonText: {
-    color: BAColors.textMuted,
+    color: theme.colors.textMuted,
   },
   dateText: {
     fontSize: 15,
     fontWeight: '700',
-    color: BAColors.textPrimary,
+    color: theme.colors.textPrimary,
   },
 });

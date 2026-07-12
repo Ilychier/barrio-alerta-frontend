@@ -4,12 +4,14 @@ import { CategoryButton } from '../components/atomic/CategoryButton';
 import { SectionCard } from '../components/layout/SectionCard';
 import { DescriptionSelector } from '../components/molecules/DescriptionSelector';
 import { EvidenceCapture } from '../components/molecules/EvidenceCapture';
-import { BAColors } from '../constants/colors';
 import { useAuth } from '../context/AuthContext';
+import { useAppTheme, AppTheme } from '../theme/ThemeContext';
 
 export function ReportarScreen() {
   const { user } = useAuth();
   const ctrl = useReporteController(user?.id ?? 0);
+  const { theme } = useAppTheme();
+  const styles = getStyles(theme);
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
@@ -74,10 +76,10 @@ export function ReportarScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (theme: AppTheme) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: BAColors.bg,
+    backgroundColor: theme.colors.bg,
   },
   content: {
     padding: 16,
@@ -85,12 +87,12 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 20,
     fontWeight: '700',
-    color: BAColors.textPrimary,
+    color: theme.colors.textPrimary,
     marginTop: 12,
   },
   description: {
     fontSize: 12,
-    color: BAColors.textMuted,
+    color: theme.colors.textMuted,
     marginTop: 4,
   },
 
@@ -100,7 +102,7 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 12,
     fontWeight: '700',
-    color: BAColors.textTertiary,
+    color: theme.colors.textTertiary,
     marginBottom: 12,
   },
   categoriesGrid: {
@@ -112,10 +114,10 @@ const styles = StyleSheet.create({
   formContainer: {
     marginTop: 24,
     padding: 20,
-    backgroundColor: BAColors.surfaceLight,
+    backgroundColor: theme.colors.surfaceLight,
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: BAColors.border,
+    borderColor: theme.colors.border,
     gap: 20,
   },
 
@@ -126,7 +128,7 @@ const styles = StyleSheet.create({
   },
   submitButton: {
     flex: 1,
-    backgroundColor: BAColors.red, // antes: BAColors.green
+    backgroundColor: theme.colors.red, 
     paddingVertical: 12,
     borderRadius: 12,
     alignItems: 'center',
@@ -135,26 +137,26 @@ const styles = StyleSheet.create({
     opacity: 0.2,
   },
   submitText: {
-  fontWeight: '800',
-  fontSize: 12,
-  color: BAColors.textPrimary, // antes: BAColors.bg
-},
-submitTextDisabled: {
-  color: BAColors.textPrimary, // antes: BAColors.bg
-},
+    fontWeight: '800',
+    fontSize: 12,
+    color: theme.colors.textPrimary, 
+  },
+  submitTextDisabled: {
+    color: theme.colors.textPrimary, 
+  },
   cancelButton: {
-    backgroundColor: BAColors.border,
+    backgroundColor: theme.colors.border,
     paddingVertical: 12,
     paddingHorizontal: 20,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: BAColors.surfaceBorder,
+    borderColor: theme.colors.surfaceBorder,
     alignItems: 'center',
     justifyContent: 'center',
   },
   cancelText: {
     fontWeight: '700',
     fontSize: 12,
-    color: BAColors.textTertiary,
+    color: theme.colors.textTertiary,
   },
 });

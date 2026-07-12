@@ -33,7 +33,9 @@ export function useDashboardController(currentUserId: number, refreshTrigger?: n
 
   useEffect(() => {
     if (!currentUserId || currentUserId === 0) {
-      setLoading(false);
+      Promise.resolve().then(() => {
+        setLoading(false);
+      });
       return;
     }
 

@@ -1,16 +1,20 @@
-import { Image, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { AlertaConDatos } from '../../../application/usecases/ObtenerAlertasUseCase';
-import { BAColors } from '../../constants/colors';
-import { IconRenderer } from '../atomic/IconRenderer';
+import { AppTheme, useAppTheme } from '../../theme/ThemeContext';
+import Icon from '../atomic/Icon';
 
 interface AlertCardProps {
   item: AlertaConDatos;
 }
 
 export function AlertCard({ item }: AlertCardProps) {
+  const { theme } = useAppTheme();
+  const styles = getStyles(theme);
+
   const { alerta, categoria, usuario, evidencias } = item;
   const isSos = alerta.es_sos;
   const firstEvidence = evidencias.length > 0 ? evidencias[0] : null;
+  const icono = categoria?.icono_referencia || 'AlertCircle';
 
   const time = new Date(alerta.fecha_hora).toLocaleTimeString([], {
     hour: '2-digit',
@@ -25,12 +29,12 @@ export function AlertCard({ item }: AlertCardProps) {
       <View style={styles.header}>
         <View style={styles.headerLeft}>
           {isSos ? (
-            <IconRenderer name="ShieldAlert" size={16} color={BAColors.red} />
+            <Icon name="ShieldAlert" size={16} color={theme.colors.red} />
           ) : isFine ? (
-            <IconRenderer name="Check" size={16} color={BAColors.green} />
+            <Icon name="Check" size={16} color={theme.colors.green} />
           ) : (
-            categoria && (
-              <IconRenderer name={categoria.icono_referencia} size={16} color={BAColors.textTertiary} />
+              categoria && (
+              <Icon name={icono as any} size={16} color={theme.colors.textMuted} />
             )
           )}
           <Text style={[
@@ -47,25 +51,15 @@ export function AlertCard({ item }: AlertCardProps) {
       {/* Description */}
       <Text style={styles.description}>{alerta.descripcion}</Text>
 
-      {/* Evidence */}
-      {firstEvidence && (
-        <View style={styles.evidenceContainer}>
-          <Image source={{ uri: firstEvidence.url_archivo }} style={styles.evidenceImage} />
-        </View>
-      )}
-
       {/* Footer */}
       <View style={styles.footer}>
         <Text style={styles.reporter}>Reportado por: {usuario?.nombre || 'Anónimo'}</Text>
-        <View style={styles.channelBadge}>
-          <View style={styles.channelDot} />
-        </View>
       </View>
     </View>
   );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (theme: AppTheme) => StyleSheet.create({
   card: {
     padding: 16,
     borderRadius: 16,
@@ -73,16 +67,16 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   cardSos: {
-    backgroundColor: BAColors.redBg,
+    backgroundColor: theme.colors.redBg,
     borderColor: 'rgba(255, 51, 51, 0.4)',
   },
   cardFine: {
-    backgroundColor: BAColors.greenBg,
-    borderColor: BAColors.greenBorder,
+    backgroundColor: theme.colors.greenBg,
+    borderColor: theme.colors.greenBorder,
   },
   cardNormal: {
-    backgroundColor: BAColors.surfaceLight,
-    borderColor: BAColors.border,
+    backgroundColor: theme.colors.surfaceLight,
+    borderColor: theme.colors.border,
   },
 
   header: {
@@ -98,23 +92,23 @@ const styles = StyleSheet.create({
   categoryName: {
     fontSize: 12,
     fontWeight: '700',
-    color: BAColors.textPrimary,
+    color: theme.colors.textPrimary,
   },
   categoryNameSos: {
-    color: BAColors.red,
+    color: theme.colors.red,
   },
   categoryNameFine: {
-    color: BAColors.green,
+    color: theme.colors.green,
   },
   time: {
     fontSize: 10,
     fontFamily: 'monospace',
-    color: BAColors.textMuted,
+    color: theme.colors.textMuted,
   },
 
   description: {
     fontSize: 12,
-    color: BAColors.textSecondary,
+    color: theme.colors.textSecondary,
     marginTop: 8,
     lineHeight: 18,
   },
@@ -124,7 +118,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     overflow: 'hidden',
     borderWidth: 1,
-    borderColor: BAColors.bg,
+    borderColor: theme.colors.bg,
     maxHeight: 140,
   },
   evidenceImage: {
@@ -140,12 +134,12 @@ const styles = StyleSheet.create({
     marginTop: 12,
     paddingTop: 10,
     borderTopWidth: 1,
-    borderTopColor: BAColors.bg,
+    borderTopColor: theme.colors.bg,
   },
   reporter: {
     fontSize: 10,
     fontWeight: '500',
-    color: BAColors.textMuted,
+    color: theme.colors.textMuted,
   },
   channelBadge: {
     flexDirection: 'row',
@@ -156,10 +150,10 @@ const styles = StyleSheet.create({
     width: 6,
     height: 6,
     borderRadius: 3,
-    backgroundColor: BAColors.green,
+    backgroundColor: theme.colors.green,
   },
   channelText: {
     fontSize: 10,
-    color: BAColors.textMuted,
+    color: theme.colors.textMuted,
   },
 });

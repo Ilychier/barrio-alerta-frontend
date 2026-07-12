@@ -1,6 +1,6 @@
 import { StyleSheet, Text, TouchableOpacity } from 'react-native';
 import * as icons from 'lucide-react-native/icons';
-import { BAColors } from '../../constants/colors';
+import { useAppTheme, AppTheme } from '../../theme/ThemeContext';
 import Icon from './Icon';
 
 interface CategoryButtonProps {
@@ -11,6 +11,9 @@ interface CategoryButtonProps {
 }
 
 export function CategoryButton({ iconName, label, selected, onPress }: CategoryButtonProps) {
+  const { theme } = useAppTheme();
+  const styles = getStyles(theme);
+
   // Validate that the icon exists in lucide-react-native, fallback to 'House' if not found
   const resolvedIconName = (iconName in icons) ? (iconName as keyof typeof icons) : 'House';
 
@@ -22,7 +25,7 @@ export function CategoryButton({ iconName, label, selected, onPress }: CategoryB
     >
       <Icon
         name={resolvedIconName}
-        color={selected ? BAColors.green : BAColors.textMuted}
+        color={selected ? theme.colors.green : theme.colors.textMuted}
         size={24}
       />
       <Text style={[styles.label, selected ? styles.labelSelected : styles.labelUnselected]}>
@@ -32,7 +35,7 @@ export function CategoryButton({ iconName, label, selected, onPress }: CategoryB
   );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (theme: AppTheme) => StyleSheet.create({
   button: {
     padding: 16,
     borderRadius: 16,
@@ -45,12 +48,12 @@ const styles = StyleSheet.create({
     minWidth: 100,
   },
   selected: {
-    backgroundColor: BAColors.greenBg,
-    borderColor: BAColors.green,
+    backgroundColor: theme.colors.greenBg,
+    borderColor: theme.colors.green,
   },
   unselected: {
-    backgroundColor: BAColors.surfaceLight,
-    borderColor: BAColors.border,
+    backgroundColor: theme.colors.surfaceLight,
+    borderColor: theme.colors.border,
   },
   label: {
     fontSize: 12,
@@ -58,9 +61,9 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   labelSelected: {
-    color: BAColors.green,
+    color: theme.colors.green,
   },
   labelUnselected: {
-    color: BAColors.textMuted,
+    color: theme.colors.textMuted,
   },
 });

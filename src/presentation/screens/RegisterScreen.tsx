@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
 import { useAuth } from '../context/AuthContext';
-import { BAColors } from '../constants/colors';
 import { SectionCard } from '../components/layout/SectionCard';
 import { SectionBadge } from '../components/atomic/SectionBadge';
 import { DependencyContainer } from '../../infrastructure/config/dependencyContainer';
 import { Barrio } from '../../domain/entities/barrio';
+import { useAppTheme, AppTheme } from '../theme/ThemeContext';
 
 interface RegisterScreenProps {
   onLoginPress: () => void;
@@ -13,6 +13,9 @@ interface RegisterScreenProps {
 
 export function RegisterScreen({ onLoginPress }: RegisterScreenProps) {
   const { register } = useAuth();
+  const { theme } = useAppTheme();
+  const styles = getStyles(theme);
+
   const [nombre, setNombre] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
@@ -75,7 +78,7 @@ export function RegisterScreen({ onLoginPress }: RegisterScreenProps) {
             value={nombre}
             onChangeText={setNombre}
             placeholder="Juan Pérez"
-            placeholderTextColor={BAColors.textMuted}
+            placeholderTextColor={theme.colors.textMuted}
           />
 
           <Text style={styles.label}>Correo Electrónico</Text>
@@ -84,7 +87,7 @@ export function RegisterScreen({ onLoginPress }: RegisterScreenProps) {
             value={email}
             onChangeText={setEmail}
             placeholder="correo@ejemplo.com"
-            placeholderTextColor={BAColors.textMuted}
+            placeholderTextColor={theme.colors.textMuted}
             keyboardType="email-address"
             autoCapitalize="none"
           />
@@ -95,7 +98,7 @@ export function RegisterScreen({ onLoginPress }: RegisterScreenProps) {
             value={phone}
             onChangeText={setPhone}
             placeholder="+573105550123"
-            placeholderTextColor={BAColors.textMuted}
+            placeholderTextColor={theme.colors.textMuted}
             keyboardType="phone-pad"
           />
 
@@ -105,7 +108,7 @@ export function RegisterScreen({ onLoginPress }: RegisterScreenProps) {
             value={address}
             onChangeText={setAddress}
             placeholder="Calle 12 # 3-45"
-            placeholderTextColor={BAColors.textMuted}
+            placeholderTextColor={theme.colors.textMuted}
           />
 
           <Text style={styles.label}>Selecciona tu Barrio</Text>
@@ -137,14 +140,14 @@ export function RegisterScreen({ onLoginPress }: RegisterScreenProps) {
             value={password}
             onChangeText={setPassword}
             placeholder="Mínimo 6 caracteres"
-            placeholderTextColor={BAColors.textMuted}
+            placeholderTextColor={theme.colors.textMuted}
             secureTextEntry
             autoCapitalize="none"
           />
 
           <TouchableOpacity style={styles.button} onPress={handleRegister} disabled={loading}>
             {loading ? (
-              <ActivityIndicator color={BAColors.textPrimary} />
+              <ActivityIndicator color={theme.colors.textPrimary} />
             ) : (
               <Text style={styles.buttonText}>Registrar Cuenta</Text>
             )}
@@ -161,10 +164,10 @@ export function RegisterScreen({ onLoginPress }: RegisterScreenProps) {
   );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (theme: AppTheme) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: BAColors.bg,
+    backgroundColor: theme.colors.bg,
   },
   content: {
     padding: 16,
@@ -174,12 +177,12 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 22,
     fontWeight: '700',
-    color: BAColors.textPrimary,
+    color: theme.colors.textPrimary,
     marginTop: 12,
   },
   subtitle: {
     fontSize: 12,
-    color: BAColors.textTertiary,
+    color: theme.colors.textTertiary,
     marginTop: 4,
     marginBottom: 20,
   },
@@ -189,17 +192,17 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 12,
     fontWeight: '600',
-    color: BAColors.textSecondary,
+    color: theme.colors.textSecondary,
     marginBottom: 4,
   },
   input: {
-    backgroundColor: BAColors.surfaceLight,
+    backgroundColor: theme.colors.surfaceLight,
     borderWidth: 1,
-    borderColor: BAColors.surfaceBorder,
+    borderColor: theme.colors.surfaceBorder,
     borderRadius: 12,
     paddingVertical: 10,
     paddingHorizontal: 16,
-    color: BAColors.textPrimary,
+    color: theme.colors.textPrimary,
     fontSize: 14,
     marginBottom: 12,
   },
@@ -210,47 +213,47 @@ const styles = StyleSheet.create({
   },
   barrioOption: {
     flex: 1,
-    backgroundColor: BAColors.surfaceLight,
+    backgroundColor: theme.colors.surfaceLight,
     borderWidth: 1,
-    borderColor: BAColors.surfaceBorder,
+    borderColor: theme.colors.surfaceBorder,
     borderRadius: 12,
     paddingVertical: 12,
     alignItems: 'center',
   },
   barrioOptionSelected: {
-    borderColor: BAColors.green,
-    backgroundColor: BAColors.greenBg,
+    borderColor: theme.colors.green,
+    backgroundColor: theme.colors.greenBg,
   },
   barrioText: {
-    color: BAColors.textSecondary,
+    color: theme.colors.textSecondary,
     fontSize: 13,
     fontWeight: '600',
   },
   barrioTextSelected: {
-    color: BAColors.textPrimary,
+    color: theme.colors.textPrimary,
   },
   button: {
-    backgroundColor: BAColors.green,
+    backgroundColor: theme.colors.green,
     paddingVertical: 12,
     borderRadius: 12,
     alignItems: 'center',
     marginTop: 16,
   },
   buttonText: {
-    color: BAColors.textPrimary,
+    color: theme.colors.textPrimary,
     fontWeight: '700',
     fontSize: 14,
   },
   errorContainer: {
-    backgroundColor: BAColors.redBg,
+    backgroundColor: theme.colors.redBg,
     borderWidth: 1,
-    borderColor: BAColors.redBorder,
+    borderColor: theme.colors.redBorder,
     borderRadius: 12,
     padding: 12,
     marginBottom: 16,
   },
   errorText: {
-    color: BAColors.textPrimary,
+    color: theme.colors.textPrimary,
     fontSize: 12,
     fontWeight: '600',
   },
@@ -259,11 +262,11 @@ const styles = StyleSheet.create({
     marginTop: 16,
   },
   switchText: {
-    color: BAColors.textMuted,
+    color: theme.colors.textMuted,
     fontSize: 12,
   },
   switchHighlight: {
-    color: BAColors.green,
+    color: theme.colors.green,
     fontWeight: '600',
   },
 });
