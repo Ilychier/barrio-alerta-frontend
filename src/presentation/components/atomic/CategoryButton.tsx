@@ -1,6 +1,7 @@
 import { StyleSheet, Text, TouchableOpacity } from 'react-native';
+import * as icons from 'lucide-react-native/icons';
 import { BAColors } from '../../constants/colors';
-import { IconRenderer } from './IconRenderer';
+import Icon from './Icon';
 
 interface CategoryButtonProps {
   iconName: string;
@@ -10,16 +11,19 @@ interface CategoryButtonProps {
 }
 
 export function CategoryButton({ iconName, label, selected, onPress }: CategoryButtonProps) {
+  // Validate that the icon exists in lucide-react-native, fallback to 'House' if not found
+  const resolvedIconName = (iconName in icons) ? (iconName as keyof typeof icons) : 'House';
+
   return (
     <TouchableOpacity
       onPress={onPress}
       activeOpacity={0.7}
       style={[styles.button, selected ? styles.selected : styles.unselected]}
     >
-      <IconRenderer
-        name={iconName}
-        size={24}
+      <Icon
+        name={resolvedIconName}
         color={selected ? BAColors.green : BAColors.textMuted}
+        size={24}
       />
       <Text style={[styles.label, selected ? styles.labelSelected : styles.labelUnselected]}>
         {label}

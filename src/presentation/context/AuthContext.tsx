@@ -1,10 +1,14 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { Usuario } from '../../domain/entities/usuario';
+import { Barrio } from '../../domain/entities/barrio';
+import { Cuadrante } from '../../domain/entities/cuadrante';
 import { DependencyContainer } from '../../infrastructure/config/dependencyContainer';
 import { TokenStorage } from '../../infrastructure/adapters/storage/TokenStorage';
 
 interface AuthContextType {
   user: Usuario | null;
+  barrio: Barrio | null;
+  cuadrante: Cuadrante | null;
   isAuthenticated: boolean;
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
@@ -23,7 +27,28 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<Usuario | null>(null);
+  const [barrio, setBarrio] = useState<Barrio | null>(null);
+  const [cuadrante, setCuadrante] = useState<Cuadrante | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
+
+  const fetchReferences = async (usuario: Usuario) => {
+    try {
+      const container = DependencyContainer.getInstance();
+      const referenciaRepo = container.getReferenciaRepository();
+      const resolvedBarrio = await referenciaRepo.getBarrioById(usuario.barrio_id);
+      setBarrio(resolvedBarrio || null);
+      if (resolvedBarrio) {
+        const resolvedCuadrante = await referenciaRepo.getCuadranteById(resolvedBarrio.cuadrante_id);
+        setCuadrante(resolvedCuadrante || null);
+      } else {
+        setCuadrante(null);
+      }
+    } catch (error) {
+      console.error('Error fetching auth user references:', error);
+      setBarrio(null);
+      setCuadrante(null);
+    }
+  };
 
   useEffect(() => {
     async function loadSession() {
@@ -33,10 +58,16 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           const authRepo = DependencyContainer.getInstance().getAuthRepository();
           const me = await authRepo.getMe();
           setUser(me);
+          if (me) {
+            await fetchReferences(me);
+          }
         }
       } catch (error) {
         console.warn('No active session or token expired', error);
         await TokenStorage.clearToken();
+        setUser(null);
+        setBarrio(null);
+        setCuadrante(null);
       } finally {
         setLoading(false);
       }
@@ -50,8 +81,13 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       const authRepo = DependencyContainer.getInstance().getAuthRepository();
       const { user: loggedUser } = await authRepo.login(email, password);
       setUser(loggedUser);
+      if (loggedUser) {
+        await fetchReferences(loggedUser);
+      }
     } catch (error) {
       setUser(null);
+      setBarrio(null);
+      setCuadrante(null);
       throw error;
     } finally {
       setLoading(false);
@@ -78,8 +114,13 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         password
       );
       setUser(registeredUser);
+      if (registeredUser) {
+        await fetchReferences(registeredUser);
+      }
     } catch (error) {
       setUser(null);
+      setBarrio(null);
+      setCuadrante(null);
       throw error;
     } finally {
       setLoading(false);
@@ -91,6 +132,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     try {
       await TokenStorage.clearToken();
       setUser(null);
+      setBarrio(null);
+      setCuadrante(null);
     } finally {
       setLoading(false);
     }
@@ -100,6 +143,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     <AuthContext.Provider
       value={{
         user,
+        barrio,
+        cuadrante,
         isAuthenticated: !!user,
         loading,
         login,

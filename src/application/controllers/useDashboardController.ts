@@ -32,6 +32,11 @@ export function useDashboardController(currentUserId: number, refreshTrigger?: n
   };
 
   useEffect(() => {
+    if (!currentUserId || currentUserId === 0) {
+      setLoading(false);
+      return;
+    }
+
     let active = true;
     const container = DependencyContainer.getInstance();
     const obtenerAlertas = container.getObtenerAlertasUseCase();
