@@ -55,9 +55,10 @@ export class InMemoryAlertaRepository implements IAlertaRepository {
     return alerta;
   }
 
-  async obtenerTodas(fecha?: string): Promise<Alerta[]> {
+  async obtenerTodas(fecha?: string, barrioId?: number): Promise<Alerta[]> {
+    let list = this.alertas;
     if (fecha) {
-      return this.alertas.filter((a) => {
+      list = list.filter((a) => {
         try {
           const datePart = a.fecha_hora.includes('T')
             ? a.fecha_hora.split('T')[0]
@@ -68,7 +69,15 @@ export class InMemoryAlertaRepository implements IAlertaRepository {
         }
       });
     }
-    return this.alertas;
+    if (barrioId !== undefined && barrioId !== null) {
+      list = list.filter((a) => {
+        // Users 1, 32, and 502 belong to barrio 1 in memory mock data.
+        const creatorId = a.usuario_id;
+        const creatorBarrioId = (creatorId === 1 || creatorId === 32 || creatorId === 502) ? 1 : barrioId;
+        return creatorBarrioId === barrioId;
+      });
+    }
+    return list;
   }
 
   async obtenerPorId(id: number): Promise<Alerta | undefined> {

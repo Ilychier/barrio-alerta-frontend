@@ -1,10 +1,10 @@
 import { isAxiosError } from 'axios';
-import { IReferenciaRepository } from '../../../domain/ports/IReferenciaRepository';
-import { Usuario } from '../../../domain/entities/usuario';
 import { Barrio } from '../../../domain/entities/barrio';
-import { Cuadrante } from '../../../domain/entities/cuadrante';
 import { Categoria } from '../../../domain/entities/categoria';
 import { CategoriaDescripcion } from '../../../domain/entities/categoriaDescripcion';
+import { Cuadrante } from '../../../domain/entities/cuadrante';
+import { Usuario } from '../../../domain/entities/usuario';
+import { IReferenciaRepository } from '../../../domain/ports/IReferenciaRepository';
 import { InMemoryReferenciaRepository } from '../memory/InMemoryReferenciaRepository';
 import { HttpGenericService } from './HttpGenericService';
 
