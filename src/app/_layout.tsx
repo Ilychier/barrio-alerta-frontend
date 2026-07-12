@@ -3,7 +3,6 @@ import { useState } from 'react';
 import { ActivityIndicator, Animated, Pressable, StyleSheet, Text, TouchableOpacity, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { useDashboardController } from '@/application/controllers/useDashboardController';
 import { IconRenderer } from '@/presentation/components/atomic/IconRenderer';
 import { Header } from '@/presentation/components/layout/Header';
 import { BAColors } from '@/presentation/constants/colors';
@@ -20,7 +19,7 @@ export default function RootLayout() {
 }
 
 function TabLayout() {
-  const { user, isAuthenticated, loading, logout } = useAuth();
+  const { user, barrio, cuadrante, isAuthenticated, loading, logout } = useAuth();
   const [showRegister, setShowRegister] = useState(false);
 
   const { width } = useWindowDimensions();
@@ -28,8 +27,6 @@ function TabLayout() {
   const router = useRouter();
   const pathname = usePathname();
   const insets = useSafeAreaInsets();
-
-  const { usuario, barrio, cuadrante } = useDashboardController(user?.id ?? 0);
 
   const [visible, setVisible] = useState(false);
   
@@ -103,7 +100,7 @@ function TabLayout() {
       <Header
         barrioNombre={barrio?.nombre}
         cuadranteNombre={cuadrante?.nombre_unidad}
-        usuarioNombre={usuario?.nombre}
+        usuarioNombre={user?.nombre}
         isMobile={isSmallScreen}
         onMenuPress={openMenu}
       />
@@ -146,12 +143,12 @@ function TabLayout() {
             {/* Conditionally include username and location badges ONLY on smaller screens */}
             {isSmallScreen && (
               <View style={styles.drawerSection}>
-                {usuario?.nombre && (
+                {user?.nombre && (
                   <View style={styles.drawerUserBadge}>
                     <IconRenderer name="User" size={14} color={BAColors.green} />
                     <View>
                       <Text style={styles.drawerUserTitle}>Usuario Activo</Text>
-                      <Text style={styles.drawerUserName}>{usuario.nombre}</Text>
+                      <Text style={styles.drawerUserName}>{user.nombre}</Text>
                     </View>
                   </View>
                 )}
