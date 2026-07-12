@@ -2,7 +2,9 @@ import { useEffect, useState } from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { Barrio } from '../../domain/entities/barrio';
 import { DependencyContainer } from '../../infrastructure/config/dependencyContainer';
+import Icon from '../components/atomic/Icon';
 import { SectionCard } from '../components/layout/SectionCard';
+import { SVGBackground } from '../components/layout/SVGBackground';
 import { useAuth } from '../context/AuthContext';
 import { AppTheme, useAppTheme } from '../theme/ThemeContext';
 
@@ -24,6 +26,14 @@ export function RegisterScreen({ onLoginPress }: RegisterScreenProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [barrios, setBarrios] = useState<Barrio[]>([]);
+
+  // Focus and visibility states
+  const [nombreFocused, setNombreFocused] = useState(false);
+  const [emailFocused, setEmailFocused] = useState(false);
+  const [phoneFocused, setPhoneFocused] = useState(false);
+  const [addressFocused, setAddressFocused] = useState(false);
+  const [passwordFocused, setPasswordFocused] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
     async function fetchBarrios() {
@@ -58,169 +68,271 @@ export function RegisterScreen({ onLoginPress }: RegisterScreenProps) {
   };
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <SectionCard>
-        <Text style={styles.title}>Crear Cuenta</Text>
-        <Text style={styles.subtitle}>Regístrate para alertar y proteger a tu barrio</Text>
-
-        {error && (
-          <View style={styles.errorContainer}>
-            <Text style={styles.errorText}>{error}</Text>
+    <SVGBackground>
+      <ScrollView style={styles.container} contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+        <SectionCard style={styles.card}>
+          {/* Header branding */}
+          <View style={styles.brandContainer}>
+            <View style={styles.logoCircle}>
+              <Icon name="ShieldAlert" size={32} color={theme.colors.green} />
+            </View>
+            <Text style={styles.brandText}>Crear Cuenta</Text>
+            <Text style={styles.brandTagline}>Regístrate para alertar y proteger a tu barrio</Text>
           </View>
-        )}
 
-        <View style={styles.form}>
-          <Text style={styles.label}>Nombre Completo</Text>
-          <TextInput
-            style={styles.input}
-            value={nombre}
-            onChangeText={setNombre}
-            placeholder="Juan Pérez"
-            placeholderTextColor={theme.colors.textMuted}
-          />
+          {error && (
+            <View style={styles.errorContainer}>
+              <Icon name="ShieldAlert" size={18} color={theme.colors.green} />
+              <Text style={styles.errorText}>{error}</Text>
+            </View>
+          )}
 
-          <Text style={styles.label}>Correo Electrónico</Text>
-          <TextInput
-            style={styles.input}
-            value={email}
-            onChangeText={setEmail}
-            placeholder="correo@ejemplo.com"
-            placeholderTextColor={theme.colors.textMuted}
-            keyboardType="email-address"
-            autoCapitalize="none"
-          />
+          <View style={styles.form}>
+            <Text style={styles.label}>Nombre Completo</Text>
+            <View style={[styles.inputContainer, nombreFocused && styles.inputContainerFocused]}>
+              <Icon name="User" size={18} color={nombreFocused ? theme.colors.green : theme.colors.textMuted} style={styles.inputIcon} />
+              <TextInput
+                style={styles.input}
+                value={nombre}
+                onChangeText={setNombre}
+                onFocus={() => setNombreFocused(true)}
+                onBlur={() => setNombreFocused(false)}
+                placeholder="Juan Pérez"
+                placeholderTextColor={theme.colors.textMuted}
+              />
+            </View>
 
-          <Text style={styles.label}>Teléfono de Emergencia</Text>
-          <TextInput
-            style={styles.input}
-            value={phone}
-            onChangeText={setPhone}
-            placeholder="+573105550123"
-            placeholderTextColor={theme.colors.textMuted}
-            keyboardType="phone-pad"
-          />
+            <Text style={styles.label}>Correo Electrónico</Text>
+            <View style={[styles.inputContainer, emailFocused && styles.inputContainerFocused]}>
+              <Icon name="Mail" size={18} color={emailFocused ? theme.colors.green : theme.colors.textMuted} style={styles.inputIcon} />
+              <TextInput
+                style={styles.input}
+                value={email}
+                onChangeText={setEmail}
+                onFocus={() => setEmailFocused(true)}
+                onBlur={() => setEmailFocused(false)}
+                placeholder="correo@ejemplo.com"
+                placeholderTextColor={theme.colors.textMuted}
+                keyboardType="email-address"
+                autoCapitalize="none"
+              />
+            </View>
 
-          <Text style={styles.label}>Dirección Residencial</Text>
-          <TextInput
-            style={styles.input}
-            value={address}
-            onChangeText={setAddress}
-            placeholder="Calle 12 # 3-45"
-            placeholderTextColor={theme.colors.textMuted}
-          />
+            <Text style={styles.label}>Teléfono de Emergencia</Text>
+            <View style={[styles.inputContainer, phoneFocused && styles.inputContainerFocused]}>
+              <Icon name="Phone" size={18} color={phoneFocused ? theme.colors.green : theme.colors.textMuted} style={styles.inputIcon} />
+              <TextInput
+                style={styles.input}
+                value={phone}
+                onChangeText={setPhone}
+                onFocus={() => setPhoneFocused(true)}
+                onBlur={() => setPhoneFocused(false)}
+                placeholder="+57 310 555 0123"
+                placeholderTextColor={theme.colors.textMuted}
+                keyboardType="phone-pad"
+              />
+            </View>
 
-          <Text style={styles.label}>Selecciona tu Barrio</Text>
-          <View style={styles.barriosContainer}>
-            {barrios.map((b) => (
-              <TouchableOpacity
-                key={b.id}
-                style={[
-                  styles.barrioOption,
-                  barrioId === b.id && styles.barrioOptionSelected
-                ]}
-                onPress={() => setBarrioId(b.id)}
-              >
-                <Text
+            <Text style={styles.label}>Dirección Residencial</Text>
+            <View style={[styles.inputContainer, addressFocused && styles.inputContainerFocused]}>
+              <Icon name="MapPin" size={18} color={addressFocused ? theme.colors.green : theme.colors.textMuted} style={styles.inputIcon} />
+              <TextInput
+                style={styles.input}
+                value={address}
+                onChangeText={setAddress}
+                onFocus={() => setAddressFocused(true)}
+                onBlur={() => setAddressFocused(false)}
+                placeholder="Calle 12 # 3-45"
+                placeholderTextColor={theme.colors.textMuted}
+              />
+            </View>
+
+            <Text style={styles.label}>Selecciona tu Barrio</Text>
+            <View style={styles.barriosContainer}>
+              {barrios.map((b) => (
+                <TouchableOpacity
+                  key={b.id}
                   style={[
-                    styles.barrioText,
-                    barrioId === b.id && styles.barrioTextSelected
+                    styles.barrioOption,
+                    barrioId === b.id && styles.barrioOptionSelected
                   ]}
+                  onPress={() => setBarrioId(b.id)}
+                  activeOpacity={0.8}
                 >
-                  {b.nombre}
-                </Text>
+                  <Text
+                    style={[
+                      styles.barrioText,
+                      barrioId === b.id && styles.barrioTextSelected
+                    ]}
+                  >
+                    {b.nombre}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            <Text style={styles.label}>Contraseña</Text>
+            <View style={[styles.inputContainer, passwordFocused && styles.inputContainerFocused]}>
+              <Icon name="Lock" size={18} color={passwordFocused ? theme.colors.green : theme.colors.textMuted} style={styles.inputIcon} />
+              <TextInput
+                style={styles.input}
+                value={password}
+                onChangeText={setPassword}
+                onFocus={() => setPasswordFocused(true)}
+                onBlur={() => setPasswordFocused(false)}
+                placeholder="Mínimo 6 caracteres"
+                placeholderTextColor={theme.colors.textMuted}
+                secureTextEntry={!showPassword}
+                autoCapitalize="none"
+              />
+              <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={styles.eyeIcon} activeOpacity={0.7}>
+                <Icon name={showPassword ? "EyeOff" : "Eye"} size={18} color={theme.colors.textTertiary} />
               </TouchableOpacity>
-            ))}
+            </View>
+
+            <TouchableOpacity style={styles.button} onPress={handleRegister} disabled={loading} activeOpacity={0.8}>
+              {loading ? (
+                <ActivityIndicator color={theme.colors.textPrimary} />
+              ) : (
+                <Text style={styles.buttonText}>Registrar Cuenta</Text>
+              )}
+            </TouchableOpacity>
+
+            <TouchableOpacity onPress={onLoginPress} style={styles.switchContainer} activeOpacity={0.7}>
+              <Text style={styles.switchText}>
+                ¿Ya tienes cuenta? <Text style={styles.switchHighlight}>Inicia sesión aquí</Text>
+              </Text>
+            </TouchableOpacity>
           </View>
-
-          <Text style={styles.label}>Contraseña</Text>
-          <TextInput
-            style={styles.input}
-            value={password}
-            onChangeText={setPassword}
-            placeholder="Mínimo 6 caracteres"
-            placeholderTextColor={theme.colors.textMuted}
-            secureTextEntry
-            autoCapitalize="none"
-          />
-
-          <TouchableOpacity style={styles.button} onPress={handleRegister} disabled={loading}>
-            {loading ? (
-              <ActivityIndicator color={theme.colors.textPrimary} />
-            ) : (
-              <Text style={styles.buttonText}>Registrar Cuenta</Text>
-            )}
-          </TouchableOpacity>
-
-          <TouchableOpacity onPress={onLoginPress} style={styles.switchContainer}>
-            <Text style={styles.switchText}>
-              ¿Ya tienes cuenta? <Text style={styles.switchHighlight}>Inicia sesión aquí</Text>
-            </Text>
-          </TouchableOpacity>
-        </View>
-      </SectionCard>
-    </ScrollView>
+        </SectionCard>
+      </ScrollView>
+    </SVGBackground>
   );
 }
 
 const getStyles = (theme: AppTheme) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: theme.colors.bg,
+    backgroundColor: 'transparent',
   },
   content: {
-    padding: 16,
+    padding: 24,
     justifyContent: 'center',
     flexGrow: 1,
   },
-  title: {
-    fontSize: 22,
-    fontWeight: '700',
-    color: theme.colors.textPrimary,
-    marginTop: 12,
+  card: {
+    backgroundColor: theme.colors.surface + 'D9', // Glassmorphism translucency (~85% opacity)
+    borderColor: theme.colors.surfaceBorder,
+    borderWidth: 1.5,
+    borderRadius: 28,
+    padding: 24,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 16 },
+    shadowOpacity: 0.3,
+    shadowRadius: 24,
+    elevation: 8,
+    marginVertical: 20,
   },
-  subtitle: {
-    fontSize: 12,
-    color: theme.colors.textTertiary,
-    marginTop: 4,
+  brandContainer: {
+    alignItems: 'center',
     marginBottom: 20,
   },
+  logoCircle: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: theme.colors.greenBg,
+    borderWidth: 1.5,
+    borderColor: theme.colors.greenBorder,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 12,
+    // Soft shadow for the logo
+    shadowColor: theme.colors.green,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  brandText: {
+    fontSize: 24,
+    fontWeight: '800',
+    color: theme.colors.textPrimary,
+    letterSpacing: 0.5,
+  },
+  brandTagline: {
+    fontSize: 12,
+    color: theme.colors.textTertiary,
+    marginTop: 2,
+    fontWeight: '500',
+    textAlign: 'center',
+  },
   form: {
-    gap: 12,
+    gap: 14,
   },
   label: {
     fontSize: 12,
-    fontWeight: '600',
+    fontWeight: '700',
     color: theme.colors.textSecondary,
-    marginBottom: 4,
+    marginBottom: -6,
+    marginLeft: 4,
+  },
+  inputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: theme.colors.surfaceLight,
+    borderWidth: 1.5,
+    borderColor: theme.colors.surfaceBorder,
+    borderRadius: 16,
+    paddingHorizontal: 16,
+    height: 52,
+  },
+  inputContainerFocused: {
+    borderColor: theme.colors.green,
+    backgroundColor: theme.colors.surface,
+    // Glow effect for focused input
+    shadowColor: theme.colors.green,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+  },
+  inputIcon: {
+    marginRight: 12,
   },
   input: {
-    backgroundColor: theme.colors.surfaceLight,
-    borderWidth: 1,
-    borderColor: theme.colors.surfaceBorder,
-    borderRadius: 12,
-    paddingVertical: 10,
-    paddingHorizontal: 16,
+    flex: 1,
     color: theme.colors.textPrimary,
     fontSize: 14,
-    marginBottom: 12,
+    height: '100%',
+  },
+  eyeIcon: {
+    padding: 8,
   },
   barriosContainer: {
     flexDirection: 'row',
     gap: 10,
-    marginBottom: 12,
+    marginTop: 4,
   },
   barrioOption: {
     flex: 1,
     backgroundColor: theme.colors.surfaceLight,
-    borderWidth: 1,
+    borderWidth: 1.5,
     borderColor: theme.colors.surfaceBorder,
-    borderRadius: 12,
+    borderRadius: 16,
     paddingVertical: 12,
     alignItems: 'center',
+    justifyContent: 'center',
+    height: 48,
   },
   barrioOptionSelected: {
     borderColor: theme.colors.green,
     backgroundColor: theme.colors.greenBg,
+    // Glow effect for selected option
+    shadowColor: theme.colors.green,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 1,
   },
   barrioText: {
     color: theme.colors.textSecondary,
@@ -229,42 +341,58 @@ const getStyles = (theme: AppTheme) => StyleSheet.create({
   },
   barrioTextSelected: {
     color: theme.colors.textPrimary,
+    fontWeight: '700',
   },
   button: {
     backgroundColor: theme.colors.green,
-    paddingVertical: 12,
-    borderRadius: 12,
+    height: 52,
+    borderRadius: 16,
+    justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 16,
+    marginTop: 12,
+    shadowColor: theme.colors.green,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 6,
   },
   buttonText: {
     color: theme.colors.textPrimary,
     fontWeight: '700',
-    fontSize: 14,
+    fontSize: 15,
+    letterSpacing: 0.5,
   },
   errorContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
     backgroundColor: theme.colors.redBg,
     borderWidth: 1,
     borderColor: theme.colors.redBorder,
-    borderRadius: 12,
-    padding: 12,
-    marginBottom: 16,
+    borderRadius: 16,
+    padding: 14,
+    marginBottom: 10,
+    gap: 10,
+  },
+  errorIcon: {
+    marginTop: 1,
   },
   errorText: {
     color: theme.colors.textPrimary,
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: '600',
+    flex: 1,
   },
   switchContainer: {
     alignItems: 'center',
-    marginTop: 16,
+    marginTop: 8,
+    paddingVertical: 8,
   },
   switchText: {
     color: theme.colors.textMuted,
-    fontSize: 12,
+    fontSize: 13,
   },
   switchHighlight: {
     color: theme.colors.green,
-    fontWeight: '600',
+    fontWeight: '700',
   },
 });

@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import Icon from '../components/atomic/Icon';
 import { SectionCard } from '../components/layout/SectionCard';
+import { SVGBackground } from '../components/layout/SVGBackground';
 import { useAuth } from '../context/AuthContext';
 import { AppTheme, useAppTheme } from '../theme/ThemeContext';
 
@@ -17,6 +19,10 @@ export function LoginScreen({ onRegisterPress }: LoginScreenProps) {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const [emailFocused, setEmailFocused] = useState(false);
+  const [passwordFocused, setPasswordFocused] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -35,136 +41,228 @@ export function LoginScreen({ onRegisterPress }: LoginScreenProps) {
   };
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <SectionCard>
-        <Text style={styles.title}>Iniciar Sesión</Text>
-        <Text style={styles.subtitle}>Ingresa tus credenciales para ingresar a la red</Text>
-
-        {error && (
-          <View style={styles.errorContainer}>
-            <Text style={styles.errorText}>{error}</Text>
+    <SVGBackground>
+      <ScrollView style={styles.container} contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+        <SectionCard style={styles.card}>
+          {/* Header branding */}
+          <View style={styles.brandContainer}>
+            <View style={styles.logoCircle}>
+              <Icon name="ShieldAlert" size={32} color={theme.colors.red} />
+            </View>
+            <Text style={styles.brandText}>Barrio Alerta</Text>
+            <Text style={styles.brandTagline}>Red de Seguridad Comunitaria</Text>
           </View>
-        )}
 
-        <View style={styles.form}>
-          <Text style={styles.label}>Correo Electrónico</Text>
-          <TextInput
-            style={styles.input}
-            value={email}
-            onChangeText={setEmail}
-            placeholder="correo@ejemplo.com"
-            placeholderTextColor={theme.colors.textMuted}
-            keyboardType="email-address"
-            autoCapitalize="none"
-          />
+          <Text style={styles.title}>Iniciar Sesión</Text>
+          <Text style={styles.subtitle}>Ingresa tus credenciales para ingresar a la red</Text>
 
-          <Text style={styles.label}>Contraseña</Text>
-          <TextInput
-            style={styles.input}
-            value={password}
-            onChangeText={setPassword}
-            placeholder="••••••••"
-            placeholderTextColor={theme.colors.textMuted}
-            secureTextEntry
-            autoCapitalize="none"
-          />
+          {error && (
+            <View style={styles.errorContainer}>
+              <Icon name="ShieldAlert" size={18} color={theme.colors.red} style={styles.errorIcon} />
+              <Text style={styles.errorText}>{error}</Text>
+            </View>
+          )}
 
-          <TouchableOpacity style={styles.button} onPress={handleLogin} disabled={loading}>
-            {loading ? (
-              <ActivityIndicator color={theme.colors.textPrimary} />
-            ) : (
-              <Text style={styles.buttonText}>Entrar</Text>
-            )}
-          </TouchableOpacity>
+          <View style={styles.form}>
+            <Text style={styles.label}>Correo Electrónico</Text>
+            <View style={[styles.inputContainer, emailFocused && styles.inputContainerFocused]}>
+              <Icon name="Mail" size={18} color={emailFocused ? theme.colors.red : theme.colors.textMuted} style={styles.inputIcon} />
+              <TextInput
+                style={styles.input}
+                value={email}
+                onChangeText={setEmail}
+                onFocus={() => setEmailFocused(true)}
+                onBlur={() => setEmailFocused(false)}
+                placeholder="correo@ejemplo.com"
+                placeholderTextColor={theme.colors.textMuted}
+                keyboardType="email-address"
+                autoCapitalize="none"
+              />
+            </View>
 
-          <TouchableOpacity onPress={onRegisterPress} style={styles.switchContainer}>
-            <Text style={styles.switchText}>
-              ¿No tienes cuenta? <Text style={styles.switchHighlight}>Regístrate aquí</Text>
-            </Text>
-          </TouchableOpacity>
-        </View>
-      </SectionCard>
-    </ScrollView>
+            <Text style={styles.label}>Contraseña</Text>
+            <View style={[styles.inputContainer, passwordFocused && styles.inputContainerFocused]}>
+              <Icon name="Lock" size={18} color={passwordFocused ? theme.colors.red : theme.colors.textMuted} style={styles.inputIcon} />
+              <TextInput
+                style={styles.input}
+                value={password}
+                onChangeText={setPassword}
+                onFocus={() => setPasswordFocused(true)}
+                onBlur={() => setPasswordFocused(false)}
+                placeholder="••••••••"
+                placeholderTextColor={theme.colors.textMuted}
+                secureTextEntry={!showPassword}
+                autoCapitalize="none"
+              />
+              <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={styles.eyeIcon} activeOpacity={0.7}>
+                <Icon name={showPassword ? "EyeOff" : "Eye"} size={18} color={theme.colors.textTertiary} />
+              </TouchableOpacity>
+            </View>
+
+            <TouchableOpacity style={styles.button} onPress={handleLogin} disabled={loading} activeOpacity={0.8}>
+              {loading ? (
+                <ActivityIndicator color={theme.colors.white} />
+              ) : (
+                <Text style={styles.buttonText}>Entrar</Text>
+              )}
+            </TouchableOpacity>
+
+            <TouchableOpacity onPress={onRegisterPress} style={styles.switchContainer} activeOpacity={0.7}>
+              <Text style={styles.switchText}>
+                ¿No tienes cuenta? <Text style={styles.switchHighlight}>Regístrate aquí</Text>
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </SectionCard>
+      </ScrollView>
+    </SVGBackground>
   );
 }
 
 const getStyles = (theme: AppTheme) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: theme.colors.bg,
+    backgroundColor: 'transparent',
   },
   content: {
-    padding: 16,
+    padding: 24,
     justifyContent: 'center',
     flexGrow: 1,
   },
+  card: {
+    backgroundColor: theme.colors.surface + 'D9',
+    alignItems: 'center',
+    padding: 24,
+  },
+  brandContainer: {
+    alignItems: 'center',
+    marginBottom: 24,
+  },
+  logoCircle: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: theme.colors.redBg,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  brandText: {
+    fontSize: 24,
+    fontWeight: '800',
+    color: theme.colors.textPrimary,
+    letterSpacing: 0.5,
+  },
+  brandTagline: {
+    fontSize: 12,
+    color: theme.colors.textTertiary,
+    marginTop: 2,
+    fontWeight: '500',
+  },
   title: {
-    fontSize: 22,
+    fontSize: 20,
     fontWeight: '700',
     color: theme.colors.textPrimary,
-    marginTop: 12,
+    textAlign: 'left',
   },
   subtitle: {
-    fontSize: 12,
+    fontSize: 13,
     color: theme.colors.textTertiary,
     marginTop: 4,
     marginBottom: 20,
+    lineHeight: 18,
   },
   form: {
-    gap: 12,
+    gap: 16,
   },
   label: {
     fontSize: 12,
-    fontWeight: '600',
+    fontWeight: '700',
     color: theme.colors.textSecondary,
-    marginBottom: 4,
+    marginBottom: -8, // Pulls label closer to the input field
+    marginLeft: 4,
+  },
+  inputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: theme.colors.surfaceLight,
+    borderWidth: 1.5,
+    borderColor: theme.colors.surfaceBorder,
+    borderRadius: 16,
+    paddingHorizontal: 16,
+    height: 52,
+  },
+  inputContainerFocused: {
+    borderColor: theme.colors.red,
+    backgroundColor: theme.colors.surface,
+    // Glow effect for focused input
+    shadowColor: theme.colors.red,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+  },
+  inputIcon: {
+    marginRight: 12,
   },
   input: {
-    backgroundColor: theme.colors.surfaceLight,
-    borderWidth: 1,
-    borderColor: theme.colors.surfaceBorder,
-    borderRadius: 12,
-    paddingVertical: 10,
-    paddingHorizontal: 16,
+    flex: 1,
     color: theme.colors.textPrimary,
     fontSize: 14,
-    marginBottom: 12,
+    height: '100%',
+  },
+  eyeIcon: {
+    padding: 8,
   },
   button: {
     backgroundColor: theme.colors.red,
-    paddingVertical: 12,
-    borderRadius: 12,
+    height: 52,
+    borderRadius: 16,
+    justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 16,
+    marginTop: 12,
+    shadowColor: theme.colors.red,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 6,
   },
   buttonText: {
-    color: theme.colors.textPrimary,
+    color: theme.colors.white,
     fontWeight: '700',
-    fontSize: 14,
+    fontSize: 15,
+    letterSpacing: 0.5,
   },
   errorContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
     backgroundColor: theme.colors.redBg,
     borderWidth: 1,
     borderColor: theme.colors.redBorder,
-    borderRadius: 12,
-    padding: 12,
+    borderRadius: 16,
+    padding: 14,
     marginBottom: 16,
+    gap: 10,
+  },
+  errorIcon: {
+    marginTop: 1,
   },
   errorText: {
     color: theme.colors.textPrimary,
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: '600',
+    flex: 1,
   },
   switchContainer: {
     alignItems: 'center',
-    marginTop: 16,
+    marginTop: 12,
+    paddingVertical: 8,
   },
   switchText: {
     color: theme.colors.textTertiary,
-    fontSize: 12,
+    fontSize: 13,
   },
   switchHighlight: {
     color: theme.colors.green,
-    fontWeight: '600',
+    fontWeight: '700',
   },
 });
