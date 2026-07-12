@@ -8,10 +8,12 @@ import { SectionCard } from '../components/layout/SectionCard';
 import { AlertCard } from '../components/molecules/AlertCard';
 import { SOSButton } from '../components/molecules/SOSButton';
 import { BAColors } from '../constants/colors';
-import { CURRENT_USER_ID } from '../constants/currentUser';
+import { useAuth } from '../context/AuthContext';
 
 export function DashboardScreen() {
   const [focusCount, forceUpdate] = useState(0);
+  const { user } = useAuth();
+  const userId = user?.id ?? 0;
 
   // Refresca los datos del repositorio cada vez que el tab obtiene foco
   useFocusEffect(
@@ -27,10 +29,10 @@ export function DashboardScreen() {
     fechaSeleccionada,
     cambiarDia,
     formatearFechaISO,
-  } = useDashboardController(CURRENT_USER_ID, focusCount);
+  } = useDashboardController(userId, focusCount);
 
   const esHoy = formatearFechaISO(fechaSeleccionada) === formatearFechaISO(new Date());
-  const sos = useSOSController(CURRENT_USER_ID, () => {
+  const sos = useSOSController(userId, () => {
     forceUpdate((n) => n + 1);
   });
 

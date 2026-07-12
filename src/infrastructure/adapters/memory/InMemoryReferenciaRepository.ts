@@ -41,6 +41,10 @@ export class InMemoryReferenciaRepository implements IReferenciaRepository {
     return this.barrios.find((b) => b.id === id);
   }
 
+  async getBarrios(): Promise<Barrio[]> {
+    return this.barrios;
+  }
+
   async getCuadranteById(id: number): Promise<Cuadrante | undefined> {
     return this.cuadrantes.find((c) => c.id === id);
   }

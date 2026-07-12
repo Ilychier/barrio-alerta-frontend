@@ -1,22 +1,35 @@
 import { useState } from 'react';
-import { View, StyleSheet, useWindowDimensions, Pressable, Text, TouchableOpacity, Animated } from 'react-native';
+import { View, StyleSheet, useWindowDimensions, Pressable, Text, TouchableOpacity, Animated, ActivityIndicator } from 'react-native';
 import { Slot, useRouter, usePathname } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { BAColors } from '@/presentation/constants/colors';
 import { Header } from '@/presentation/components/layout/Header';
 import { useDashboardController } from '@/application/controllers/useDashboardController';
-import { CURRENT_USER_ID } from '@/presentation/constants/currentUser';
 import { IconRenderer } from '@/presentation/components/atomic/IconRenderer';
+import { AuthProvider, useAuth } from '@/presentation/context/AuthContext';
+import { LoginScreen } from '@/presentation/screens/LoginScreen';
+import { RegisterScreen } from '@/presentation/screens/RegisterScreen';
 
-export default function TabLayout() {
+export default function RootLayout() {
+  return (
+    <AuthProvider>
+      <TabLayout />
+    </AuthProvider>
+  );
+}
+
+function TabLayout() {
+  const { user, isAuthenticated, loading, logout } = useAuth();
+  const [showRegister, setShowRegister] = useState(false);
+
   const { width } = useWindowDimensions();
   const isSmallScreen = width < 768;
   const router = useRouter();
   const pathname = usePathname();
   const insets = useSafeAreaInsets();
 
-  const { usuario, barrio, cuadrante } = useDashboardController(CURRENT_USER_ID);
+  const { usuario, barrio, cuadrante } = useDashboardController(user?.id ?? 0);
 
   const [visible, setVisible] = useState(false);
   
@@ -57,7 +70,7 @@ export default function TabLayout() {
     });
   };
 
-  const handleNavigate = (route: string) => {
+  const handleNavigate = (route: any) => {
     router.push(route);
     closeMenu();
   };
@@ -68,6 +81,21 @@ export default function TabLayout() {
     }
     return pathname.startsWith(route);
   };
+
+  if (loading) {
+    return (
+      <View style={{ flex: 1, backgroundColor: BAColors.bg, justifyContent: 'center', alignItems: 'center' }}>
+        <ActivityIndicator size="large" color={BAColors.green} />
+      </View>
+    );
+  }
+
+  if (!isAuthenticated) {
+    if (showRegister) {
+      return <RegisterScreen onLoginPress={() => setShowRegister(false)} />;
+    }
+    return <LoginScreen onRegisterPress={() => setShowRegister(true)} />;
+  }
 
   return (
     <View style={styles.root}>
@@ -87,9 +115,9 @@ export default function TabLayout() {
 
       {/* Hamburger Menu slide-out drawer */}
       {visible && (
-        <View style={StyleSheet.absoluteFillObject}>
+        <View style={StyleSheet.absoluteFill}>
           {/* Dark translucent backdrop */}
-          <Pressable style={StyleSheet.absoluteFillObject} onPress={closeMenu}>
+          <Pressable style={StyleSheet.absoluteFill} onPress={closeMenu}>
             <Animated.View style={[styles.backdrop, { opacity: fadeAnim }]} />
           </Pressable>
 
@@ -188,6 +216,24 @@ export default function TabLayout() {
                   Ajustes Canal
                 </Text>
               </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={async () => {
+                  closeMenu();
+                  await logout();
+                }}
+                style={styles.navLink}
+                activeOpacity={0.7}
+              >
+                <IconRenderer
+                  name="LogOut"
+                  size={16}
+                  color={BAColors.red}
+                />
+                <Text style={[styles.navLinkText, { color: BAColors.red }]}>
+                  Cerrar Sesión
+                </Text>
+              </TouchableOpacity>
             </View>
 
             {/* Footer */}
@@ -211,7 +257,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   backdrop: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     backgroundColor: 'rgba(0, 0, 0, 0.75)',
   },
   drawerPanel: {

@@ -6,10 +6,11 @@ import { SectionCard } from '../components/layout/SectionCard';
 import { DescriptionSelector } from '../components/molecules/DescriptionSelector';
 import { EvidenceCapture } from '../components/molecules/EvidenceCapture';
 import { BAColors } from '../constants/colors';
-import { CURRENT_USER_ID } from '../constants/currentUser';
+import { useAuth } from '../context/AuthContext';
 
 export function ReportarScreen() {
-  const ctrl = useReporteController(CURRENT_USER_ID);
+  const { user } = useAuth();
+  const ctrl = useReporteController(user?.id ?? 0);
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
