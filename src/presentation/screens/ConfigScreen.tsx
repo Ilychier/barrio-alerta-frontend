@@ -7,12 +7,14 @@ import { SectionBadge } from '../components/atomic/SectionBadge';
 import { ToggleSwitch } from '../components/atomic/ToggleSwitch';
 import { SectionCard } from '../components/layout/SectionCard';
 import { BAColors } from '../constants/colors';
-import { CURRENT_USER_ID } from '../constants/currentUser';
+import { useAuth } from '../context/AuthContext';
 
 export function ConfigScreen() {
   const router = useRouter();
-  const { config, handleUpdate } = useConfiguracionController(CURRENT_USER_ID);
-  const { barrio, cuadrante } = useDashboardController(CURRENT_USER_ID);
+  const { user } = useAuth();
+  const userId = user?.id ?? 0;
+  const { config, handleUpdate } = useConfiguracionController(userId);
+  const { barrio, cuadrante } = useDashboardController(userId);
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
@@ -54,7 +56,7 @@ export function ConfigScreen() {
           <View style={[styles.infoRow, styles.infoRowLast]}>
             <Text style={styles.infoLabel}>Barrio de Cobertura:</Text>
             <Text style={styles.infoValue}>
-              {barrio?.nombre} (Soacha, COL)
+              {barrio?.nombre}
             </Text>
           </View>
         </View>

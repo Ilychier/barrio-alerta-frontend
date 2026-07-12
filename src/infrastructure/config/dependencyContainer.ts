@@ -1,13 +1,16 @@
 import { IAlertaRepository } from '../../domain/ports/IAlertaRepository';
 import { IConfiguracionRepository } from '../../domain/ports/IConfiguracionRepository';
 import { IReferenciaRepository } from '../../domain/ports/IReferenciaRepository';
+import { IAuthRepository } from '../../domain/ports/IAuthRepository';
 
 import { InMemoryAlertaRepository } from '../adapters/memory/InMemoryAlertaRepository';
 import { InMemoryConfiguracionRepository } from '../adapters/memory/InMemoryConfiguracionRepository';
 import { InMemoryReferenciaRepository } from '../adapters/memory/InMemoryReferenciaRepository';
+import { InMemoryAuthRepository } from '../adapters/memory/InMemoryAuthRepository';
 import { ApiReferenciaRepository } from '../adapters/api/ApiReferenciaRepository';
 import { HttpAlertaRepository } from '../adapters/api/HttpAlertaRepository';
 import { HttpConfiguracionRepository } from '../adapters/api/HttpConfiguracionRepository';
+import { HttpAuthRepository } from '../adapters/api/HttpAuthRepository';
 
 import { DispararSOSUseCase } from '../../application/usecases/DispararSOSUseCase';
 import { ReportarIncidenteUseCase } from '../../application/usecases/ReportarIncidenteUseCase';
@@ -22,6 +25,7 @@ export class DependencyContainer {
   private readonly _alertaRepo: IAlertaRepository;
   private readonly _configRepo: IConfiguracionRepository;
   private readonly _referenciaRepo: IReferenciaRepository;
+  private readonly _authRepo: IAuthRepository;
 
   private constructor() {
     const repoType = getRepositoryType();
@@ -31,12 +35,14 @@ export class DependencyContainer {
         this._alertaRepo = new HttpAlertaRepository();
         this._configRepo = new HttpConfiguracionRepository();
         this._referenciaRepo = new ApiReferenciaRepository();
+        this._authRepo = new HttpAuthRepository();
         break;
       case 'memory':
       default:
         this._alertaRepo = new InMemoryAlertaRepository();
         this._configRepo = new InMemoryConfiguracionRepository();
         this._referenciaRepo = new InMemoryReferenciaRepository();
+        this._authRepo = new InMemoryAuthRepository();
         break;
     }
   }
@@ -59,6 +65,10 @@ export class DependencyContainer {
 
   getReferenciaRepository(): IReferenciaRepository {
     return this._referenciaRepo;
+  }
+
+  getAuthRepository(): IAuthRepository {
+    return this._authRepo;
   }
 
   // --- Casos de Uso ---

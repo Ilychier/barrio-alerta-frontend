@@ -59,6 +59,32 @@ export class ApiReferenciaRepository implements IReferenciaRepository {
     }
   }
 
+  async getBarrios(): Promise<Barrio[]> {
+    try {
+      const response = await this.http.get<any>('/barrios');
+      const data = response.data && response.data.content ? response.data.content : response.data;
+      if (Array.isArray(data)) {
+        return data.map(
+          (b) => new Barrio(
+            b.id,
+            b.nombre,
+            b.cuadrante?.id || b.cuadrante_id
+          )
+        );
+      }
+      return [];
+    } catch (error) {
+      if (isAxiosError(error)) {
+        console.warn(
+          `[ApiReferenciaRepository] Failed to getBarrios() [Status: ${error.response?.status}]. Falling back to local data.`
+        );
+      } else {
+        console.warn('[ApiReferenciaRepository] Failed to getBarrios(). Falling back to local data:', error);
+      }
+      return this.fallback.getBarrios();
+    }
+  }
+
   async getCuadranteById(id: number): Promise<Cuadrante | undefined> {
     try {
       const response = await this.http.get<any>(`/cuadrantes/${id}`);
