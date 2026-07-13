@@ -1,10 +1,10 @@
 import { isAxiosError } from 'axios';
-import { IReferenciaRepository } from '../../../domain/ports/IReferenciaRepository';
-import { Usuario } from '../../../domain/entities/usuario';
 import { Barrio } from '../../../domain/entities/barrio';
-import { Cuadrante } from '../../../domain/entities/cuadrante';
 import { Categoria } from '../../../domain/entities/categoria';
 import { CategoriaDescripcion } from '../../../domain/entities/categoriaDescripcion';
+import { Cuadrante } from '../../../domain/entities/cuadrante';
+import { Usuario } from '../../../domain/entities/usuario';
+import { IReferenciaRepository } from '../../../domain/ports/IReferenciaRepository';
 import { InMemoryReferenciaRepository } from '../memory/InMemoryReferenciaRepository';
 import { HttpGenericService } from './HttpGenericService';
 
@@ -56,6 +56,32 @@ export class ApiReferenciaRepository implements IReferenciaRepository {
         console.warn(`[ApiReferenciaRepository] Failed to getBarrioById(${id}). Falling back to local data:`, error);
       }
       return this.fallback.getBarrioById(id);
+    }
+  }
+
+  async getBarrios(): Promise<Barrio[]> {
+    try {
+      const response = await this.http.get<any>('/barrios');
+      const data = response.data && response.data.content ? response.data.content : response.data;
+      if (Array.isArray(data)) {
+        return data.map(
+          (b) => new Barrio(
+            b.id,
+            b.nombre,
+            b.cuadrante?.id || b.cuadrante_id
+          )
+        );
+      }
+      return [];
+    } catch (error) {
+      if (isAxiosError(error)) {
+        console.warn(
+          `[ApiReferenciaRepository] Failed to getBarrios() [Status: ${error.response?.status}]. Falling back to local data.`
+        );
+      } else {
+        console.warn('[ApiReferenciaRepository] Failed to getBarrios(). Falling back to local data:', error);
+      }
+      return this.fallback.getBarrios();
     }
   }
 

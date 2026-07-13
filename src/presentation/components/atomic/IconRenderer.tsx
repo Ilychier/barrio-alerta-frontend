@@ -1,5 +1,5 @@
 import { StyleSheet, Text, View } from 'react-native';
-import { BAColors } from '../../constants/colors';
+import { useAppTheme } from '../../theme/ThemeContext';
 
 const ICON_MAP: Record<string, string> = {
   ShieldAlertOutline: '🚨',
@@ -33,8 +33,9 @@ interface IconRendererProps {
 }
 
 export function IconRenderer({ name, size = 16, color }: IconRendererProps) {
+  const { theme } = useAppTheme();
   const symbol = ICON_MAP[name] || '•';
-  const iconColor = color || BAColors.textTertiary;
+  const iconColor = color || theme.colors.textTertiary;
 
   return (
     <View style={[styles.container, { width: size, height: size }]}>

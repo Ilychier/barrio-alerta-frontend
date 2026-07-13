@@ -1,5 +1,5 @@
 import { View, Text, Pressable, StyleSheet } from 'react-native';
-import { BAColors } from '../../constants/colors';
+import { useAppTheme, AppTheme } from '../../theme/ThemeContext';
 
 interface ToggleSwitchProps {
   value: boolean;
@@ -9,6 +9,9 @@ interface ToggleSwitchProps {
 }
 
 export function ToggleSwitch({ value, onToggle, label, description }: ToggleSwitchProps) {
+  const { theme } = useAppTheme();
+  const styles = getStyles(theme);
+
   return (
     <View style={styles.container}>
       <View style={styles.textContainer}>
@@ -29,16 +32,16 @@ const SWITCH_WIDTH = 40;
 const SWITCH_HEIGHT = 22;
 const THUMB_SIZE = 18;
 
-const styles = StyleSheet.create({
+const getStyles = (theme: AppTheme) => StyleSheet.create({
   container: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: BAColors.surfaceLight,
+    backgroundColor: theme.colors.surfaceLight,
     padding: 16,
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: BAColors.border,
+    borderColor: theme.colors.border,
   },
   textContainer: {
     flex: 1,
@@ -47,11 +50,11 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 12,
     fontWeight: '700',
-    color: BAColors.textPrimary,
+    color: theme.colors.textPrimary,
   },
   description: {
     fontSize: 11,
-    color: BAColors.textMuted,
+    color: theme.colors.textMuted,
     marginTop: 2,
   },
   track: {
@@ -62,16 +65,16 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   trackActive: {
-    backgroundColor: BAColors.green,
+    backgroundColor: theme.colors.green,
   },
   trackInactive: {
-    backgroundColor: BAColors.surfaceBorder,
+    backgroundColor: theme.colors.surfaceBorder,
   },
   thumb: {
     width: THUMB_SIZE,
     height: THUMB_SIZE,
     borderRadius: THUMB_SIZE / 2,
-    backgroundColor: BAColors.bg,
+    backgroundColor: theme.colors.bg,
   },
   thumbActive: {
     alignSelf: 'flex-end',
