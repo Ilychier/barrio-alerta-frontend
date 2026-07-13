@@ -25,9 +25,12 @@ export class ObtenerAlertasUseCase {
   ) {}
 
   async execute(usuarioId: number, fecha?: string): Promise<ObtenerAlertasResponse> {
+    const userRes = await this.referenciaRepo.getUsuarioById(usuarioId);
+    const barrioId = userRes?.barrio_id;
+
     const [config, todas] = await Promise.all([
       this.configRepo.obtenerPorUsuarioId(usuarioId),
-      this.alertaRepo.obtenerTodas(fecha),
+      this.alertaRepo.obtenerTodas(fecha, barrioId),
     ]);
 
     const filtradas = todas.filter((a) => {

@@ -1,5 +1,6 @@
 import { create } from 'axios';
 import type { AxiosInstance } from 'axios';
+import { TokenStorage } from '../storage/TokenStorage';
 
 export class HttpGenericService {
   private static instance: HttpGenericService;
@@ -19,6 +20,14 @@ export class HttpGenericService {
       headers: {
         'Content-Type': 'application/json',
       },
+    });
+
+    this.client.interceptors.request.use(async (config) => {
+      const token = await TokenStorage.getToken();
+      if (token && config.headers) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
+      return config;
     });
   }
 

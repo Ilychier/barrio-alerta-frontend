@@ -7,6 +7,7 @@ import { CategoriaDescripcion } from '../entities/categoriaDescripcion';
 export interface IReferenciaRepository {
   getUsuarioById(id: number): Promise<Usuario | undefined>;
   getBarrioById(id: number): Promise<Barrio | undefined>;
+  getBarrios(): Promise<Barrio[]>;
   getCuadranteById(id: number): Promise<Cuadrante | undefined>;
   getCategorias(): Promise<Categoria[]>;
   getCategoriaById(id: number): Promise<Categoria | undefined>;

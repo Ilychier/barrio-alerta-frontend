@@ -1,22 +1,37 @@
 import { Slot, usePathname, useRouter } from 'expo-router';
 import { useState } from 'react';
-import { Animated, Pressable, StyleSheet, Text, TouchableOpacity, useWindowDimensions, View } from 'react-native';
+import { ActivityIndicator, Animated, Pressable, StyleSheet, Text, TouchableOpacity, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { useDashboardController } from '@/application/controllers/useDashboardController';
+import Icon from '@/presentation/components/atomic/Icon';
 import { IconRenderer } from '@/presentation/components/atomic/IconRenderer';
 import { Header } from '@/presentation/components/layout/Header';
-import { BAColors } from '@/presentation/constants/colors';
-import { CURRENT_USER_ID } from '@/presentation/constants/currentUser';
+import { AuthProvider, useAuth } from '@/presentation/context/AuthContext';
+import { LoginScreen } from '@/presentation/screens/LoginScreen';
+import { RegisterScreen } from '@/presentation/screens/RegisterScreen';
+import { AppTheme, ThemeProvider, useAppTheme } from '@/presentation/theme/ThemeContext';
 
-export default function TabLayout() {
+export default function RootLayout() {
+  return (
+    <AuthProvider>
+      <ThemeProvider>
+        <TabLayout />
+      </ThemeProvider>
+    </AuthProvider>
+  );
+}
+
+function TabLayout() {
+  const { user, barrio, cuadrante, isAuthenticated, loading, logout } = useAuth();
+  const { theme } = useAppTheme();
+  const styles = getStyles(theme);
+  const [showRegister, setShowRegister] = useState(false);
+
   const { width } = useWindowDimensions();
   const isSmallScreen = width < 768;
   const router = useRouter();
   const pathname = usePathname();
   const insets = useSafeAreaInsets();
-
-  const { usuario, barrio, cuadrante } = useDashboardController(CURRENT_USER_ID);
 
   const [visible, setVisible] = useState(false);
   
@@ -57,7 +72,7 @@ export default function TabLayout() {
     });
   };
 
-  const handleNavigate = (route: string) => {
+  const handleNavigate = (route: any) => {
     router.push(route);
     closeMenu();
   };
@@ -69,13 +84,28 @@ export default function TabLayout() {
     return pathname.startsWith(route);
   };
 
+  if (loading) {
+    return (
+      <View style={{ flex: 1, backgroundColor: theme.colors.bg, justifyContent: 'center', alignItems: 'center' }}>
+        <ActivityIndicator size="large" color={theme.colors.green} />
+      </View>
+    );
+  }
+
+  if (!isAuthenticated) {
+    if (showRegister) {
+      return <RegisterScreen onLoginPress={() => setShowRegister(false)} />;
+    }
+    return <LoginScreen onRegisterPress={() => setShowRegister(true)} />;
+  }
+
   return (
     <View style={styles.root}>
       {/* Header with hamburger menu toggle - badges conditionally visible outside based on screen size */}
       <Header
         barrioNombre={barrio?.nombre}
         cuadranteNombre={cuadrante?.nombre_unidad}
-        usuarioNombre={usuario?.nombre}
+        usuarioNombre={user?.nombre}
         isMobile={isSmallScreen}
         onMenuPress={openMenu}
       />
@@ -87,9 +117,9 @@ export default function TabLayout() {
 
       {/* Hamburger Menu slide-out drawer */}
       {visible && (
-        <View style={StyleSheet.absoluteFillObject}>
+        <View style={StyleSheet.absoluteFill}>
           {/* Dark translucent backdrop */}
-          <Pressable style={StyleSheet.absoluteFillObject} onPress={closeMenu}>
+          <Pressable style={StyleSheet.absoluteFill} onPress={closeMenu}>
             <Animated.View style={[styles.backdrop, { opacity: fadeAnim }]} />
           </Pressable>
 
@@ -107,33 +137,32 @@ export default function TabLayout() {
             {/* Header inside Menu */}
             <View style={styles.drawerHeader}>
               <View style={styles.drawerLogoContainer}>
-                <IconRenderer name="Shield" size={18} color={BAColors.red} />
+                <Icon name="ShieldAlert" size={24} style={{ marginTop: 2 }} color={theme.colors.textPrimary} />
                 <Text style={styles.drawerLogoText}>Barrio Alerta</Text>
               </View>
               <TouchableOpacity onPress={closeMenu} style={styles.closeButton} activeOpacity={0.7}>
-                <IconRenderer name="X" size={20} color={BAColors.textPrimary} />
+                <IconRenderer name="X" size={20} color={theme.colors.textPrimary} />
               </TouchableOpacity>
             </View>
 
             {/* Conditionally include username and location badges ONLY on smaller screens */}
             {isSmallScreen && (
               <View style={styles.drawerSection}>
-                {usuario?.nombre && (
+                {user?.nombre && (
                   <View style={styles.drawerUserBadge}>
-                    <IconRenderer name="User" size={14} color={BAColors.green} />
+                    <Icon name="User" size={14} color={theme.colors.green} />
                     <View>
                       <Text style={styles.drawerUserTitle}>Usuario Activo</Text>
-                      <Text style={styles.drawerUserName}>{usuario.nombre}</Text>
+                      <Text style={styles.drawerUserName}>{user.nombre}</Text>
                     </View>
                   </View>
                 )}
                 {barrio?.nombre && cuadrante?.nombre_unidad && (
                   <View style={styles.drawerLocationBadge}>
-                    <IconRenderer name="MapPin" size={14} color={BAColors.green} />
+                    <Icon name="MapPin" size={14} color={theme.colors.green} />
                     <View style={styles.locationTextContainer}>
                       <Text style={styles.drawerLocationTitle}>Barrio / CAI</Text>
-                      <Text style={styles.drawerLocationText}>{barrio.nombre}</Text>
-                      <Text style={styles.drawerCuadranteText}>CAI: {cuadrante.nombre_unidad}</Text>
+                      <Text style={styles.drawerCuadranteText}>{barrio.nombre} / {cuadrante.nombre_unidad}</Text>
                     </View>
                   </View>
                 )}
@@ -142,7 +171,7 @@ export default function TabLayout() {
 
             {/* Navigation list */}
             <View style={styles.navLinks}>
-              <Text style={styles.sectionLabel}>NAVEGACIÓN</Text>
+              <Text style={styles.sectionLabel}>Navegación</Text>
               
               <TouchableOpacity
                 onPress={() => handleNavigate('/')}
@@ -152,10 +181,25 @@ export default function TabLayout() {
                 <IconRenderer
                   name="Activity"
                   size={16}
-                  color={isRouteActive('/') ? BAColors.textPrimary : BAColors.textMuted}
+                  color={isRouteActive('/') ? theme.colors.textPrimary : theme.colors.textMuted}
                 />
                 <Text style={[styles.navLinkText, isRouteActive('/') && styles.navLinkTextActive]}>
                   Dashboard
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={() => handleNavigate('/alertas-sector')}
+                style={[styles.navLink, isRouteActive('/alertas-sector') && styles.navLinkActive]}
+                activeOpacity={0.7}
+              >
+                <Icon
+                  name="Bell"
+                  size={16}
+                  color={isRouteActive('/alertas-sector') ? theme.colors.textPrimary : theme.colors.textMuted}
+                />
+                <Text style={[styles.navLinkText, isRouteActive('/alertas-sector') && styles.navLinkTextActive]}>
+                  Alertas del Sector
                 </Text>
               </TouchableOpacity>
 
@@ -164,11 +208,7 @@ export default function TabLayout() {
                 style={[styles.navLink, isRouteActive('/reportar') && styles.navLinkActive]}
                 activeOpacity={0.7}
               >
-                <IconRenderer
-                  name="ShieldAlert"
-                  size={16}
-                  color={isRouteActive('/reportar') ? BAColors.textPrimary : BAColors.textMuted}
-                />
+                <Icon name="ClockAlert" size={16} color={isRouteActive('/reportar') ? theme.colors.textPrimary : theme.colors.textMuted} />
                 <Text style={[styles.navLinkText, isRouteActive('/reportar') && styles.navLinkTextActive]}>
                   Reportar
                 </Text>
@@ -179,13 +219,23 @@ export default function TabLayout() {
                 style={[styles.navLink, isRouteActive('/config') && styles.navLinkActive]}
                 activeOpacity={0.7}
               >
-                <IconRenderer
-                  name="Radio"
-                  size={16}
-                  color={isRouteActive('/config') ? BAColors.textPrimary : BAColors.textMuted}
-                />
+                <Icon name="Settings" size={16} color={isRouteActive('/config') ? theme.colors.textPrimary : theme.colors.textMuted} />
                 <Text style={[styles.navLinkText, isRouteActive('/config') && styles.navLinkTextActive]}>
                   Configuración (Notificaciones)
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={async () => {
+                  closeMenu();
+                  await logout();
+                }}
+                style={styles.navLink}
+                activeOpacity={0.7}
+              >
+                <Icon name="LogOut" size={16} color={theme.colors.red} />
+                <Text style={[styles.navLinkText, { color: theme.colors.red }]}>
+                  Cerrar Sesión
                 </Text>
               </TouchableOpacity>
             </View>
@@ -202,16 +252,16 @@ export default function TabLayout() {
   );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (theme: AppTheme) => StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: BAColors.bg,
+    backgroundColor: theme.colors.bg,
   },
   content: {
     flex: 1,
   },
   backdrop: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     backgroundColor: 'rgba(0, 0, 0, 0.75)',
   },
   drawerPanel: {
@@ -220,9 +270,9 @@ const styles = StyleSheet.create({
     left: 0,
     bottom: 0,
     width: 280,
-    backgroundColor: BAColors.surfaceDark,
+    backgroundColor: theme.colors.surfaceDark,
     borderRightWidth: 1,
-    borderRightColor: BAColors.border,
+    borderRightColor: theme.colors.border,
     padding: 20,
     justifyContent: 'space-between',
     zIndex: 1001,
@@ -241,82 +291,70 @@ const styles = StyleSheet.create({
   drawerLogoText: {
     fontSize: 16,
     fontWeight: '700',
-    color: BAColors.textPrimary,
+    color: theme.colors.textPrimary,
   },
   closeButton: {
     padding: 6,
-    borderRadius: 8,
-    backgroundColor: BAColors.surfaceLight,
-    borderWidth: 1,
-    borderColor: BAColors.surfaceBorder,
   },
   drawerSection: {
     gap: 12,
     marginBottom: 24,
     borderBottomWidth: 1,
-    borderBottomColor: BAColors.border,
+    borderBottomColor: theme.colors.border,
     paddingBottom: 20,
   },
   drawerUserBadge: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
-    backgroundColor: BAColors.surfaceLight,
     paddingVertical: 10,
     paddingHorizontal: 12,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: BAColors.surfaceBorder,
+    borderBottomWidth: 1,
+    borderBottomColor: theme.colors.border,
   },
   drawerUserTitle: {
-    fontSize: 9,
-    color: BAColors.textMuted,
+    fontSize: 12,
+    color: theme.colors.textMuted,
     fontWeight: '600',
-    textTransform: 'uppercase',
   },
   drawerUserName: {
     fontSize: 13,
     fontWeight: '600',
-    color: BAColors.textSecondary,
+    color: theme.colors.textSecondary,
   },
   drawerLocationBadge: {
     flexDirection: 'row',
     alignItems: 'flex-start',
     gap: 10,
-    backgroundColor: BAColors.surfaceLight,
-    paddingVertical: 10,
     paddingHorizontal: 12,
     borderRadius: 12,
-    borderWidth: 1,
-    borderColor: BAColors.surfaceBorder,
   },
   locationTextContainer: {
     flex: 1,
     gap: 2,
   },
   drawerLocationTitle: {
-    fontSize: 9,
-    color: BAColors.textMuted,
+    fontSize: 12,
+    color: theme.colors.textMuted,
     fontWeight: '600',
-    textTransform: 'uppercase',
   },
   drawerLocationText: {
     fontSize: 12,
     fontWeight: '600',
-    color: BAColors.textSecondary,
+    color: theme.colors.textSecondary,
   },
   drawerCuadranteText: {
     fontSize: 11,
-    color: BAColors.textTertiary,
+    color: theme.colors.textTertiary,
   },
   navLinks: {
     flex: 1,
     gap: 8,
   },
   sectionLabel: {
-    fontSize: 10,
+    fontSize: 12,
     fontWeight: '700',
-    color: BAColors.textMuted,
+    color: theme.colors.textMuted,
     letterSpacing: 1,
     marginBottom: 8,
   },
@@ -326,36 +364,34 @@ const styles = StyleSheet.create({
     gap: 12,
     paddingVertical: 12,
     paddingHorizontal: 14,
-    borderRadius: 12,
-    borderWidth: 1,
     borderColor: 'transparent',
   },
   navLinkActive: {
-    backgroundColor: BAColors.surfaceLight,
-    borderColor: BAColors.surfaceBorder,
+    backgroundColor: theme.colors.surfaceLight,
+    borderColor: theme.colors.surfaceBorder,
   },
   navLinkText: {
     fontSize: 13,
     fontWeight: '600',
-    color: BAColors.textMuted,
+    color: theme.colors.textMuted,
   },
   navLinkTextActive: {
-    color: BAColors.textPrimary,
+    color: theme.colors.textPrimary,
   },
   drawerFooter: {
     paddingTop: 16,
     borderTopWidth: 1,
-    borderTopColor: BAColors.border,
+    borderTopColor: theme.colors.border,
     alignItems: 'center',
     gap: 2,
   },
   footerText: {
     fontSize: 11,
     fontWeight: '600',
-    color: BAColors.textTertiary,
+    color: theme.colors.textTertiary,
   },
   footerSubtext: {
     fontSize: 9,
-    color: BAColors.textMuted,
+    color: theme.colors.textMuted,
   },
 });

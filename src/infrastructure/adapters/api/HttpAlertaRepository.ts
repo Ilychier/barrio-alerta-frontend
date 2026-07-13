@@ -108,9 +108,14 @@ export class HttpAlertaRepository implements IAlertaRepository {
     }
   }
 
-  async obtenerTodas(fecha?: string): Promise<Alerta[]> {
+  async obtenerTodas(fecha?: string, barrioId?: number): Promise<Alerta[]> {
     try {
-      const url = fecha ? `${this.endpoints.alertas}?fecha=${fecha}` : this.endpoints.alertas;
+      const params: string[] = [];
+      if (fecha) params.push(`fecha=${fecha}`);
+      if (barrioId !== undefined && barrioId !== null) params.push(`barrioId=${barrioId}`);
+      
+      const queryString = params.join('&');
+      const url = queryString ? `${this.endpoints.alertas}?${queryString}` : this.endpoints.alertas;
       const response = await this.http.get<any>(url);
       const data = response.data && response.data.content ? response.data.content : response.data;
       if (Array.isArray(data)) {
