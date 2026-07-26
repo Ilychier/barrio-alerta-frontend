@@ -22,7 +22,10 @@ interface RegisterScreenProps {
   onBackPress?: () => void;
 }
 
-export function RegisterScreen({ onLoginPress, onBackPress }: RegisterScreenProps) {
+export function RegisterScreen({
+  onLoginPress,
+  onBackPress,
+}: RegisterScreenProps) {
   const { register } = useAuth();
   const { theme } = useAppTheme();
   const styles = getStyles(theme);
@@ -86,8 +89,16 @@ export function RegisterScreen({ onLoginPress, onBackPress }: RegisterScreenProp
         keyboardShouldPersistTaps="handled"
       >
         {onBackPress && (
-          <TouchableOpacity onPress={onBackPress} style={styles.backButton} activeOpacity={0.7}>
-            <Icon name="ArrowLeft" size={20} color={theme.colors.textSecondary} />
+          <TouchableOpacity
+            onPress={onBackPress}
+            style={styles.backButton}
+            activeOpacity={0.7}
+          >
+            <Icon
+              name="ArrowLeft"
+              size={20}
+              color={theme.colors.textSecondary}
+            />
           </TouchableOpacity>
         )}
         <SectionCard style={styles.card}>
@@ -336,7 +347,7 @@ const getStyles = (theme: AppTheme) =>
       backgroundColor: theme.colors.surface + "D9",
       borderRadius: 28,
       padding: 24,
-      marginVertical: 20,
+      marginVertical: 50,
     },
     brandContainer: {
       alignItems: "center",

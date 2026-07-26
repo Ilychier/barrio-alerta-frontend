@@ -84,7 +84,7 @@ export function SectorAlertReportsScreen() {
 const getStyles = (theme: AppTheme) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: theme.colors.bg,
+    backgroundColor: 'transparent',
   },
   content: {
     padding: 16,

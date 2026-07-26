@@ -16,6 +16,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Icon from "@/presentation/components/atomic/Icon";
 import { IconRenderer } from "@/presentation/components/atomic/IconRenderer";
 import { Header } from "@/presentation/components/layout/Header";
+import { SVGBackground } from "@/presentation/components/layout/SVGBackground";
 import { AuthProvider, useAuth } from "@/presentation/context/AuthContext";
 import { LoginScreen } from "@/presentation/screens/LoginScreen";
 import { RegisterScreen } from "@/presentation/screens/RegisterScreen";
@@ -141,7 +142,7 @@ function TabLayout() {
   }
 
   return (
-    <View style={styles.root}>
+    <SVGBackground>
       {/* Header with hamburger menu toggle - badges conditionally visible outside based on screen size */}
       <Header
         barrioNombre={barrio?.nombre}
@@ -361,16 +362,12 @@ function TabLayout() {
           </Animated.View>
         </View>
       )}
-    </View>
+    </SVGBackground>
   );
 }
 
 const getStyles = (theme: AppTheme) =>
   StyleSheet.create({
-    root: {
-      flex: 1,
-      backgroundColor: theme.colors.bg,
-    },
     content: {
       flex: 1,
     },
