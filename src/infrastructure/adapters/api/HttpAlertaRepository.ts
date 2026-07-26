@@ -3,10 +3,11 @@ import { Alerta } from '../../../domain/entities/alerta';
 import { Evidencia } from '../../../domain/entities/evidencia';
 import { IAlertaRepository } from '../../../domain/ports/IAlertaRepository';
 import { HttpGenericService } from './HttpGenericService';
-import { renderAlertaEmail } from '../../email/alertaEmailTemplate';
+import { renderAlertaEmail, getSubject } from '../../email/alertaEmailTemplate';
 
 export class HttpAlertaRepository implements IAlertaRepository {
   private readonly http = HttpGenericService.getInstance().getClient();
+  private readonly baseUrl = HttpGenericService.getInstance().getBaseUrl();
   
   private readonly endpoints = {
     alertas: '/alertas',
@@ -46,6 +47,7 @@ export class HttpAlertaRepository implements IAlertaRepository {
       });
 
       const isSos = response.data.esSos !== undefined ? response.data.esSos : response.data.es_sos;
+      const createdCategoriaId = response.data.categoria?.id || response.data.categoriaId || response.data.categoria_id || alerta.categoria_id || (isSos ? 4 : 4);
       const createdAlerta = isSos
         ? Alerta.crearEmergenciaSOS(
             response.data.id,
@@ -58,21 +60,24 @@ export class HttpAlertaRepository implements IAlertaRepository {
             response.data.descripcion,
             response.data.fechaHora || response.data.fecha_hora || new Date().toISOString(),
             response.data.usuarioId || response.data.usuario_id,
-            response.data.categoria?.id || response.data.categoriaId || response.data.categoria_id || 4
+            createdCategoriaId
           );
 
       if (toEmail) {
+        const emailData = {
+          id: createdAlerta.id,
+          descripcion: createdAlerta.descripcion,
+          esSos: isSos,
+          fechaHora: createdAlerta.fecha_hora,
+          emailDestino: toEmail,
+          categoriaId: createdCategoriaId,
+          baseUrl: this.baseUrl,
+        };
         try {
           await this.http.post(this.endpoints.email, {
             toEmail,
-            subject: `¡${isSos ? "ALERTA S.O.S" : "NUEVA ALERTA"} GENERADA!`,
-            body: renderAlertaEmail({
-              id: createdAlerta.id,
-              descripcion: createdAlerta.descripcion,
-              esSos: isSos,
-              fechaHora: createdAlerta.fecha_hora,
-              emailDestino: toEmail,
-            }),
+            subject: getSubject(emailData),
+            body: renderAlertaEmail(emailData),
           });
         } catch (emailError) {
           console.warn('[HttpAlertaRepository] Failed to send email notification:', emailError);
@@ -95,17 +100,20 @@ export class HttpAlertaRepository implements IAlertaRepository {
       return createdAlerta;
     } catch (error) {
       if (alerta.es_sos && toEmail) {
+        const fallbackData = {
+          id: alerta.id,
+          descripcion: alerta.descripcion,
+          esSos: true,
+          fechaHora: alerta.fecha_hora,
+          emailDestino: toEmail,
+          categoriaId: 4,
+          baseUrl: this.baseUrl,
+        };
         try {
           await this.http.post(this.endpoints.email, {
             toEmail,
-            subject: "¡ALERTA S.O.S GENERADA!",
-            body: renderAlertaEmail({
-              id: alerta.id,
-              descripcion: alerta.descripcion,
-              esSos: true,
-              fechaHora: alerta.fecha_hora,
-              emailDestino: toEmail,
-            }),
+            subject: getSubject(fallbackData),
+            body: renderAlertaEmail(fallbackData),
           });
         } catch (emailError) {
           console.warn('[HttpAlertaRepository] Failed to send fallback email notification:', emailError);

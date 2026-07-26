@@ -5,12 +5,14 @@ import { TokenStorage } from '../storage/TokenStorage';
 export class HttpGenericService {
   private static instance: HttpGenericService;
   private readonly client: AxiosInstance;
+  private readonly baseUrl: string;
 
   private constructor() {
     let url = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000';
     if (url.endsWith('/')) {
       url = url.slice(0, -1);
     }
+    this.baseUrl = url;
     if (!url.endsWith('/api')) {
       url = `${url}/api`;
     }
@@ -40,5 +42,9 @@ export class HttpGenericService {
 
   getClient(): AxiosInstance {
     return this.client;
+  }
+
+  getBaseUrl(): string {
+    return this.baseUrl;
   }
 }
