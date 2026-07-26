@@ -1,12 +1,11 @@
 import {
   Image,
-  Linking,
   ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
   useWindowDimensions,
-  View,
+  View
 } from "react-native";
 import Icon from "../components/atomic/Icon";
 import { SVGBackground } from "../components/layout/SVGBackground";
@@ -469,12 +468,6 @@ export function LandingScreen({
                 </Text>
               </View>
               <View style={styles.footerRight}>
-                <TouchableOpacity
-                  onPress={() => Linking.openURL("https://github.com/")}
-                  activeOpacity={0.7}
-                >
-                  <Text style={styles.footerLink}>Código fuente</Text>
-                </TouchableOpacity>
                 <Text style={styles.footerLink}>Privacidad</Text>
                 <Text style={styles.footerLink}>Licencia</Text>
                 <Text style={styles.footerLink}>Contacto</Text>
