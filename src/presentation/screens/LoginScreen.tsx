@@ -17,9 +17,10 @@ import { AppTheme, useAppTheme } from "../theme/ThemeContext";
 
 interface LoginScreenProps {
   onRegisterPress: () => void;
+  onBackPress?: () => void;
 }
 
-export function LoginScreen({ onRegisterPress }: LoginScreenProps) {
+export function LoginScreen({ onRegisterPress, onBackPress }: LoginScreenProps) {
   const { login } = useAuth();
   const { theme } = useAppTheme();
   const styles = getStyles(theme);
@@ -56,6 +57,11 @@ export function LoginScreen({ onRegisterPress }: LoginScreenProps) {
         contentContainerStyle={styles.content}
         keyboardShouldPersistTaps="handled"
       >
+        {onBackPress && (
+          <TouchableOpacity onPress={onBackPress} style={styles.backButton} activeOpacity={0.7}>
+            <Icon name="ArrowLeft" size={20} color={theme.colors.textSecondary} />
+          </TouchableOpacity>
+        )}
         <SectionCard style={styles.card}>
           {/* Header branding */}
           <View style={styles.brandContainer}>
@@ -193,6 +199,15 @@ const getStyles = (theme: AppTheme) =>
       padding: 24,
       justifyContent: "center",
       flexGrow: 1,
+    },
+    backButton: {
+      position: "absolute",
+      top: 16,
+      left: 16,
+      zIndex: 10,
+      padding: 8,
+      borderRadius: 20,
+      backgroundColor: theme.colors.surface + "CC",
     },
     card: {
       backgroundColor: theme.colors.surface + "D9",

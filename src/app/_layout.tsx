@@ -19,6 +19,7 @@ import { Header } from "@/presentation/components/layout/Header";
 import { AuthProvider, useAuth } from "@/presentation/context/AuthContext";
 import { LoginScreen } from "@/presentation/screens/LoginScreen";
 import { RegisterScreen } from "@/presentation/screens/RegisterScreen";
+import { LandingScreen } from "@/presentation/screens/LandingScreen";
 import {
   AppTheme,
   ThemeProvider,
@@ -40,7 +41,7 @@ function TabLayout() {
     useAuth();
   const { theme } = useAppTheme();
   const styles = getStyles(theme);
-  const [showRegister, setShowRegister] = useState(false);
+  const [authView, setAuthView] = useState<'landing' | 'login' | 'register'>('landing');
 
   const { width } = useWindowDimensions();
   const isSmallScreen = width < 768;
@@ -115,10 +116,28 @@ function TabLayout() {
   }
 
   if (!isAuthenticated) {
-    if (showRegister) {
-      return <RegisterScreen onLoginPress={() => setShowRegister(false)} />;
+    if (authView === 'register') {
+      return (
+        <RegisterScreen
+          onLoginPress={() => setAuthView('login')}
+          onBackPress={() => setAuthView('landing')}
+        />
+      );
     }
-    return <LoginScreen onRegisterPress={() => setShowRegister(true)} />;
+    if (authView === 'login') {
+      return (
+        <LoginScreen
+          onRegisterPress={() => setAuthView('register')}
+          onBackPress={() => setAuthView('landing')}
+        />
+      );
+    }
+    return (
+      <LandingScreen
+        onLoginPress={() => setAuthView('login')}
+        onRegisterPress={() => setAuthView('register')}
+      />
+    );
   }
 
   return (
