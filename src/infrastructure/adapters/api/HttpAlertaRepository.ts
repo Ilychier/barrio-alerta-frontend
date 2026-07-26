@@ -3,6 +3,7 @@ import { Alerta } from '../../../domain/entities/alerta';
 import { Evidencia } from '../../../domain/entities/evidencia';
 import { IAlertaRepository } from '../../../domain/ports/IAlertaRepository';
 import { HttpGenericService } from './HttpGenericService';
+import { renderAlertaEmail } from '../../email/alertaEmailTemplate';
 
 export class HttpAlertaRepository implements IAlertaRepository {
   private readonly http = HttpGenericService.getInstance().getClient();
@@ -13,29 +14,29 @@ export class HttpAlertaRepository implements IAlertaRepository {
     email: '/email/send-email',
   };
 
-  private async getCuadranteTelefonoByUsuarioId(usuarioId: number): Promise<string | undefined> {
+  private async getCuadranteEmailByUsuarioId(usuarioId: number): Promise<string | undefined> {
     try {
       const userRes = await this.http.get<any>(`/usuarios/${usuarioId}`);
       const barrioId = userRes.data?.barrio?.id || userRes.data?.barrioId || userRes.data?.barrio_id;
       if (barrioId) {
         const barrioRes = await this.http.get<any>(`/barrios/${barrioId}`);
-        const cuadranteId = barrioRes.data?.cuadrante?.id || barrioRes.data?.cuadrante_id;
+        const cuadranteId = barrioRes.data?.cuadranteId ?? barrioRes.data?.cuadrante_id ?? barrioRes.data?.cuadrante?.id;
         if (cuadranteId) {
           const cuadranteRes = await this.http.get<any>(`/cuadrantes/${cuadranteId}`);
-          const tel = cuadranteRes.data?.telefonoEmergencia || cuadranteRes.data?.telefono_emergencia;
-          if (tel) {
-            return tel;
+          const email = cuadranteRes.data?.emailEmergencia || cuadranteRes.data?.email_emergencia;
+          if (email) {
+            return email;
           }
         }
       }
     } catch (error) {
-      console.warn('[HttpAlertaRepository] Failed to resolve cuadrante telefono_emergencia:', error);
+      console.warn('[HttpAlertaRepository] Failed to resolve cuadrante email:', error);
     }
     return undefined;
   }
 
   async crearAlerta(alerta: Alerta, evidencias?: Evidencia[]): Promise<Alerta> {
-    let toEmail: string | undefined = await this.getCuadranteTelefonoByUsuarioId(alerta.usuario_id);
+    let toEmail: string | undefined = await this.getCuadranteEmailByUsuarioId(alerta.usuario_id);
     try {
       const response = await this.http.post<any>(this.endpoints.alertas, {
         descripcion: alerta.descripcion,
@@ -60,14 +61,22 @@ export class HttpAlertaRepository implements IAlertaRepository {
             response.data.categoria?.id || response.data.categoriaId || response.data.categoria_id || 4
           );
 
-      try {
-        await this.http.post(this.endpoints.email, {
-          toEmail,
-          subject: "¡ALERTA S.O.S GENERADA!",
-          body: `Se ha activado un botón de S.O.S. Descripción de la alerta: ${createdAlerta.descripcion}`,
-        });
-      } catch (emailError) {
-        console.warn('[HttpAlertaRepository] Failed to send email notification for SOS alert:', emailError);
+      if (toEmail) {
+        try {
+          await this.http.post(this.endpoints.email, {
+            toEmail,
+            subject: `¡${isSos ? "ALERTA S.O.S" : "NUEVA ALERTA"} GENERADA!`,
+            body: renderAlertaEmail({
+              id: createdAlerta.id,
+              descripcion: createdAlerta.descripcion,
+              esSos: isSos,
+              fechaHora: createdAlerta.fecha_hora,
+              emailDestino: toEmail,
+            }),
+          });
+        } catch (emailError) {
+          console.warn('[HttpAlertaRepository] Failed to send email notification:', emailError);
+        }
       }
 
       if (evidencias && evidencias.length > 0) {
@@ -90,10 +99,16 @@ export class HttpAlertaRepository implements IAlertaRepository {
           await this.http.post(this.endpoints.email, {
             toEmail,
             subject: "¡ALERTA S.O.S GENERADA!",
-            body: `Se ha activado un botón de S.O.S. Descripción de la alerta: ${alerta.descripcion}`,
+            body: renderAlertaEmail({
+              id: alerta.id,
+              descripcion: alerta.descripcion,
+              esSos: true,
+              fechaHora: alerta.fecha_hora,
+              emailDestino: toEmail,
+            }),
           });
         } catch (emailError) {
-          console.warn('[HttpAlertaRepository] Failed to send fallback email notification for SOS alert:', emailError);
+          console.warn('[HttpAlertaRepository] Failed to send fallback email notification:', emailError);
         }
       }
 

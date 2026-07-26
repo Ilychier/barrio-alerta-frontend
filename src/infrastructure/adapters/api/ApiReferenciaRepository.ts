@@ -92,7 +92,8 @@ export class ApiReferenciaRepository implements IReferenciaRepository {
         return new Cuadrante(
           response.data.id,
           response.data.nombreUnidad || response.data.nombre_unidad,
-          response.data.telefonoEmergencia || response.data.telefono_emergencia
+          response.data.telefonoEmergencia || response.data.telefono_emergencia,
+          response.data.emailEmergencia || response.data.email_emergencia
         );
       }
       return undefined;

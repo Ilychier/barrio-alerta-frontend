@@ -1,12 +1,21 @@
-import { useEffect, useState } from 'react';
-import { ActivityIndicator, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import { Barrio } from '../../domain/entities/barrio';
-import { DependencyContainer } from '../../infrastructure/config/dependencyContainer';
-import Icon from '../components/atomic/Icon';
-import { SectionCard } from '../components/layout/SectionCard';
-import { SVGBackground } from '../components/layout/SVGBackground';
-import { useAuth } from '../context/AuthContext';
-import { AppTheme, useAppTheme } from '../theme/ThemeContext';
+import { useEffect, useState } from "react";
+import {
+  ActivityIndicator,
+  Image,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { Barrio } from "../../domain/entities/barrio";
+import { DependencyContainer } from "../../infrastructure/config/dependencyContainer";
+import Icon from "../components/atomic/Icon";
+import { SectionCard } from "../components/layout/SectionCard";
+import { SVGBackground } from "../components/layout/SVGBackground";
+import { useAuth } from "../context/AuthContext";
+import { AppTheme, useAppTheme } from "../theme/ThemeContext";
 
 interface RegisterScreenProps {
   onLoginPress: () => void;
@@ -17,12 +26,12 @@ export function RegisterScreen({ onLoginPress }: RegisterScreenProps) {
   const { theme } = useAppTheme();
   const styles = getStyles(theme);
 
-  const [nombre, setNombre] = useState('');
-  const [email, setEmail] = useState('');
-  const [phone, setPhone] = useState('');
-  const [address, setAddress] = useState('');
+  const [nombre, setNombre] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [address, setAddress] = useState("");
   const [barrioId, setBarrioId] = useState<number>(1);
-  const [password, setPassword] = useState('');
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [barrios, setBarrios] = useState<Barrio[]>([]);
@@ -38,14 +47,15 @@ export function RegisterScreen({ onLoginPress }: RegisterScreenProps) {
   useEffect(() => {
     async function fetchBarrios() {
       try {
-        const repo = DependencyContainer.getInstance().getReferenciaRepository();
+        const repo =
+          DependencyContainer.getInstance().getReferenciaRepository();
         const list = await repo.getBarrios();
         setBarrios(list);
         if (list.length > 0) {
           setBarrioId(list[0].id);
         }
       } catch (e) {
-        console.error('Error fetching barrios:', e);
+        console.error("Error fetching barrios:", e);
       }
     }
     fetchBarrios();
@@ -53,7 +63,7 @@ export function RegisterScreen({ onLoginPress }: RegisterScreenProps) {
 
   const handleRegister = async () => {
     if (!nombre || !email || !phone || !address || !password) {
-      setError('Por favor, completa todos los campos.');
+      setError("Por favor, completa todos los campos.");
       return;
     }
     setError(null);
@@ -61,7 +71,7 @@ export function RegisterScreen({ onLoginPress }: RegisterScreenProps) {
     try {
       await register(nombre, email, phone, address, barrioId, password);
     } catch (e: any) {
-      setError(e.message || 'Error al registrarse. Inténtalo de nuevo.');
+      setError(e.message || "Error al registrarse. Inténtalo de nuevo.");
     } finally {
       setLoading(false);
     }
@@ -69,15 +79,23 @@ export function RegisterScreen({ onLoginPress }: RegisterScreenProps) {
 
   return (
     <SVGBackground>
-      <ScrollView style={styles.container} contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+      <ScrollView
+        style={styles.container}
+        contentContainerStyle={styles.content}
+        keyboardShouldPersistTaps="handled"
+      >
         <SectionCard style={styles.card}>
           {/* Header branding */}
           <View style={styles.brandContainer}>
-            <View style={styles.logoCircle}>
-              <Icon name="ShieldAlert" size={32} color={theme.colors.green} />
-            </View>
+            <Image
+              source={require("@/assets/images/logo.png")}
+              style={styles.logoImage}
+              resizeMode="contain"
+            />
             <Text style={styles.brandText}>Crear Cuenta</Text>
-            <Text style={styles.brandTagline}>Regístrate para alertar y proteger a tu barrio</Text>
+            <Text style={styles.brandTagline}>
+              Regístrate para alertar y proteger a tu barrio
+            </Text>
           </View>
 
           {error && (
@@ -89,8 +107,20 @@ export function RegisterScreen({ onLoginPress }: RegisterScreenProps) {
 
           <View style={styles.form}>
             <Text style={styles.label}>Nombre Completo</Text>
-            <View style={[styles.inputContainer, nombreFocused && styles.inputContainerFocused]}>
-              <Icon name="User" size={18} color={nombreFocused ? theme.colors.green : theme.colors.textMuted} style={styles.inputIcon} />
+            <View
+              style={[
+                styles.inputContainer,
+                nombreFocused && styles.inputContainerFocused,
+              ]}
+            >
+              <Icon
+                name="User"
+                size={18}
+                color={
+                  nombreFocused ? theme.colors.green : theme.colors.textMuted
+                }
+                style={styles.inputIcon}
+              />
               <TextInput
                 style={styles.input}
                 value={nombre}
@@ -103,8 +133,20 @@ export function RegisterScreen({ onLoginPress }: RegisterScreenProps) {
             </View>
 
             <Text style={styles.label}>Correo Electrónico</Text>
-            <View style={[styles.inputContainer, emailFocused && styles.inputContainerFocused]}>
-              <Icon name="Mail" size={18} color={emailFocused ? theme.colors.green : theme.colors.textMuted} style={styles.inputIcon} />
+            <View
+              style={[
+                styles.inputContainer,
+                emailFocused && styles.inputContainerFocused,
+              ]}
+            >
+              <Icon
+                name="Mail"
+                size={18}
+                color={
+                  emailFocused ? theme.colors.green : theme.colors.textMuted
+                }
+                style={styles.inputIcon}
+              />
               <TextInput
                 style={styles.input}
                 value={email}
@@ -119,8 +161,20 @@ export function RegisterScreen({ onLoginPress }: RegisterScreenProps) {
             </View>
 
             <Text style={styles.label}>Teléfono de Emergencia</Text>
-            <View style={[styles.inputContainer, phoneFocused && styles.inputContainerFocused]}>
-              <Icon name="Phone" size={18} color={phoneFocused ? theme.colors.green : theme.colors.textMuted} style={styles.inputIcon} />
+            <View
+              style={[
+                styles.inputContainer,
+                phoneFocused && styles.inputContainerFocused,
+              ]}
+            >
+              <Icon
+                name="Phone"
+                size={18}
+                color={
+                  phoneFocused ? theme.colors.green : theme.colors.textMuted
+                }
+                style={styles.inputIcon}
+              />
               <TextInput
                 style={styles.input}
                 value={phone}
@@ -134,8 +188,20 @@ export function RegisterScreen({ onLoginPress }: RegisterScreenProps) {
             </View>
 
             <Text style={styles.label}>Dirección Residencial</Text>
-            <View style={[styles.inputContainer, addressFocused && styles.inputContainerFocused]}>
-              <Icon name="MapPin" size={18} color={addressFocused ? theme.colors.green : theme.colors.textMuted} style={styles.inputIcon} />
+            <View
+              style={[
+                styles.inputContainer,
+                addressFocused && styles.inputContainerFocused,
+              ]}
+            >
+              <Icon
+                name="MapPin"
+                size={18}
+                color={
+                  addressFocused ? theme.colors.green : theme.colors.textMuted
+                }
+                style={styles.inputIcon}
+              />
               <TextInput
                 style={styles.input}
                 value={address}
@@ -154,7 +220,7 @@ export function RegisterScreen({ onLoginPress }: RegisterScreenProps) {
                   key={b.id}
                   style={[
                     styles.barrioOption,
-                    barrioId === b.id && styles.barrioOptionSelected
+                    barrioId === b.id && styles.barrioOptionSelected,
                   ]}
                   onPress={() => setBarrioId(b.id)}
                   activeOpacity={0.8}
@@ -162,7 +228,7 @@ export function RegisterScreen({ onLoginPress }: RegisterScreenProps) {
                   <Text
                     style={[
                       styles.barrioText,
-                      barrioId === b.id && styles.barrioTextSelected
+                      barrioId === b.id && styles.barrioTextSelected,
                     ]}
                   >
                     {b.nombre}
@@ -172,8 +238,20 @@ export function RegisterScreen({ onLoginPress }: RegisterScreenProps) {
             </View>
 
             <Text style={styles.label}>Contraseña</Text>
-            <View style={[styles.inputContainer, passwordFocused && styles.inputContainerFocused]}>
-              <Icon name="Lock" size={18} color={passwordFocused ? theme.colors.green : theme.colors.textMuted} style={styles.inputIcon} />
+            <View
+              style={[
+                styles.inputContainer,
+                passwordFocused && styles.inputContainerFocused,
+              ]}
+            >
+              <Icon
+                name="Lock"
+                size={18}
+                color={
+                  passwordFocused ? theme.colors.green : theme.colors.textMuted
+                }
+                style={styles.inputIcon}
+              />
               <TextInput
                 style={styles.input}
                 value={password}
@@ -185,12 +263,25 @@ export function RegisterScreen({ onLoginPress }: RegisterScreenProps) {
                 secureTextEntry={!showPassword}
                 autoCapitalize="none"
               />
-              <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={styles.eyeIcon} activeOpacity={0.7}>
-                <Icon name={showPassword ? "EyeOff" : "Eye"} size={18} color={theme.colors.textTertiary} />
+              <TouchableOpacity
+                onPress={() => setShowPassword(!showPassword)}
+                style={styles.eyeIcon}
+                activeOpacity={0.7}
+              >
+                <Icon
+                  name={showPassword ? "EyeOff" : "Eye"}
+                  size={18}
+                  color={theme.colors.textTertiary}
+                />
               </TouchableOpacity>
             </View>
 
-            <TouchableOpacity style={styles.button} onPress={handleRegister} disabled={loading} activeOpacity={0.8}>
+            <TouchableOpacity
+              style={styles.button}
+              onPress={handleRegister}
+              disabled={loading}
+              activeOpacity={0.8}
+            >
               {loading ? (
                 <ActivityIndicator color={theme.colors.textPrimary} />
               ) : (
@@ -198,9 +289,14 @@ export function RegisterScreen({ onLoginPress }: RegisterScreenProps) {
               )}
             </TouchableOpacity>
 
-            <TouchableOpacity onPress={onLoginPress} style={styles.switchContainer} activeOpacity={0.7}>
+            <TouchableOpacity
+              onPress={onLoginPress}
+              style={styles.switchContainer}
+              activeOpacity={0.7}
+            >
               <Text style={styles.switchText}>
-                ¿Ya tienes cuenta? <Text style={styles.switchHighlight}>Inicia sesión aquí</Text>
+                ¿Ya tienes cuenta?{" "}
+                <Text style={styles.switchHighlight}>Inicia sesión aquí</Text>
               </Text>
             </TouchableOpacity>
           </View>
@@ -210,189 +306,166 @@ export function RegisterScreen({ onLoginPress }: RegisterScreenProps) {
   );
 }
 
-const getStyles = (theme: AppTheme) => StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: 'transparent',
-  },
-  content: {
-    padding: 24,
-    justifyContent: 'center',
-    flexGrow: 1,
-  },
-  card: {
-    backgroundColor: theme.colors.surface + 'D9', // Glassmorphism translucency (~85% opacity)
-    borderColor: theme.colors.surfaceBorder,
-    borderWidth: 1.5,
-    borderRadius: 28,
-    padding: 24,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 16 },
-    shadowOpacity: 0.3,
-    shadowRadius: 24,
-    elevation: 8,
-    marginVertical: 20,
-  },
-  brandContainer: {
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  logoCircle: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    backgroundColor: theme.colors.greenBg,
-    borderWidth: 1.5,
-    borderColor: theme.colors.greenBorder,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 12,
-    // Soft shadow for the logo
-    shadowColor: theme.colors.green,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 2,
-  },
-  brandText: {
-    fontSize: 24,
-    fontWeight: '800',
-    color: theme.colors.textPrimary,
-    letterSpacing: 0.5,
-  },
-  brandTagline: {
-    fontSize: 12,
-    color: theme.colors.textTertiary,
-    marginTop: 2,
-    fontWeight: '500',
-    textAlign: 'center',
-  },
-  form: {
-    gap: 14,
-  },
-  label: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: theme.colors.textSecondary,
-    marginBottom: -6,
-    marginLeft: 4,
-  },
-  inputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: theme.colors.surfaceLight,
-    borderWidth: 1.5,
-    borderColor: theme.colors.surfaceBorder,
-    borderRadius: 16,
-    paddingHorizontal: 16,
-    height: 52,
-  },
-  inputContainerFocused: {
-    borderColor: theme.colors.green,
-    backgroundColor: theme.colors.surface,
-    // Glow effect for focused input
-    shadowColor: theme.colors.green,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
-  },
-  inputIcon: {
-    marginRight: 12,
-  },
-  input: {
-    flex: 1,
-    color: theme.colors.textPrimary,
-    fontSize: 14,
-    height: '100%',
-  },
-  eyeIcon: {
-    padding: 8,
-  },
-  barriosContainer: {
-    flexDirection: 'row',
-    gap: 10,
-    marginTop: 4,
-  },
-  barrioOption: {
-    flex: 1,
-    backgroundColor: theme.colors.surfaceLight,
-    borderWidth: 1.5,
-    borderColor: theme.colors.surfaceBorder,
-    borderRadius: 16,
-    paddingVertical: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-    height: 48,
-  },
-  barrioOptionSelected: {
-    borderColor: theme.colors.green,
-    backgroundColor: theme.colors.greenBg,
-    // Glow effect for selected option
-    shadowColor: theme.colors.green,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 4,
-    elevation: 1,
-  },
-  barrioText: {
-    color: theme.colors.textSecondary,
-    fontSize: 13,
-    fontWeight: '600',
-  },
-  barrioTextSelected: {
-    color: theme.colors.textPrimary,
-    fontWeight: '700',
-  },
-  button: {
-    backgroundColor: theme.colors.green,
-    height: 52,
-    borderRadius: 16,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: 12,
-    shadowColor: theme.colors.green,
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.3,
-    shadowRadius: 12,
-    elevation: 6,
-  },
-  buttonText: {
-    color: theme.colors.textPrimary,
-    fontWeight: '700',
-    fontSize: 15,
-    letterSpacing: 0.5,
-  },
-  errorContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: theme.colors.redBg,
-    borderWidth: 1,
-    borderColor: theme.colors.redBorder,
-    borderRadius: 16,
-    padding: 14,
-    marginBottom: 10,
-    gap: 10,
-  },
-  errorIcon: {
-    marginTop: 1,
-  },
-  errorText: {
-    color: theme.colors.textPrimary,
-    fontSize: 13,
-    fontWeight: '600',
-    flex: 1,
-  },
-  switchContainer: {
-    alignItems: 'center',
-    marginTop: 8,
-    paddingVertical: 8,
-  },
-  switchText: {
-    color: theme.colors.textMuted,
-    fontSize: 13,
-  },
-  switchHighlight: {
-    color: theme.colors.green,
-    fontWeight: '700',
-  },
-});
+const getStyles = (theme: AppTheme) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: "transparent",
+    },
+    content: {
+      padding: 24,
+      justifyContent: "center",
+      flexGrow: 1,
+    },
+    card: {
+      backgroundColor: theme.colors.surface + "D9",
+      borderRadius: 28,
+      padding: 24,
+      marginVertical: 20,
+    },
+    brandContainer: {
+      alignItems: "center",
+      marginBottom: 20,
+    },
+    logoImage: {
+      width: 80,
+      height: 80,
+      marginBottom: 12,
+    },
+    brandText: {
+      fontSize: 24,
+      fontWeight: "800",
+      color: theme.colors.textPrimary,
+      letterSpacing: 0.5,
+    },
+    brandTagline: {
+      fontSize: 12,
+      color: theme.colors.textTertiary,
+      marginTop: 2,
+      fontWeight: "500",
+      textAlign: "center",
+    },
+    form: {
+      gap: 14,
+    },
+    label: {
+      fontSize: 12,
+      fontWeight: "700",
+      color: theme.colors.textSecondary,
+      marginBottom: -6,
+      marginLeft: 4,
+    },
+    inputContainer: {
+      flexDirection: "row",
+      alignItems: "center",
+      backgroundColor: theme.colors.surfaceLight,
+      borderWidth: 1.5,
+      borderColor: theme.colors.surfaceBorder,
+      borderRadius: 16,
+      paddingHorizontal: 16,
+      height: 52,
+    },
+    inputContainerFocused: {
+      borderColor: theme.colors.green,
+      backgroundColor: theme.colors.surface,
+      // Glow effect for focused input
+      shadowColor: theme.colors.green,
+      shadowOffset: { width: 0, height: 0 },
+      shadowOpacity: 0.1,
+      shadowRadius: 6,
+    },
+    inputIcon: {
+      marginRight: 12,
+    },
+    input: {
+      flex: 1,
+      color: theme.colors.textPrimary,
+      fontSize: 14,
+      height: "100%",
+    },
+    eyeIcon: {
+      padding: 8,
+    },
+    barriosContainer: {
+      flexDirection: "row",
+      gap: 10,
+      marginTop: 4,
+    },
+    barrioOption: {
+      flex: 1,
+      backgroundColor: theme.colors.surfaceLight,
+      borderWidth: 1.5,
+      borderColor: theme.colors.surfaceBorder,
+      borderRadius: 16,
+      paddingVertical: 12,
+      alignItems: "center",
+      justifyContent: "center",
+      height: 48,
+    },
+    barrioOptionSelected: {
+      borderColor: theme.colors.green,
+      backgroundColor: theme.colors.greenBg,
+      // Glow effect for selected option
+      shadowColor: theme.colors.green,
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.15,
+      shadowRadius: 4,
+      elevation: 1,
+    },
+    barrioText: {
+      color: theme.colors.textSecondary,
+      fontSize: 13,
+      fontWeight: "600",
+    },
+    barrioTextSelected: {
+      color: theme.colors.textPrimary,
+      fontWeight: "700",
+    },
+    button: {
+      backgroundColor: theme.colors.green,
+      height: 52,
+      borderRadius: 16,
+      justifyContent: "center",
+      alignItems: "center",
+      marginTop: 12,
+    },
+    buttonText: {
+      color: theme.colors.surfaceLight,
+      fontWeight: "700",
+      fontSize: 15,
+      letterSpacing: 0.5,
+    },
+    errorContainer: {
+      flexDirection: "row",
+      alignItems: "center",
+      backgroundColor: theme.colors.redBg,
+      borderWidth: 1,
+      borderColor: theme.colors.redBorder,
+      borderRadius: 16,
+      padding: 14,
+      marginBottom: 10,
+      gap: 10,
+    },
+    errorIcon: {
+      marginTop: 1,
+    },
+    errorText: {
+      color: theme.colors.textPrimary,
+      fontSize: 13,
+      fontWeight: "600",
+      flex: 1,
+    },
+    switchContainer: {
+      alignItems: "center",
+      marginTop: 8,
+      paddingVertical: 8,
+    },
+    switchText: {
+      color: theme.colors.textMuted,
+      fontSize: 13,
+    },
+    switchHighlight: {
+      color: theme.colors.green,
+      fontWeight: "700",
+    },
+  });

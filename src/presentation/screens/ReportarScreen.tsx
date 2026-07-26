@@ -1,9 +1,8 @@
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { useReporteController } from '../../application/controllers/useReporteController';
 import { CategoryButton } from '../components/atomic/CategoryButton';
 import { SectionCard } from '../components/layout/SectionCard';
 import { DescriptionSelector } from '../components/molecules/DescriptionSelector';
-import { EvidenceCapture } from '../components/molecules/EvidenceCapture';
 import { useAuth } from '../context/AuthContext';
 import { useAppTheme, AppTheme } from '../theme/ThemeContext';
 
@@ -39,13 +38,6 @@ export function ReportarScreen() {
         {/* Formulario dinámico */}
         {ctrl.selectedCategory && (
           <View style={styles.formContainer}>
-            <EvidenceCapture
-              attached={ctrl.evidenceAttached}
-              photoUrl={ctrl.mockPhotoUrl}
-              onCapture={ctrl.triggerMockPhotoCapture}
-              onRemove={ctrl.removeEvidence}
-            />
-
             {ctrl.descripciones && ctrl.descripciones.length > 0 && (
               <DescriptionSelector
                 descriptions={ctrl.descripciones.map((d) => d.descripcion)}
@@ -53,6 +45,20 @@ export function ReportarScreen() {
                 onSelect={ctrl.handleSelectDescription}
               />
             )}
+
+            <View>
+              <Text style={styles.label}>Descripción Detallada</Text>
+              <TextInput
+                style={styles.textArea}
+                value={ctrl.descripcionDetallada}
+                onChangeText={ctrl.setDescripcionDetallada}
+                placeholder="Describe el incidente con detalle..."
+                placeholderTextColor={theme.colors.textMuted}
+                multiline
+                numberOfLines={4}
+                textAlignVertical="top"
+              />
+            </View>
           </View>
         )}
 
@@ -60,10 +66,10 @@ export function ReportarScreen() {
         <View style={styles.actions}>
           <TouchableOpacity
             onPress={ctrl.saveIncidentReport}
-            disabled={!ctrl.selectedCategory || !ctrl.evidenceAttached}
-            style={[styles.submitButton, (!ctrl.selectedCategory || !ctrl.evidenceAttached) && styles.submitDisabled]}
+            disabled={!ctrl.selectedCategory}
+            style={[styles.submitButton, !ctrl.selectedCategory && styles.submitDisabled]}
           >
-            <Text style={[styles.submitText, (!ctrl.selectedCategory || !ctrl.evidenceAttached) && styles.submitTextDisabled]}>
+            <Text style={[styles.submitText, !ctrl.selectedCategory && styles.submitTextDisabled]}>
               Enviar Reporte
             </Text>
           </TouchableOpacity>
@@ -119,6 +125,18 @@ const getStyles = (theme: AppTheme) => StyleSheet.create({
     borderWidth: 1,
     borderColor: theme.colors.border,
     gap: 20,
+  },
+
+  textArea: {
+    backgroundColor: theme.colors.surface,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    borderRadius: 12,
+    padding: 14,
+    fontSize: 13,
+    color: theme.colors.textPrimary,
+    minHeight: 100,
+    lineHeight: 20,
   },
 
   actions: {

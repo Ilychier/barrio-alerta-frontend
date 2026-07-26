@@ -7,8 +7,7 @@ export function useReporteController(currentUserId: number) {
   const [categorias, setCategorias] = useState<Categoria[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
   const [selectedDescription, setSelectedDescription] = useState('');
-  const [evidenceAttached, setEvidenceAttached] = useState(false);
-  const [mockPhotoUrl, setMockPhotoUrl] = useState('');
+  const [descripcionDetallada, setDescripcionDetallada] = useState('');
   const [descripciones, setDescripciones] = useState<CategoriaDescripcion[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -41,7 +40,7 @@ export function useReporteController(currentUserId: number) {
 
   const handleSelectCategory = useCallback(async (catId: number) => {
     setSelectedCategory(catId);
-    setEvidenceAttached(false);
+    setDescripcionDetallada('');
 
     try {
       const repo = DependencyContainer.getInstance().getReferenciaRepository();
@@ -50,72 +49,56 @@ export function useReporteController(currentUserId: number) {
 
       if (list.length > 0) {
         setSelectedDescription(list[0].descripcion);
-        setMockPhotoUrl(list[0].imagenUrl || '');
       } else {
         setSelectedDescription('');
-        setMockPhotoUrl('');
       }
     } catch (error) {
       console.error('Error loading category descriptions:', error);
       setDescripciones([]);
       setSelectedDescription('');
-      setMockPhotoUrl('');
     }
   }, []);
 
   const handleSelectDescription = useCallback((desc: string) => {
     setSelectedDescription(desc);
-    const match = descripciones.find(d => d.descripcion === desc);
-    if (match && match.imagenUrl) {
-      setMockPhotoUrl(match.imagenUrl);
-    }
-  }, [descripciones]);
-
-  const triggerMockPhotoCapture = useCallback(() => {
-    setEvidenceAttached(true);
-  }, []);
-
-  const removeEvidence = useCallback(() => {
-    setEvidenceAttached(false);
   }, []);
 
   const saveIncidentReport = useCallback(async (): Promise<boolean> => {
-    if (!selectedCategory || !evidenceAttached) return false;
+    if (!selectedCategory) return false;
+
+    const descripcionFinal = selectedDescription
+      ? `${selectedDescription}: ${descripcionDetallada}`
+      : descripcionDetallada;
 
     await reportarUseCase.execute({
-      descripcion: selectedDescription,
+      descripcion: descripcionFinal,
       categoriaId: selectedCategory,
       usuarioId: currentUserId,
-      evidenciaUrl: mockPhotoUrl,
     });
 
     setSelectedCategory(null);
     setSelectedDescription('');
+    setDescripcionDetallada('');
     setDescripciones([]);
-    setEvidenceAttached(false);
-    setMockPhotoUrl('');
     return true;
-  }, [selectedCategory, evidenceAttached, selectedDescription, currentUserId, mockPhotoUrl, reportarUseCase]);
+  }, [selectedCategory, selectedDescription, descripcionDetallada, currentUserId, reportarUseCase]);
 
   const cancel = useCallback(() => {
     setSelectedCategory(null);
     setSelectedDescription('');
+    setDescripcionDetallada('');
     setDescripciones([]);
-    setEvidenceAttached(false);
-    setMockPhotoUrl('');
   }, []);
 
   return {
     categorias,
     selectedCategory,
     selectedDescription,
+    descripcionDetallada,
+    setDescripcionDetallada,
     descripciones,
-    evidenceAttached,
-    mockPhotoUrl,
     handleSelectCategory,
     handleSelectDescription,
-    triggerMockPhotoCapture,
-    removeEvidence,
     saveIncidentReport,
     cancel,
     loading,

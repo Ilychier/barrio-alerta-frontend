@@ -13,7 +13,7 @@ export function DescriptionSelector({ descriptions, selected, onSelect }: Descri
 
   return (
     <View>
-      <Text style={styles.label}>Descripción del Suceso</Text>
+      <Text style={styles.label}>Tipo de Suceso</Text>
       <View style={styles.list}>
         {descriptions.map((desc, idx) => {
           const isSelected = selected === desc;

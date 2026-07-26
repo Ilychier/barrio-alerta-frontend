@@ -3,5 +3,6 @@ export class Cuadrante {
     public readonly id: number,
     public readonly nombre_unidad: string,
     public readonly telefono_emergencia: string,
+    public readonly email_emergencia?: string,
   ) {}
 }
