@@ -1,5 +1,3 @@
-import { useFocusEffect } from 'expo-router';
-import { useCallback, useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useDashboardController } from '../../application/controllers/useDashboardController';
 import { useSOSController } from '../../application/controllers/useSOSController';
@@ -9,26 +7,16 @@ import { useAuth } from '../context/AuthContext';
 import { AppTheme, useAppTheme } from '../theme/ThemeContext';
 
 export function DashboardScreen() {
-  const [focusCount, forceUpdate] = useState(0);
   const { user } = useAuth();
   const userId = user?.id ?? 0;
   const { theme } = useAppTheme();
   const styles = getStyles(theme);
 
-  // Refresca los datos del cuadrante cuando la pantalla obtiene foco
-  useFocusEffect(
-    useCallback(() => {
-      forceUpdate((n) => n + 1);
-    }, []),
-  );
-
   const {
     cuadrante,
-  } = useDashboardController(userId, focusCount);
+  } = useDashboardController();
 
-  const sos = useSOSController(userId, () => {
-    forceUpdate((n) => n + 1);
-  });
+  const sos = useSOSController(userId, () => {});
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>

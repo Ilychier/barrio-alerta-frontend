@@ -43,7 +43,7 @@ export class ApiReferenciaRepository implements IReferenciaRepository {
         return new Barrio(
           response.data.id,
           response.data.nombre,
-          response.data.cuadrante?.id || response.data.cuadrante_id
+          response.data.cuadranteId ?? response.data.cuadrante_id ?? response.data.cuadrante?.id
         );
       }
       return undefined;
@@ -68,7 +68,7 @@ export class ApiReferenciaRepository implements IReferenciaRepository {
           (b) => new Barrio(
             b.id,
             b.nombre,
-            b.cuadrante?.id || b.cuadrante_id
+            b.cuadranteId ?? b.cuadrante_id ?? b.cuadrante?.id
           )
         );
       }

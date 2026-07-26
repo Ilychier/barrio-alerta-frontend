@@ -10,10 +10,8 @@ import { useAppTheme, AppTheme } from '../theme/ThemeContext';
 
 export function ConfigScreen() {
   const router = useRouter();
-  const { user } = useAuth();
-  const userId = user?.id ?? 0;
-  const { config, handleUpdate } = useConfiguracionController(userId);
-  const { barrio, cuadrante } = useDashboardController(userId);
+  const { config, handleUpdate } = useConfiguracionController();
+  const { barrio, cuadrante } = useDashboardController();
   const { theme, themeType, toggleTheme } = useAppTheme();
   const styles = getStyles(theme);
 

@@ -15,7 +15,7 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [themeType, setThemeType] = useState<ThemeType>('dark'); // Dark theme by default (brand identity)
+  const [themeType, setThemeType] = useState<ThemeType>('light');
   const theme = themeType === 'dark' ? DarkTheme : LightTheme;
 
   const toggleTheme = () => {

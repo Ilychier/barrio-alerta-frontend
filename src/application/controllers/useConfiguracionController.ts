@@ -1,51 +1,25 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 import { DependencyContainer } from '../../infrastructure/config/dependencyContainer';
-import { Configuracion } from '../../domain/entities/configuracion';
+import { useAuth } from '../../presentation/context/AuthContext';
 
 type CampoConfig = 'recibir_notificaciones' | 'modo_silencioso';
 
-export function useConfiguracionController(currentUserId: number) {
+export function useConfiguracionController() {
   const container = DependencyContainer.getInstance();
   const useCase = container.getActualizarConfiguracionUseCase();
-  const configRepo = container.getConfiguracionRepository();
-
-  const [config, setConfig] = useState<Configuracion | undefined>(undefined);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    let active = true;
-    async function loadConfig() {
-      try {
-        setLoading(true);
-        const res = await configRepo.obtenerPorUsuarioId(currentUserId);
-        if (active) {
-          setConfig(res);
-        }
-      } catch (error) {
-        console.error('Error loading configuration:', error);
-      } finally {
-        if (active) {
-          setLoading(false);
-        }
-      }
-    }
-    loadConfig();
-    return () => {
-      active = false;
-    };
-  }, [currentUserId, configRepo]);
+  const { configuracion, setConfiguracion } = useAuth();
 
   const handleUpdate = useCallback(
     async (campo: CampoConfig, valor: boolean) => {
       try {
-        const result = await useCase.execute({ usuarioId: currentUserId, campo, valor });
-        setConfig(result.configuracion);
+        const result = await useCase.execute({ usuarioId: configuracion?.usuario_id ?? 0, campo, valor });
+        setConfiguracion(result.configuracion);
       } catch (error) {
         console.error('Error updating configuration:', error);
       }
     },
-    [currentUserId, useCase],
+    [configuracion, useCase, setConfiguracion],
   );
 
-  return { config, handleUpdate, loading };
+  return { config: configuracion, handleUpdate };
 }

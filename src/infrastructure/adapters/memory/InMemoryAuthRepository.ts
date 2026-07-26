@@ -1,16 +1,26 @@
 import { IAuthRepository } from '../../../domain/ports/IAuthRepository';
+import { SesionDTO } from '../../../domain/entities/sesion';
 import { Usuario } from '../../../domain/entities/usuario';
+import { Barrio } from '../../../domain/entities/barrio';
+import { Cuadrante } from '../../../domain/entities/cuadrante';
+import { Configuracion } from '../../../domain/entities/configuracion';
 
 export class InMemoryAuthRepository implements IAuthRepository {
   private currentUser: Usuario = new Usuario(2, 'Carlos Mendoza', 'carlos.mendoza@email.com', 1);
 
-  async login(email: string, _password: string): Promise<{ token: string; user: Usuario }> {
-    // Mock login by creating/finding a user
-    this.currentUser = new Usuario(2, 'Carlos Mendoza', email, 1);
+  private buildSesion(token: string | null, user: Usuario): SesionDTO {
     return {
-      token: 'mock-jwt-token',
-      user: this.currentUser,
+      token,
+      user,
+      barrio: new Barrio(1, 'Centro', 101),
+      cuadrante: new Cuadrante(101, 'CAI Soacha Centro', '+57 310 555 0123'),
+      configuracion: new Configuracion(1, user.id, true, false),
     };
+  }
+
+  async login(_email: string, _password: string): Promise<SesionDTO> {
+    this.currentUser = new Usuario(2, 'Carlos Mendoza', _email, 1);
+    return this.buildSesion('mock-jwt-token', this.currentUser);
   }
 
   async register(
@@ -20,15 +30,12 @@ export class InMemoryAuthRepository implements IAuthRepository {
     _address: string,
     barrioId: number,
     _password: string
-  ): Promise<{ token: string; user: Usuario }> {
+  ): Promise<SesionDTO> {
     this.currentUser = new Usuario(Math.floor(Math.random() * 1000) + 10, nombre, email, barrioId);
-    return {
-      token: 'mock-jwt-token',
-      user: this.currentUser,
-    };
+    return this.buildSesion('mock-jwt-token', this.currentUser);
   }
 
-  async getMe(): Promise<Usuario> {
-    return this.currentUser;
+  async getMe(): Promise<SesionDTO> {
+    return this.buildSesion(null, this.currentUser);
   }
 }
