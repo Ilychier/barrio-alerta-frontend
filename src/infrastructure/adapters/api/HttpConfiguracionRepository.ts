@@ -45,7 +45,7 @@ export class HttpConfiguracionRepository implements IConfiguracionRepository {
         modoSilencioso: config.modo_silencioso,
       };
       const response = await this.http.put<any>(
-        `${this.endpoints.configuraciones}/${config.usuario_id}`,
+        `${this.endpoints.configuraciones}/usuario/${config.usuario_id}`,
         payload
       );
       if (response.data) {

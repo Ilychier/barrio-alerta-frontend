@@ -46,3 +46,4 @@ example
 /.codegraph
 /.cursor
 package-lock.json
+.env
