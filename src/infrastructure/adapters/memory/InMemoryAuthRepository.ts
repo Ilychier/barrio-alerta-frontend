@@ -1,11 +1,13 @@
-import { IAuthRepository } from '../../../domain/ports/IAuthRepository';
 import { Usuario } from '../../../domain/entities/usuario';
+import { IAuthRepository } from '../../../domain/ports/IAuthRepository';
 
 export class InMemoryAuthRepository implements IAuthRepository {
   private currentUser: Usuario = new Usuario(2, 'Carlos Mendoza', 'carlos.mendoza@email.com', 1);
 
   async login(email: string, _password: string): Promise<{ token: string; user: Usuario }> {
     // Mock login by creating/finding a user
+
+    console.log('🔥 LOGIN EN MEMORIA', email);
     this.currentUser = new Usuario(2, 'Carlos Mendoza', email, 1);
     return {
       token: 'mock-jwt-token',

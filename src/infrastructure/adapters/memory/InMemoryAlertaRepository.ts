@@ -35,6 +35,8 @@ export class InMemoryAlertaRepository implements IAlertaRepository {
   private readonly http = HttpGenericService.getInstance().getClient();
 
   async crearAlerta(alerta: Alerta, evidencias?: Evidencia[]): Promise<Alerta> {
+    
+    console.log("crearAlerta ejecutado", alerta);
     this.alertas = [alerta, ...this.alertas];
     if (evidencias && evidencias.length > 0) {
       this.evidencias = [...this.evidencias, ...evidencias];

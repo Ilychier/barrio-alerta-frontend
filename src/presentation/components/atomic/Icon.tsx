@@ -8,8 +8,16 @@ interface IconProps {
 }
 
 const Icon = ({ name, color, size, style }: IconProps) => {
-  // eslint-disable-next-line import/namespace
+  console.log(Object.keys(icons).filter(i => i.toLowerCase().includes("alert")));
   const LucideIcon = icons[name];
+
+  console.log("Icon solicitado:", name);
+  console.log("Existe:", !!LucideIcon);
+
+  if (!LucideIcon) {
+    console.error("Icono no encontrado:", name);
+    return null;
+  }
 
   return <LucideIcon color={color} size={size} style={style} />;
 };

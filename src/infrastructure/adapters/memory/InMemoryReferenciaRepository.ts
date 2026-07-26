@@ -1,9 +1,9 @@
-import { IReferenciaRepository } from '../../../domain/ports/IReferenciaRepository';
-import { Usuario } from '../../../domain/entities/usuario';
 import { Barrio } from '../../../domain/entities/barrio';
-import { Cuadrante } from '../../../domain/entities/cuadrante';
 import { Categoria } from '../../../domain/entities/categoria';
 import { CategoriaDescripcion } from '../../../domain/entities/categoriaDescripcion';
+import { Cuadrante } from '../../../domain/entities/cuadrante';
+import { Usuario } from '../../../domain/entities/usuario';
+import { IReferenciaRepository } from '../../../domain/ports/IReferenciaRepository';
 
 const INITIAL_CUADRANTES: Cuadrante[] = [
   new Cuadrante(101, 'CAI Soacha Centro', '+57 310 555 0123'),
@@ -21,7 +21,7 @@ const INITIAL_USUARIOS: Usuario[] = [
 ];
 
 const INITIAL_CATEGORIAS: Categoria[] = [
-  new Categoria(10, 'Sospechoso', 'AlertTriangle'),
+  new Categoria(10, 'Sospechoso', 'TriangleAlert'),
   new Categoria(11, 'Robo', 'ShieldAlert'),
   new Categoria(12, 'Urgencia Médica', 'Activity'),
   new Categoria(13, 'Incendio', 'Flame'),

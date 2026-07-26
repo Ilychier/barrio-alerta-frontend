@@ -10,7 +10,7 @@ const ICON_MAP: Record<string, string> = {
   PawOutline: '🐾',
 
   // Iconos del sistema base
-  AlertTriangle: '⚠',
+  TriangleAlert: '⚠',
   ShieldAlert: '🚨',
   Activity: '❤',
   Flame: '🔥',

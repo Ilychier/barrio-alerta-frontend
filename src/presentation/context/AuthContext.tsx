@@ -1,9 +1,9 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { Usuario } from '../../domain/entities/usuario';
+import React, { createContext, ReactNode, useContext, useEffect, useState } from 'react';
 import { Barrio } from '../../domain/entities/barrio';
 import { Cuadrante } from '../../domain/entities/cuadrante';
-import { DependencyContainer } from '../../infrastructure/config/dependencyContainer';
+import { Usuario } from '../../domain/entities/usuario';
 import { TokenStorage } from '../../infrastructure/adapters/storage/TokenStorage';
+import { DependencyContainer } from '../../infrastructure/config/dependencyContainer';
 
 interface AuthContextType {
   user: Usuario | null;
@@ -78,12 +78,16 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const login = async (email: string, password: string) => {
     setLoading(true);
     try {
-      const authRepo = DependencyContainer.getInstance().getAuthRepository();
-      const { user: loggedUser } = await authRepo.login(email, password);
-      setUser(loggedUser);
-      if (loggedUser) {
-        await fetchReferences(loggedUser);
-      }
+    const authRepo = DependencyContainer.getInstance().getAuthRepository();
+    const { token, user: loggedUser } = await authRepo.login(email, password);
+
+    await TokenStorage.setToken(token);
+
+    setUser(loggedUser);
+
+    if (loggedUser) {
+      await fetchReferences(loggedUser);
+    }
     } catch (error) {
       setUser(null);
       setBarrio(null);
@@ -105,7 +109,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setLoading(true);
     try {
       const authRepo = DependencyContainer.getInstance().getAuthRepository();
-      const { user: registeredUser } = await authRepo.register(
+      const { token, user: registeredUser } = await authRepo.register(
         nombre,
         email,
         phone,
@@ -113,7 +117,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         barrioId,
         password
       );
+      await TokenStorage.setToken(token);
+
       setUser(registeredUser);
+
       if (registeredUser) {
         await fetchReferences(registeredUser);
       }
