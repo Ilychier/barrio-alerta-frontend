@@ -45,6 +45,7 @@ export class HttpGenericService {
   }
 
   getBaseUrl(): string {
-    return this.baseUrl;
+    // Quitar /api del final para que sea la raíz del dominio
+    return this.baseUrl.replace(/\/api$/, '');
   }
 }

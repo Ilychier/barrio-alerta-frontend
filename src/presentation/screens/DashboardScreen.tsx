@@ -286,20 +286,21 @@ const getStyles = (theme: AppTheme, isDesktop: boolean) =>
 
     // ── CUADRANTE CARD ───────────────────────────────────
     cuadranteCard: {
-      flexDirection: "row",
+      flexDirection: isDesktop ? "row" : "column",
       backgroundColor: theme.colors.surface,
       borderRadius: 24,
       borderWidth: 1,
       borderColor: theme.colors.border,
-      padding: 24,
-      gap: 20,
-      alignItems: "center",
+      padding: isDesktop ? 24 : 20,
+      gap: isDesktop ? 20 : 16,
+      alignItems: isDesktop ? "center" : "center",
     },
     cuadranteLeft: {
       flex: 1,
       flexDirection: "row",
       gap: 16,
       alignItems: "center",
+      minWidth: 0,
     },
     cuadranteIconCircle: {
       width: 32,

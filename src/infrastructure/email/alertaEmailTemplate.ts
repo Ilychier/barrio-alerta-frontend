@@ -199,7 +199,7 @@ function buildStyles(cfg: TipoConfig): string {
       position: relative;
     }
     .header {
-      background: linear-gradient(135deg, ${cfg.primary}, ${cfg.primaryDark});
+      background: linear-gradient(135deg, #EDF1F2, #E4E8EA);
       padding: 36px 40px 32px;
       text-align: center;
       position: relative;
@@ -209,7 +209,7 @@ function buildStyles(cfg: TipoConfig): string {
       margin-bottom: 20px;
     }
     .header-logo img {
-      width: 160px;
+      width: 120px;
       height: auto;
       display: inline-block;
     }
@@ -219,14 +219,14 @@ function buildStyles(cfg: TipoConfig): string {
       margin-bottom: 8px;
     }
     .header-title {
-      color: ${COLORS.white};
+      color: #00000;
       font-size: 22px;
       font-weight: 800;
       margin: 0;
       letter-spacing: -0.3px;
     }
     .header-subtitle {
-      color: rgba(255,255,255,0.80);
+      color: rgba(0,0,0,0.80);
       font-size: 14px;
       margin: 6px 0 0;
       font-weight: 400;
@@ -234,8 +234,8 @@ function buildStyles(cfg: TipoConfig): string {
     }
     .badge {
       display: inline-block;
-      background-color: rgba(255,255,255,0.15);
-      color: ${COLORS.white};
+      background-color: rgba(255,255,255,0.45);
+      color: #000000;
       border: 1px solid rgba(255,255,255,0.25);
       border-radius: 999px;
       padding: 6px 16px;
@@ -359,7 +359,7 @@ function buildStyles(cfg: TipoConfig): string {
 
 function buildHeader(cfg: TipoConfig, baseUrl?: string): string {
   const logoHtml = baseUrl
-    ? `<div class="header-logo"><img src="${baseUrl}/images/horizontal-logo.png" alt="${BRAND}" /></div>`
+    ? `<div class="header-logo"><img src="${baseUrl}/images/logo.png" alt="${BRAND}" /></div>`
     : '';
 
   return `
