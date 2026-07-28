@@ -12,6 +12,7 @@ import {
 import { Barrio } from "../../domain/entities/barrio";
 import { DependencyContainer } from "../../infrastructure/config/dependencyContainer";
 import Icon from "../components/atomic/Icon";
+import { SelectInput, SelectOption } from "../components/atomic/SelectInput";
 import { SectionCard } from "../components/layout/SectionCard";
 import { SVGBackground } from "../components/layout/SVGBackground";
 import { useAuth } from "../context/AuthContext";
@@ -39,6 +40,13 @@ export function RegisterScreen({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [barrios, setBarrios] = useState<Barrio[]>([]);
+  const [barriosPage, setBarriosPage] = useState(0);
+  const [barriosHasMore, setBarriosHasMore] = useState(true);
+  const [barriosLoadingMore, setBarriosLoadingMore] = useState(false);
+  const barrioOptions: SelectOption[] = barrios.map((b) => ({
+    value: b.id,
+    label: b.nombre,
+  }));
 
   // Focus and visibility states
   const [nombreFocused, setNombreFocused] = useState(false);
@@ -46,17 +54,22 @@ export function RegisterScreen({
   const [phoneFocused, setPhoneFocused] = useState(false);
   const [addressFocused, setAddressFocused] = useState(false);
   const [passwordFocused, setPasswordFocused] = useState(false);
+  const [barrioFocused, setBarrioFocused] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+
+  const PAGE_SIZE = 20;
 
   useEffect(() => {
     async function fetchBarrios() {
       try {
         const repo =
           DependencyContainer.getInstance().getReferenciaRepository();
-        const list = await repo.getBarrios();
-        setBarrios(list);
-        if (list.length > 0) {
-          setBarrioId(list[0].id);
+        const result = await repo.getBarriosPaginated(0, PAGE_SIZE);
+        setBarrios(result.items);
+        setBarriosPage(0);
+        setBarriosHasMore(result.page + 1 < result.totalPages);
+        if (result.items.length > 0 && barrioId === 1) {
+          setBarrioId(result.items[0].id);
         }
       } catch (e) {
         console.error("Error fetching barrios:", e);
@@ -64,6 +77,24 @@ export function RegisterScreen({
     }
     fetchBarrios();
   }, []);
+
+  const handleLoadMoreBarrios = async () => {
+    if (barriosLoadingMore || !barriosHasMore) return;
+    setBarriosLoadingMore(true);
+    try {
+      const repo =
+        DependencyContainer.getInstance().getReferenciaRepository();
+      const nextPage = barriosPage + 1;
+      const result = await repo.getBarriosPaginated(nextPage, PAGE_SIZE);
+      setBarrios((prev) => [...prev, ...result.items]);
+      setBarriosPage(nextPage);
+      setBarriosHasMore(nextPage + 1 < result.totalPages);
+    } catch (e) {
+      console.error("Error loading more barrios:", e);
+    } finally {
+      setBarriosLoadingMore(false);
+    }
+  };
 
   const handleRegister = async () => {
     if (!nombre || !email || !phone || !address || !password) {
@@ -230,29 +261,21 @@ export function RegisterScreen({
               />
             </View>
 
-            <Text style={styles.label}>Selecciona tu Barrio</Text>
-            <View style={styles.barriosContainer}>
-              {barrios.map((b) => (
-                <TouchableOpacity
-                  key={b.id}
-                  style={[
-                    styles.barrioOption,
-                    barrioId === b.id && styles.barrioOptionSelected,
-                  ]}
-                  onPress={() => setBarrioId(b.id)}
-                  activeOpacity={0.8}
-                >
-                  <Text
-                    style={[
-                      styles.barrioText,
-                      barrioId === b.id && styles.barrioTextSelected,
-                    ]}
-                  >
-                    {b.nombre}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
+            <SelectInput
+              label="Selecciona tu Barrio"
+              icon="MapPin"
+              options={barrioOptions}
+              selectedValue={barrioId}
+              onSelect={setBarrioId}
+              placeholder="Elige tu barrio..."
+              theme={theme}
+              focused={barrioFocused}
+              onFocus={() => setBarrioFocused(true)}
+              onBlur={() => setBarrioFocused(false)}
+              onLoadMore={handleLoadMoreBarrios}
+              hasMore={barriosHasMore}
+              loadingMore={barriosLoadingMore}
+            />
 
             <Text style={styles.label}>Contraseña</Text>
             <View
@@ -411,41 +434,6 @@ const getStyles = (theme: AppTheme) =>
     },
     eyeIcon: {
       padding: 8,
-    },
-    barriosContainer: {
-      flexDirection: "row",
-      gap: 10,
-      marginTop: 4,
-    },
-    barrioOption: {
-      flex: 1,
-      backgroundColor: theme.colors.surfaceLight,
-      borderWidth: 1.5,
-      borderColor: theme.colors.surfaceBorder,
-      borderRadius: 16,
-      paddingVertical: 12,
-      alignItems: "center",
-      justifyContent: "center",
-      height: 48,
-    },
-    barrioOptionSelected: {
-      borderColor: theme.colors.green,
-      backgroundColor: theme.colors.greenBg,
-      // Glow effect for selected option
-      shadowColor: theme.colors.green,
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.15,
-      shadowRadius: 4,
-      elevation: 1,
-    },
-    barrioText: {
-      color: theme.colors.textSecondary,
-      fontSize: 13,
-      fontWeight: "600",
-    },
-    barrioTextSelected: {
-      color: theme.colors.textPrimary,
-      fontWeight: "700",
     },
     button: {
       backgroundColor: theme.colors.green,

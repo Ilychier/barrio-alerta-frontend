@@ -1,4 +1,4 @@
-import { IReferenciaRepository } from '../../../domain/ports/IReferenciaRepository';
+import { IReferenciaRepository, PaginatedResult } from '../../../domain/ports/IReferenciaRepository';
 import { Usuario } from '../../../domain/entities/usuario';
 import { Barrio } from '../../../domain/entities/barrio';
 import { Cuadrante } from '../../../domain/entities/cuadrante';
@@ -43,6 +43,18 @@ export class InMemoryReferenciaRepository implements IReferenciaRepository {
 
   async getBarrios(): Promise<Barrio[]> {
     return this.barrios;
+  }
+
+  async getBarriosPaginated(page: number, size: number): Promise<PaginatedResult<Barrio>> {
+    const start = page * size;
+    const items = this.barrios.slice(start, start + size);
+    return {
+      items,
+      totalElements: this.barrios.length,
+      totalPages: Math.ceil(this.barrios.length / size),
+      page,
+      size,
+    };
   }
 
   async getCuadranteById(id: number): Promise<Cuadrante | undefined> {

@@ -4,7 +4,7 @@ import { Categoria } from '../../../domain/entities/categoria';
 import { CategoriaDescripcion } from '../../../domain/entities/categoriaDescripcion';
 import { Cuadrante } from '../../../domain/entities/cuadrante';
 import { Usuario } from '../../../domain/entities/usuario';
-import { IReferenciaRepository } from '../../../domain/ports/IReferenciaRepository';
+import { IReferenciaRepository, PaginatedResult } from '../../../domain/ports/IReferenciaRepository';
 import { InMemoryReferenciaRepository } from '../memory/InMemoryReferenciaRepository';
 import { HttpGenericService } from './HttpGenericService';
 
@@ -82,6 +82,38 @@ export class ApiReferenciaRepository implements IReferenciaRepository {
         console.warn('[ApiReferenciaRepository] Failed to getBarrios(). Falling back to local data:', error);
       }
       return this.fallback.getBarrios();
+    }
+  }
+
+  async getBarriosPaginated(page: number, size: number): Promise<PaginatedResult<Barrio>> {
+    try {
+      const response = await this.http.get<any>('/barrios', {
+        params: { page, size },
+      });
+      const body = response.data;
+      const items = (body.content ?? body).map(
+        (b: any) => new Barrio(
+          b.id,
+          b.nombre,
+          b.cuadranteId ?? b.cuadrante_id ?? b.cuadrante?.id
+        )
+      );
+      return {
+        items,
+        totalElements: body.totalElements ?? items.length,
+        totalPages: body.totalPages ?? 1,
+        page: body.page ?? page,
+        size: body.size ?? size,
+      };
+    } catch (error) {
+      if (isAxiosError(error)) {
+        console.warn(
+          `[ApiReferenciaRepository] Failed to getBarriosPaginated(${page}, ${size}) [Status: ${error.response?.status}]. Falling back to local data.`
+        );
+      } else {
+        console.warn(`[ApiReferenciaRepository] Failed to getBarriosPaginated(${page}, ${size}). Falling back to local data:`, error);
+      }
+      return this.fallback.getBarriosPaginated(page, size);
     }
   }
 

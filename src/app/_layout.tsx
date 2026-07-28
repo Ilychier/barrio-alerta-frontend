@@ -18,9 +18,9 @@ import { IconRenderer } from "@/presentation/components/atomic/IconRenderer";
 import { Header } from "@/presentation/components/layout/Header";
 import { SVGBackground } from "@/presentation/components/layout/SVGBackground";
 import { AuthProvider, useAuth } from "@/presentation/context/AuthContext";
+import { LandingScreen } from "@/presentation/screens/LandingScreen";
 import { LoginScreen } from "@/presentation/screens/LoginScreen";
 import { RegisterScreen } from "@/presentation/screens/RegisterScreen";
-import { LandingScreen } from "@/presentation/screens/LandingScreen";
 import {
   AppTheme,
   ThemeProvider,
@@ -42,7 +42,9 @@ function TabLayout() {
     useAuth();
   const { theme } = useAppTheme();
   const styles = getStyles(theme);
-  const [authView, setAuthView] = useState<'landing' | 'login' | 'register'>('landing');
+  const [authView, setAuthView] = useState<"landing" | "login" | "register">(
+    "landing",
+  );
 
   const { width } = useWindowDimensions();
   const isSmallScreen = width < 768;
@@ -103,40 +105,41 @@ function TabLayout() {
 
   if (loading) {
     return (
-      <View
-        style={{
-          flex: 1,
-          backgroundColor: theme.colors.bg,
-          justifyContent: "center",
-          alignItems: "center",
-        }}
-      >
-        <ActivityIndicator size="large" color={theme.colors.green} />
-      </View>
+      <SVGBackground>
+        <View
+          style={{
+            flex: 1,
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <ActivityIndicator size="large" color={theme.colors.green} />
+        </View>
+      </SVGBackground>
     );
   }
 
   if (!isAuthenticated) {
-    if (authView === 'register') {
+    if (authView === "register") {
       return (
         <RegisterScreen
-          onLoginPress={() => setAuthView('login')}
-          onBackPress={() => setAuthView('landing')}
+          onLoginPress={() => setAuthView("login")}
+          onBackPress={() => setAuthView("landing")}
         />
       );
     }
-    if (authView === 'login') {
+    if (authView === "login") {
       return (
         <LoginScreen
-          onRegisterPress={() => setAuthView('register')}
-          onBackPress={() => setAuthView('landing')}
+          onRegisterPress={() => setAuthView("register")}
+          onBackPress={() => setAuthView("landing")}
         />
       );
     }
     return (
       <LandingScreen
-        onLoginPress={() => setAuthView('login')}
-        onRegisterPress={() => setAuthView('register')}
+        onLoginPress={() => setAuthView("login")}
+        onRegisterPress={() => setAuthView("register")}
       />
     );
   }

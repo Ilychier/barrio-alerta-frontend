@@ -5,7 +5,7 @@ import {
   Text,
   TouchableOpacity,
   useWindowDimensions,
-  View
+  View,
 } from "react-native";
 import Icon from "../components/atomic/Icon";
 import { SVGBackground } from "../components/layout/SVGBackground";
@@ -371,57 +371,6 @@ export function LandingScreen({
                   </View>
                 </View>
               ))}
-            </View>
-          </View>
-        </View>
-
-        {/* ── IMPACT ──────────────────────────────────────── */}
-        <View style={styles.impactOuter}>
-          <View style={styles.contentWrapper}>
-            <Text style={styles.sectionTag}>Detrás del código</Text>
-            <Text style={styles.sectionTitle}>Eficiencia con conciencia</Text>
-
-            <View style={styles.impactCard}>
-              <View style={styles.impactRow}>
-                <View style={styles.impactIconCircle}>
-                  <Icon name="Zap" size={22} color={theme.colors.green} />
-                </View>
-                <View style={styles.impactTextContainer}>
-                  <Text style={styles.impactLabel}>Mapeos en compilación</Text>
-                  <Text style={styles.impactDetail}>
-                    Sin reflexión en runtime. Menos CPU, menos batería en el
-                    servidor.
-                  </Text>
-                </View>
-              </View>
-              <View style={styles.impactDivider} />
-              <View style={styles.impactRow}>
-                <View style={styles.impactIconCircle}>
-                  <Icon name="Database" size={22} color={theme.colors.green} />
-                </View>
-                <View style={styles.impactTextContainer}>
-                  <Text style={styles.impactLabel}>
-                    Dominio puro, sin frameworks
-                  </Text>
-                  <Text style={styles.impactDetail}>
-                    El núcleo del sistema es Java puro. Ejecutable en cualquier
-                    entorno, sin el peso de librerías comerciales.
-                  </Text>
-                </View>
-              </View>
-              <View style={styles.impactDivider} />
-              <View style={styles.impactRow}>
-                <View style={styles.impactIconCircle}>
-                  <Icon name="Eye" size={22} color={theme.colors.green} />
-                </View>
-                <View style={styles.impactTextContainer}>
-                  <Text style={styles.impactLabel}>Transparencia radical</Text>
-                  <Text style={styles.impactDetail}>
-                    Código abierto, documentado y auditable. Cualquier comunidad
-                    puede desplegar su propia instancia.
-                  </Text>
-                </View>
-              </View>
             </View>
           </View>
         </View>
