@@ -6,8 +6,8 @@ import { Categoria } from '../../../domain/entities/categoria';
 import { CategoriaDescripcion } from '../../../domain/entities/categoriaDescripcion';
 
 const INITIAL_CUADRANTES: Cuadrante[] = [
-  new Cuadrante(101, 'CAI Soacha Centro', '+57 310 555 0123'),
-  new Cuadrante(102, 'CAI Compartir', '+57 312 444 9876'),
+  new Cuadrante(101, 'CAI Soacha Centro', '+57 310 555 0123', 'cai.soacha.centro@test.com'),
+  new Cuadrante(102, 'CAI Compartir', '+57 312 444 9876', 'cai.compartir@test.com'),
 ];
 
 const INITIAL_BARRIOS: Barrio[] = [

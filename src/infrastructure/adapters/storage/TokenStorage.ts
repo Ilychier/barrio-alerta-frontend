@@ -1,39 +1,29 @@
-import { Platform } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+const AUTH_TOKEN_KEY = 'auth_token';
 
 export class TokenStorage {
-  private static token: string | null = null;
-
   static async setToken(token: string): Promise<void> {
-    this.token = token;
-    if (Platform.OS === 'web') {
-      try {
-        localStorage.setItem('auth_token', token);
-      } catch (e) {
-        console.warn('LocalStorage is not available', e);
-      }
+    try {
+      await AsyncStorage.setItem(AUTH_TOKEN_KEY, token);
+    } catch (e) {
+      console.warn('AsyncStorage is not available', e);
     }
   }
 
   static async getToken(): Promise<string | null> {
-    if (this.token) return this.token;
-    if (Platform.OS === 'web') {
-      try {
-        return localStorage.getItem('auth_token');
-      } catch (e) {
-        return null;
-      }
+    try {
+      return await AsyncStorage.getItem(AUTH_TOKEN_KEY);
+    } catch (e) {
+      return null;
     }
-    return null;
   }
 
   static async clearToken(): Promise<void> {
-    this.token = null;
-    if (Platform.OS === 'web') {
-      try {
-        localStorage.removeItem('auth_token');
-      } catch (e) {
-        // ignore
-      }
+    try {
+      await AsyncStorage.removeItem(AUTH_TOKEN_KEY);
+    } catch (e) {
+      // ignore
     }
   }
 }

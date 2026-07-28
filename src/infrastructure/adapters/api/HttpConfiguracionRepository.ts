@@ -14,7 +14,7 @@ export class HttpConfiguracionRepository implements IConfiguracionRepository {
 
   async obtenerPorUsuarioId(usuarioId: number): Promise<Configuracion | undefined> {
     try {
-      const response = await this.http.get<any>(`${this.endpoints.configuraciones}/${usuarioId}`);
+      const response = await this.http.get<any>(`${this.endpoints.configuraciones}/usuario/${usuarioId}`);
       if (response.data) {
         const raw = response.data;
         return new Configuracion(
@@ -45,7 +45,7 @@ export class HttpConfiguracionRepository implements IConfiguracionRepository {
         modoSilencioso: config.modo_silencioso,
       };
       const response = await this.http.put<any>(
-        `${this.endpoints.configuraciones}/${config.usuario_id}`,
+        `${this.endpoints.configuraciones}/usuario/${config.usuario_id}`,
         payload
       );
       if (response.data) {

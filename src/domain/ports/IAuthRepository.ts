@@ -1,7 +1,7 @@
-import { Usuario } from '../entities/usuario';
+import { SesionDTO } from '../entities/sesion';
 
 export interface IAuthRepository {
-  login(email: string, password: string): Promise<{ token: string; user: Usuario }>;
+  login(email: string, password: string): Promise<SesionDTO>;
   register(
     nombre: string,
     email: string,
@@ -9,6 +9,6 @@ export interface IAuthRepository {
     address: string,
     barrioId: number,
     password: string
-  ): Promise<{ token: string; user: Usuario }>;
-  getMe(): Promise<Usuario>;
+  ): Promise<SesionDTO>;
+  getMe(): Promise<SesionDTO>;
 }

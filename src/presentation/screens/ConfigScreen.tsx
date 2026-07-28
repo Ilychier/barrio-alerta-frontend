@@ -1,21 +1,28 @@
-import { useRouter } from 'expo-router';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useEffect, useRef } from 'react';
+import { Animated, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useConfiguracionController } from '../../application/controllers/useConfiguracionController';
 import { useDashboardController } from '../../application/controllers/useDashboardController';
 import { IconRenderer } from '../components/atomic/IconRenderer';
 import { ToggleSwitch } from '../components/atomic/ToggleSwitch';
 import { SectionCard } from '../components/layout/SectionCard';
-import { useAuth } from '../context/AuthContext';
 import { useAppTheme, AppTheme } from '../theme/ThemeContext';
 
 export function ConfigScreen() {
-  const router = useRouter();
-  const { user } = useAuth();
-  const userId = user?.id ?? 0;
-  const { config, handleUpdate } = useConfiguracionController(userId);
-  const { barrio, cuadrante } = useDashboardController(userId);
+  const { config, handleUpdate, feedback, clearFeedback } = useConfiguracionController();
+  const { barrio, cuadrante } = useDashboardController();
   const { theme, themeType, toggleTheme } = useAppTheme();
   const styles = getStyles(theme);
+  const feedbackOpacity = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    if (feedback) {
+      Animated.sequence([
+        Animated.timing(feedbackOpacity, { toValue: 1, duration: 200, useNativeDriver: true }),
+        Animated.delay(2500),
+        Animated.timing(feedbackOpacity, { toValue: 0, duration: 300, useNativeDriver: true }),
+      ]).start(() => clearFeedback());
+    }
+  }, [feedback, feedbackOpacity, clearFeedback]);
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
@@ -67,14 +74,25 @@ export function ConfigScreen() {
             </Text>
           </View>
         </View>
-
-        <TouchableOpacity
-          onPress={() => router.back()}
-          style={styles.confirmButton}
-        >
-          <Text style={styles.confirmButtonText}>Confirmar Preferencias</Text>
-        </TouchableOpacity>
       </SectionCard>
+
+      {/* Toast de feedback */}
+      {feedback && (
+        <Animated.View
+          style={[
+            styles.toast,
+            feedback.type === 'success' ? styles.toastSuccess : styles.toastError,
+            { opacity: feedbackOpacity },
+          ]}
+        >
+          <IconRenderer
+            name={feedback.type === 'success' ? 'Check' : 'AlertTriangle'}
+            size={16}
+            color={theme.colors.white}
+          />
+          <Text style={styles.toastText}>{feedback.message}</Text>
+        </Animated.View>
+      )}
     </ScrollView>
   );
 }
@@ -82,7 +100,7 @@ export function ConfigScreen() {
 const getStyles = (theme: AppTheme) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: theme.colors.bg,
+    backgroundColor: 'transparent',
   },
   content: {
     padding: 16,
@@ -143,18 +161,33 @@ const getStyles = (theme: AppTheme) => StyleSheet.create({
     color: theme.colors.green,
   },
 
-  confirmButton: {
-    marginTop: 24,
-    backgroundColor: theme.colors.border,
-    paddingVertical: 10,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: theme.colors.surfaceBorder,
+  // Toast
+  toast: {
+    position: 'absolute',
+    top: 16,
+    left: 16,
+    right: 16,
+    flexDirection: 'row',
     alignItems: 'center',
+    gap: 10,
+    padding: 14,
+    borderRadius: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 6,
   },
-  confirmButtonText: {
-    fontWeight: '700',
-    fontSize: 12,
-    color: theme.colors.textPrimary,
+  toastSuccess: {
+    backgroundColor: theme.colors.green,
+  },
+  toastError: {
+    backgroundColor: theme.colors.red,
+  },
+  toastText: {
+    color: theme.colors.white,
+    fontSize: 13,
+    fontWeight: '600',
+    flex: 1,
   },
 });

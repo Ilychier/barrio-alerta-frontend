@@ -1,51 +1,35 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 import { DependencyContainer } from '../../infrastructure/config/dependencyContainer';
-import { Configuracion } from '../../domain/entities/configuracion';
+import { useAuth } from '../../presentation/context/AuthContext';
 
 type CampoConfig = 'recibir_notificaciones' | 'modo_silencioso';
 
-export function useConfiguracionController(currentUserId: number) {
+export interface FeedbackState {
+  message: string;
+  type: 'success' | 'error';
+}
+
+export function useConfiguracionController() {
   const container = DependencyContainer.getInstance();
   const useCase = container.getActualizarConfiguracionUseCase();
-  const configRepo = container.getConfiguracionRepository();
-
-  const [config, setConfig] = useState<Configuracion | undefined>(undefined);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    let active = true;
-    async function loadConfig() {
-      try {
-        setLoading(true);
-        const res = await configRepo.obtenerPorUsuarioId(currentUserId);
-        if (active) {
-          setConfig(res);
-        }
-      } catch (error) {
-        console.error('Error loading configuration:', error);
-      } finally {
-        if (active) {
-          setLoading(false);
-        }
-      }
-    }
-    loadConfig();
-    return () => {
-      active = false;
-    };
-  }, [currentUserId, configRepo]);
+  const { configuracion, setConfiguracion } = useAuth();
+  const [feedback, setFeedback] = useState<FeedbackState | null>(null);
 
   const handleUpdate = useCallback(
     async (campo: CampoConfig, valor: boolean) => {
       try {
-        const result = await useCase.execute({ usuarioId: currentUserId, campo, valor });
-        setConfig(result.configuracion);
+        const result = await useCase.execute({ usuarioId: configuracion?.usuario_id ?? 0, campo, valor });
+        setConfiguracion(result.configuracion);
+        setFeedback({ message: 'Configuración actualizada', type: 'success' });
       } catch (error) {
         console.error('Error updating configuration:', error);
+        setFeedback({ message: 'Error al actualizar la configuración', type: 'error' });
+      } finally {
+        setTimeout(() => setFeedback(null), 3000);
       }
     },
-    [currentUserId, useCase],
+    [configuracion, useCase, setConfiguracion],
   );
 
-  return { config, handleUpdate, loading };
+  return { config: configuracion, handleUpdate, feedback, clearFeedback: () => setFeedback(null) };
 }

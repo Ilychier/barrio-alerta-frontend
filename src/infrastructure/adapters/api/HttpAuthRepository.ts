@@ -1,27 +1,20 @@
 import { isAxiosError } from 'axios';
 import { IAuthRepository } from '../../../domain/ports/IAuthRepository';
+import { SesionDTO } from '../../../domain/entities/sesion';
 import { Usuario } from '../../../domain/entities/usuario';
+import { Barrio } from '../../../domain/entities/barrio';
+import { Cuadrante } from '../../../domain/entities/cuadrante';
+import { Configuracion } from '../../../domain/entities/configuracion';
 import { HttpGenericService } from './HttpGenericService';
 import { TokenStorage } from '../storage/TokenStorage';
 
 export class HttpAuthRepository implements IAuthRepository {
   private readonly http = HttpGenericService.getInstance().getClient();
 
-  async login(email: string, password: string): Promise<{ token: string; user: Usuario }> {
+  async login(email: string, password: string): Promise<SesionDTO> {
     try {
       const response = await this.http.post<any>('/auth/login', { email, password });
-      const { token, user } = response.data;
-      
-      await TokenStorage.setToken(token);
-      
-      const mappedUser = new Usuario(
-        user.id,
-        user.name || user.nombre || 'Usuario',
-        user.email,
-        user.barrioId || user.barrio_id || 1
-      );
-      
-      return { token, user: mappedUser };
+      return this.toSesion(response.data);
     } catch (error) {
       if (isAxiosError(error)) {
         throw new Error(error.response?.data?.errors?.[0]?.name || 'Error al iniciar sesión');
@@ -37,7 +30,7 @@ export class HttpAuthRepository implements IAuthRepository {
     address: string,
     barrioId: number,
     password: string
-  ): Promise<{ token: string; user: Usuario }> {
+  ): Promise<SesionDTO> {
     try {
       const payload = {
         name: nombre,
@@ -47,20 +40,8 @@ export class HttpAuthRepository implements IAuthRepository {
         barrioId,
         password
       };
-      
       const response = await this.http.post<any>('/auth/register', payload);
-      const { token, user } = response.data;
-      
-      await TokenStorage.setToken(token);
-      
-      const mappedUser = new Usuario(
-        user.id,
-        user.name || user.nombre || 'Usuario',
-        user.email,
-        user.barrioId || user.barrio_id || 1
-      );
-      
-      return { token, user: mappedUser };
+      return this.toSesion(response.data);
     } catch (error) {
       if (isAxiosError(error)) {
         throw new Error(error.response?.data?.errors?.[0]?.name || 'Error al registrar usuario');
@@ -69,23 +50,55 @@ export class HttpAuthRepository implements IAuthRepository {
     }
   }
 
-  async getMe(): Promise<Usuario> {
+  async getMe(): Promise<SesionDTO> {
     try {
-      const response = await this.http.get<any>('/usuarios/me');
-      if (response.data) {
-        return new Usuario(
-          response.data.id,
-          response.data.name || response.data.nombre || 'Usuario',
-          response.data.email,
-          response.data.barrioId || response.data.barrio_id || 1
-        );
-      }
-      throw new Error('No se pudo obtener la información de perfil.');
+      const response = await this.http.get<any>('/auth/me');
+      return this.toSesion(response.data);
     } catch (error) {
       if (isAxiosError(error)) {
         throw new Error(error.response?.data?.errors?.[0]?.name || 'Error al obtener sesión');
       }
       throw error;
     }
+  }
+
+  private async toSesion(raw: any): Promise<SesionDTO> {
+    if (raw.token) {
+      await TokenStorage.setToken(raw.token);
+    }
+
+    const user = new Usuario(
+      raw.user.id,
+      raw.user.name || raw.user.nombre || 'Usuario',
+      raw.user.email,
+      raw.user.barrioId ?? raw.user.barrio_id ?? 1
+    );
+
+    const barrio = raw.barrio
+      ? new Barrio(
+          raw.barrio.id,
+          raw.barrio.nombre,
+          raw.barrio.cuadranteId ?? raw.barrio.cuadrante_id ?? raw.barrio.cuadrante?.id
+        )
+      : null;
+
+    const cuadrante = raw.cuadrante
+      ? new Cuadrante(
+          raw.cuadrante.id,
+          raw.cuadrante.nombreUnidad || raw.cuadrante.nombre_unidad,
+          raw.cuadrante.telefonoEmergencia || raw.cuadrante.telefono_emergencia
+        )
+      : null;
+
+    const configuracion = raw.configuracion
+      ? new Configuracion(
+          raw.configuracion.id,
+          raw.configuracion.usuarioId ?? raw.configuracion.usuario_id,
+          raw.configuracion.recibirNotificaciones ?? raw.configuracion.recibir_notificaciones,
+          raw.configuracion.modoSilencioso ?? raw.configuracion.modo_silencioso
+        )
+      : null;
+
+    return { token: raw.token, user, barrio, cuadrante, configuracion };
   }
 }
