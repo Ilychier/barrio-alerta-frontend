@@ -24,6 +24,7 @@ export function mapCiudad(raw: any): Ciudad {
     raw.nombre ?? '',
     raw.departamento ?? '',
     raw.pais ?? 'Colombia',
+    raw.esCapital ?? false,
   );
 }
 

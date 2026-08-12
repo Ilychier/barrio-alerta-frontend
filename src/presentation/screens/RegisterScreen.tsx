@@ -10,6 +10,8 @@ import {
   View,
 } from "react-native";
 import { Barrio } from "../../domain/entities/barrio";
+import { Localidad } from "../../domain/entities/localidad";
+import { Ciudad } from "../../domain/mascotas/entities/Ciudad";
 import { DependencyContainer } from "../../infrastructure/config/dependencyContainer";
 import Icon from "../components/atomic/Icon";
 import { SelectInput, SelectOption } from "../components/atomic/SelectInput";
@@ -23,6 +25,9 @@ interface RegisterScreenProps {
   onBackPress?: () => void;
 }
 
+// País quemado: solo Colombia por ahora (extensión lista para más países)
+const PAISES: SelectOption[] = [{ value: 1, label: "Colombia" }];
+
 export function RegisterScreen({
   onLoginPress,
   onBackPress,
@@ -35,14 +40,36 @@ export function RegisterScreen({
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
-  const [barrioId, setBarrioId] = useState<number>(1);
+  const [paisId, setPaisId] = useState<number>(1);
+  const [departamento, setDepartamento] = useState<string>("");
+  const [municipioId, setMunicipioId] = useState<number>(0);
+  const [localidadId, setLocalidadId] = useState<number>(0);
+  const [barrioId, setBarrioId] = useState<number>(0);
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Catálogo de municipios (1125 reales) — cacheado una vez
+  const [municipios, setMunicipios] = useState<Ciudad[]>([]);
+  const [localidades, setLocalidades] = useState<Localidad[]>([]);
   const [barrios, setBarrios] = useState<Barrio[]>([]);
   const [barriosPage, setBarriosPage] = useState(0);
   const [barriosHasMore, setBarriosHasMore] = useState(true);
   const [barriosLoadingMore, setBarriosLoadingMore] = useState(false);
+
+  // Departamentos únicos derivados del catálogo de municipios (KISS: sin endpoint extra)
+  const departamentoOptions: SelectOption[] = [
+    ...new Set(municipios.map((m) => m.departamento).filter(Boolean)),
+  ]
+    .sort()
+    .map((d) => ({ value: d, label: d }));
+  // Municipios filtrados por departamento seleccionado
+  const municipioOptions: SelectOption[] = municipios
+    .filter((m) => m.departamento === departamento)
+    .map((m) => ({ value: m.id, label: m.nombre }));
+  const localidadOptions: SelectOption[] = localidades.map((l) => ({
+    value: l.id,
+    label: l.nombre,
+  }));
   const barrioOptions: SelectOption[] = barrios.map((b) => ({
     value: b.id,
     label: b.nombre,
@@ -54,38 +81,85 @@ export function RegisterScreen({
   const [phoneFocused, setPhoneFocused] = useState(false);
   const [addressFocused, setAddressFocused] = useState(false);
   const [passwordFocused, setPasswordFocused] = useState(false);
+  const [paisFocused, setPaisFocused] = useState(false);
+  const [departamentoFocused, setDepartamentoFocused] = useState(false);
+  const [municipioFocused, setMunicipioFocused] = useState(false);
+  const [localidadFocused, setLocalidadFocused] = useState(false);
   const [barrioFocused, setBarrioFocused] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
   const PAGE_SIZE = 20;
 
+  // 1. Carga el catálogo de municipios (1125 reales de Colombia) una sola vez
   useEffect(() => {
-    async function fetchBarrios() {
+    async function fetchMunicipios() {
+      try {
+        const repo =
+          DependencyContainer.getInstance().getMascotaReferenciaRepository();
+        const todas = await repo.getCiudadesTodas();
+        setMunicipios(todas);
+      } catch (e) {
+        console.error("Error fetching municipios:", e);
+      }
+    }
+    fetchMunicipios();
+  }, []);
+
+  // 2. Al elegir departamento, el handler resetea municipio/localidad/barrio
+  //    (sin setState síncrono en effect — cumple react-hooks/set-state-in-effect)
+
+  // 3. Al elegir municipio, carga sus localidades
+  useEffect(() => {
+    async function fetchLocalidades() {
+      if (!municipioId) {
+        setLocalidades([]);
+        setLocalidadId(0);
+        return;
+      }
       try {
         const repo =
           DependencyContainer.getInstance().getReferenciaRepository();
-        const result = await repo.getBarriosPaginated(0, PAGE_SIZE);
+        const items = await repo.getLocalidadesByMunicipio(municipioId);
+        setLocalidades(items);
+        setLocalidadId(items.length > 0 ? items[0].id : 0);
+      } catch (e) {
+        console.error("Error fetching localidades:", e);
+      }
+    }
+    fetchLocalidades();
+  }, [municipioId]);
+
+  // 4. Al elegir localidad, carga sus barrios
+  useEffect(() => {
+    async function fetchBarrios() {
+      if (!localidadId) {
+        setBarrios([]);
+        setBarrioId(0);
+        return;
+      }
+      try {
+        const repo =
+          DependencyContainer.getInstance().getReferenciaRepository();
+        const result = await repo.getBarriosPaginated(0, PAGE_SIZE, localidadId);
         setBarrios(result.items);
         setBarriosPage(0);
         setBarriosHasMore(result.page + 1 < result.totalPages);
-        if (result.items.length > 0 && barrioId === 1) {
-          setBarrioId(result.items[0].id);
-        }
+        setBarrioId(result.items.length > 0 ? result.items[0].id : 0);
       } catch (e) {
         console.error("Error fetching barrios:", e);
       }
     }
     fetchBarrios();
-  }, []);
+  }, [localidadId]);
 
   const handleLoadMoreBarrios = async () => {
-    if (barriosLoadingMore || !barriosHasMore) return;
+    if (barriosLoadingMore || !barriosHasMore || !localidadId) return;
     setBarriosLoadingMore(true);
     try {
       const repo =
         DependencyContainer.getInstance().getReferenciaRepository();
       const nextPage = barriosPage + 1;
-      const result = await repo.getBarriosPaginated(nextPage, PAGE_SIZE);
+      const result = await repo.getBarriosPaginated(nextPage, PAGE_SIZE, localidadId);
       setBarrios((prev) => [...prev, ...result.items]);
       setBarriosPage(nextPage);
       setBarriosHasMore(nextPage + 1 < result.totalPages);
@@ -96,9 +170,35 @@ export function RegisterScreen({
     }
   };
 
+  const handleDepartamentoChange = (value: number | string) => {
+    setDepartamento(String(value));
+    // Resetear la cadena inferior al cambiar departamento
+    setMunicipioId(0);
+    setLocalidadId(0);
+    setBarrioId(0);
+    setLocalidades([]);
+    setBarrios([]);
+  };
+
   const handleRegister = async () => {
     if (!nombre || !email || !phone || !address || !password) {
       setError("Por favor, completa todos los campos.");
+      return;
+    }
+    if (!departamento) {
+      setError("Por favor, selecciona tu departamento.");
+      return;
+    }
+    if (!municipioId) {
+      setError("Por favor, selecciona tu municipio/ciudad.");
+      return;
+    }
+    if (!localidadId) {
+      setError("Por favor, selecciona tu localidad.");
+      return;
+    }
+    if (!barrioId) {
+      setError("Por favor, selecciona tu barrio.");
       return;
     }
     setError(null);
@@ -262,12 +362,64 @@ export function RegisterScreen({
             </View>
 
             <SelectInput
-              label="Selecciona tu Barrio"
+              label="País"
+              icon="Globe"
+              options={PAISES}
+              selectedValue={paisId}
+              onSelect={(v) => setPaisId(Number(v))}
+              placeholder="Elige tu país..."
+              theme={theme}
+              focused={paisFocused}
+              onFocus={() => setPaisFocused(true)}
+              onBlur={() => setPaisFocused(false)}
+            />
+
+            <SelectInput
+              label="Departamento"
+              icon="Map"
+              options={departamentoOptions}
+              selectedValue={departamento}
+              onSelect={handleDepartamentoChange}
+              placeholder="Elige tu departamento..."
+              theme={theme}
+              focused={departamentoFocused}
+              onFocus={() => setDepartamentoFocused(true)}
+              onBlur={() => setDepartamentoFocused(false)}
+            />
+
+            <SelectInput
+              label="Municipio / Ciudad"
+              icon="Building2"
+              options={municipioOptions}
+              selectedValue={municipioId}
+              onSelect={(v) => setMunicipioId(Number(v))}
+              placeholder={departamento ? "Elige tu municipio..." : "Primero elige tu departamento"}
+              theme={theme}
+              focused={municipioFocused}
+              onFocus={() => setMunicipioFocused(true)}
+              onBlur={() => setMunicipioFocused(false)}
+            />
+
+            <SelectInput
+              label="Localidad / Comuna"
               icon="MapPin"
+              options={localidadOptions}
+              selectedValue={localidadId}
+              onSelect={(v) => setLocalidadId(Number(v))}
+              placeholder={municipioId ? "Elige tu localidad..." : "Primero elige tu municipio"}
+              theme={theme}
+              focused={localidadFocused}
+              onFocus={() => setLocalidadFocused(true)}
+              onBlur={() => setLocalidadFocused(false)}
+            />
+
+            <SelectInput
+              label="Selecciona tu Barrio"
+              icon="House"
               options={barrioOptions}
               selectedValue={barrioId}
-              onSelect={setBarrioId}
-              placeholder="Elige tu barrio..."
+              onSelect={(v) => setBarrioId(Number(v))}
+              placeholder={localidadId ? "Elige tu barrio..." : "Primero elige tu localidad"}
               theme={theme}
               focused={barrioFocused}
               onFocus={() => setBarrioFocused(true)}

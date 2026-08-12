@@ -79,7 +79,7 @@ export class HttpAuthRepository implements IAuthRepository {
           raw.barrio.id,
           raw.barrio.nombre,
           raw.barrio.cuadranteId ?? raw.barrio.cuadrante_id ?? raw.barrio.cuadrante?.id,
-          raw.barrio.ciudadId ?? raw.barrio.ciudad_id
+          raw.barrio.localidadId ?? raw.barrio.localidad_id
         )
       : null;
 

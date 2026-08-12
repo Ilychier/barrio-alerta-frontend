@@ -12,7 +12,7 @@ export class InMemoryAuthRepository implements IAuthRepository {
     return {
       token,
       user,
-      barrio: new Barrio(1, 'Centro', 101, 2),
+      barrio: new Barrio(1, 'Centro', 101, 1),
       cuadrante: new Cuadrante(101, 'CAI Soacha Centro', '+57 310 555 0123'),
       configuracion: new Configuracion(1, user.id, true, false),
       ciudadNombre: 'Medellín',
