@@ -13,8 +13,10 @@ import { useEffect, useState } from "react";
 import * as ImagePicker from "expo-image-picker";
 import { Image } from "expo-image";
 import { useReporteMascotaController } from "../../../application/mascotas/controllers/useReporteMascotaController";
+import { useUbicacionGeografica } from "../../../application/ubicacion/useUbicacionGeografica";
 import { useAuth } from "../../context/AuthContext";
 import Icon from "../../components/atomic/Icon";
+import { UbicacionGeograficaPicker } from "../../components/molecules/UbicacionGeograficaPicker";
 import { AppTheme, useAppTheme } from "../../theme/ThemeContext";
 
 const MAX_FOTO_BYTES = 8 * 1024 * 1024; // 8 MB (mismo límite que el backend)
@@ -42,12 +44,13 @@ export function CrearReporteMascotaScreen() {
   const [tipoMascotaId, setTipoMascotaId] = useState<number | undefined>(undefined);
   const [otroTipoMascota, setOtroTipoMascota] = useState("");
   const [ciudadId, setCiudadId] = useState<number | undefined>(undefined);
-  const [ubicacion, setUbicacion] = useState("");
   const [telefono, setTelefono] = useState(user?.email ? "" : "");
   const [descripcion, setDescripcion] = useState("");
   const [fotoUri, setFotoUri] = useState<string | undefined>(undefined);
   const [fotoMime, setFotoMime] = useState<string | undefined>(undefined);
   const [fotoFile, setFotoFile] = useState<any>(undefined);
+
+  const ubicacion = useUbicacionGeografica(controller.ciudades);
 
   useEffect(() => {
     controller.cargarReferencias();
@@ -60,8 +63,8 @@ export function CrearReporteMascotaScreen() {
   const validar = (): string | null => {
     if (!tipoMascotaId) return "Selecciona el tipo de mascota";
     if (esOtro && !otroTipoMascota.trim()) return "Especifica qué tipo de mascota es";
-    if (!ciudadId) return "Selecciona la ciudad";
-    if (!ubicacion.trim()) return "Indica el sector o barrio";
+    if (!ciudadId) return "Selecciona el municipio/ciudad";
+    if (!ubicacion.ubicacionCompuesta.trim()) return "Indica el sector o barrio";
     if (!telefono.trim() || telefono.trim().length < 7) return "Indica un teléfono de contacto válido";
     return null;
   };
@@ -107,7 +110,7 @@ export function CrearReporteMascotaScreen() {
       tipoMascotaId: tipoMascotaId!,
       otroTipoMascota: esOtro ? otroTipoMascota.trim() : undefined,
       ciudadId: ciudadId!,
-      ubicacion: ubicacion.trim(),
+      ubicacion: ubicacion.ubicacionCompuesta,
       telefono: telefono.trim(),
       descripcion: descripcion.trim() || undefined,
       fotoUri,
@@ -182,39 +185,15 @@ export function CrearReporteMascotaScreen() {
         )}
       </View>
 
-      {/* ── Ciudad ─────────────────────────────────────── */}
+      {/* ── Ubicación (cascada Depto → Municipio → Localidad → Barrio) ── */}
       <View style={styles.seccion}>
-        <Text style={styles.label}>Ciudad</Text>
-        {controller.referenciasLoading ? (
-          <ActivityIndicator color={theme.colors.green} />
-        ) : (
-          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-            <View style={styles.chips}>
-              {controller.ciudades.slice(0, 30).map((c) => (
-                <Pressable
-                  key={c.id}
-                  style={[styles.chip, ciudadId === c.id && styles.chipActivo]}
-                  onPress={() => setCiudadId(c.id)}
-                >
-                  <Text style={[styles.chipText, ciudadId === c.id && styles.chipTextActivo]}>
-                    {c.nombre}
-                  </Text>
-                </Pressable>
-              ))}
-            </View>
-          </ScrollView>
-        )}
-      </View>
-
-      {/* ── Ubicación ──────────────────────────────────── */}
-      <View style={styles.seccion}>
-        <Text style={styles.label}>Sector / barrio / lugar</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Ej: Barrio La Soledad, cerca al parque"
-          placeholderTextColor={theme.colors.textDim}
-          value={ubicacion}
-          onChangeText={setUbicacion}
+        <Text style={styles.label}>¿Dónde está la mascota?</Text>
+        <UbicacionGeograficaPicker
+          ubicacion={ubicacion}
+          ciudadId={ciudadId}
+          onChangeCiudadId={(municipioId) => setCiudadId(municipioId)}
+          theme={theme}
+          loading={controller.referenciasLoading}
         />
       </View>
 
