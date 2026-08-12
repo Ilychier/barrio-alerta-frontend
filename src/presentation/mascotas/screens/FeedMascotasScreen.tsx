@@ -7,6 +7,7 @@ import {
   Pressable,
   StyleSheet,
   Text,
+  TextInput,
   useWindowDimensions,
   View,
 } from "react-native";
@@ -64,7 +65,32 @@ export function FeedMascotasScreen({ onVerDetalle }: FeedMascotasScreenProps = {
     setFiltroEstado(estado);
     setFiltroTipo(tipo);
     setCiudadId(ciudad);
-    feed.aplicarFiltros({ estado, tipoReporte: tipo, ciudadId: ciudad });
+    feed.aplicarFiltros({
+      estado,
+      tipoReporte: tipo,
+      ciudadId: ciudad,
+      busqueda: feed.busqueda,
+    });
+  };
+
+  const buscar = (texto: string) => {
+    feed.setBusqueda(texto);
+    feed.aplicarFiltros({
+      estado: filtroEstado,
+      tipoReporte: filtroTipo,
+      ciudadId,
+      busqueda: texto,
+    });
+  };
+
+  const limpiarBusqueda = () => {
+    feed.setBusqueda("");
+    feed.aplicarFiltros({
+      estado: filtroEstado,
+      tipoReporte: filtroTipo,
+      ciudadId,
+      busqueda: "",
+    });
   };
 
   const renderItem = ({ item }: { item: ReporteMascota }) => (
@@ -149,6 +175,31 @@ export function FeedMascotasScreen({ onVerDetalle }: FeedMascotasScreenProps = {
         <Text style={styles.subtitle}>
           Reportes de mascotas perdidas y encontradas en tu ciudad
         </Text>
+      </View>
+
+      {/* ── Búsqueda por texto ────────────────────────────── */}
+      <View style={styles.busquedaContainer}>
+        <Icon name="Search" size={16} color={theme.colors.textMuted} />
+        <TextInput
+          style={styles.busquedaInput}
+          placeholder="Buscar por descripción o ubicación…"
+          placeholderTextColor={theme.colors.textDim}
+          value={feed.busqueda}
+          onChangeText={buscar}
+          autoCapitalize="none"
+          autoCorrect={false}
+          returnKeyType="search"
+          accessibilityLabel="Buscar mascotas por descripción o ubicación"
+        />
+        {feed.busqueda.length > 0 ? (
+          <Pressable
+            onPress={limpiarBusqueda}
+            hitSlop={8}
+            accessibilityLabel="Limpiar búsqueda"
+          >
+            <Icon name="X" size={16} color={theme.colors.textMuted} />
+          </Pressable>
+        ) : null}
       </View>
 
       {/* ── Filtros ────────────────────────────────────── */}
@@ -265,6 +316,24 @@ const getStyles = (theme: AppTheme, isDesktop: boolean) =>
       gap: 12,
       marginBottom: 10,
       width: "100%",
+    },
+    busquedaContainer: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 8,
+      backgroundColor: theme.colors.surface,
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+      borderRadius: 12,
+      paddingHorizontal: 12,
+      marginBottom: 10,
+      width: "100%",
+    },
+    busquedaInput: {
+      flex: 1,
+      paddingVertical: 10,
+      fontSize: 14,
+      color: theme.colors.textPrimary,
     },
     selectWrapper: {
       flex: 1,

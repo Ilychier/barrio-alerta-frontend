@@ -14,6 +14,7 @@ import { ReporteRapidoResult } from "../../domain/mascotas/ports/IReporteRapidoR
 import Icon from "../components/atomic/Icon";
 import { SVGBackground } from "../components/layout/SVGBackground";
 import { useAuth } from "../context/AuthContext";
+import { CambiarPasswordScreen } from "./CambiarPasswordScreen";
 import { RegistroRapidoForm } from "../mascotas/components/RegistroRapidoForm";
 import { FeedMascotasScreen } from "../mascotas/screens/FeedMascotasScreen";
 import { DetalleReporteMascotaScreen } from "../mascotas/screens/DetalleReporteMascotaScreen";
@@ -30,7 +31,7 @@ interface LandingEmergenciaMascotasScreenProps {
 }
 
 type Vista = "reportar" | "ver";
-type EstadoRegistro = "idle" | "exito" | "existente";
+type EstadoRegistro = "idle" | "cambiando-clave" | "exito" | "existente";
 /**
  * Landing de emergencia (BC Mascotas) — pantalla inicial cuando
  * MODO_EMERGENCIA=true. Reemplaza a la landing de marketing (que queda
@@ -39,8 +40,10 @@ type EstadoRegistro = "idle" | "exito" | "existente";
  * - Toggle superior: "Reportar" (formulario rápido) / "Ver Animalitos" (feed público).
  * - Menú: "Emergencia Colombia" (esta pantalla), "Ver Dashboard" (entra a la
  *   app normal), "Cambiar mi contraseña" (si clave temporal), login/logout.
- * - Tras reportar: auto-login con el JWT (usuario nuevo o temporal) y pantalla
- *   de gracias. Si el usuario ya existía con clave real, mensaje + botón a login.
+ * - Tras reportar: auto-login con el JWT (usuario nuevo o temporal). Si la
+ *   clave es temporal, se fuerza el cambio de clave ANTES de mostrar la
+ *   pantalla de gracias (evita que los usuarios pierdan sus claves). Si el
+ *   usuario ya existía con clave real, mensaje + botón a login.
  */
 export function LandingEmergenciaMascotasScreen({
   onLoginPress,
@@ -60,9 +63,13 @@ export function LandingEmergenciaMascotasScreen({
   const [detalleReporte, setDetalleReporte] = useState<ReporteMascota | null>(
     null,
   );
-  const [estadoRegistro, setEstadoRegistro] = useState<EstadoRegistro>(() =>
-    ultimoRegistroRapido.get() ? "exito" : "idle",
-  );
+  const [estadoRegistro, setEstadoRegistro] = useState<EstadoRegistro>(() => {
+    const res = ultimoRegistroRapido.get();
+    if (!res) return "idle";
+    // Si la clave sigue temporal (no se completó el cambio), forzar el cambio
+    if (passwordTemporal) return "cambiando-clave";
+    return "exito";
+  });
   const [resultado, setResultado] = useState<ReporteRapidoResult | null>(() =>
     ultimoRegistroRapido.get(),
   );
@@ -109,7 +116,12 @@ export function LandingEmergenciaMascotasScreen({
     if (result.token) {
       try {
         await autenticarConToken(result.token);
-        setEstadoRegistro("exito");
+        // Clave temporal: forzar el cambio de clave ANTES de las gracias
+        if (result.passwordTemporal) {
+          setEstadoRegistro("cambiando-clave");
+        } else {
+          setEstadoRegistro("exito");
+        }
       } catch {
         setAutologinError(
           "Tu reporte quedó registrado, pero no pudimos iniciar sesión automáticamente.",
@@ -128,6 +140,12 @@ export function LandingEmergenciaMascotasScreen({
     ultimoRegistroRapido.clear();
     setVista("reportar");
     ultimaVistaEmergencia.set("reportar");
+  };
+
+  // El cambio de clave terminó con éxito: la clave ya no es temporal,
+  // mostrar la pantalla de gracias (sin aviso de clave temporal).
+  const handleClaveCambiada = () => {
+    setEstadoRegistro("exito");
   };
 
   return (
@@ -236,6 +254,14 @@ export function LandingEmergenciaMascotasScreen({
         {vista === "reportar" ? (
           estadoRegistro === "idle" ? (
             <RegistroRapidoForm onSuccess={handleRegistroExitoso} />
+          ) : estadoRegistro === "cambiando-clave" ? (
+            // Cambio de clave OBLIGATORIO tras el registro rápido con clave
+            // temporal. Si el usuario presiona atrás, se cierra la sesión
+            // (no puede quedar navegando con credenciales temporales).
+            <CambiarPasswordScreen
+              onBackPress={onLogoutPress}
+              onSuccess={handleClaveCambiada}
+            />
           ) : estadoRegistro === "exito" ? (
             <View style={styles.graciasCard}>
               <View style={styles.graciasIcon}>
@@ -253,33 +279,10 @@ export function LandingEmergenciaMascotasScreen({
                   : "mascota encontrada"}{" "}
                 quedó publicado. Quien la vea podrá contactarte por WhatsApp.
               </Text>
-              {passwordTemporal && (
-                <View style={styles.claveTemporalBox}>
-                  <Icon name="KeyRound" size={18} color={theme.colors.red} />
-                  <Text style={styles.claveTemporalText}>
-                    Tu cuenta usa una clave temporal de emergencia.{"\n"}
-                    <Text style={styles.claveTemporalBold}>
-                      Cambia tu contraseña
-                    </Text>{" "}
-                    para proteger tu cuenta.
-                  </Text>
-                </View>
-              )}
               {autologinError && (
                 <Text style={styles.error}>{autologinError}</Text>
               )}
               <View style={styles.graciasActions}>
-                {passwordTemporal && (
-                  <TouchableOpacity
-                    style={styles.primaryBtn}
-                    onPress={onCambiarPasswordPress}
-                    activeOpacity={0.8}
-                  >
-                    <Text style={styles.primaryBtnText}>
-                      Cambiar mi contraseña
-                    </Text>
-                  </TouchableOpacity>
-                )}
                 <TouchableOpacity
                   style={styles.secondaryBtn}
                   onPress={volverAReportar}
@@ -605,24 +608,6 @@ const getStyles = (theme: AppTheme, isDesktop: boolean) =>
       textAlign: "center",
       lineHeight: 21,
     },
-    claveTemporalBox: {
-      flexDirection: "row",
-      alignItems: "center",
-      gap: 10,
-      backgroundColor: theme.colors.redBg,
-      borderWidth: 1,
-      borderColor: theme.colors.redBorder,
-      borderRadius: 14,
-      padding: 14,
-      marginTop: 4,
-    },
-    claveTemporalText: {
-      flex: 1,
-      fontSize: 13,
-      color: theme.colors.textPrimary,
-      lineHeight: 19,
-    },
-    claveTemporalBold: { fontWeight: "800", color: theme.colors.red },
     graciasActions: { gap: 10, width: "100%", marginTop: 8 },
     primaryBtn: {
       backgroundColor: theme.colors.red,

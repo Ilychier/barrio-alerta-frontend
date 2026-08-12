@@ -8,6 +8,8 @@ export interface FiltrosReporteMascota {
   estado?: EstadoReporte;
   tipoReporte?: TipoReporte;
   ciudadId?: number;
+  /** Texto libre: cada palabra debe coincidir en descripcion o ubicacion (AND entre palabras). */
+  busqueda?: string;
 }
 
 /** Command para crear un reporte (usuario autenticado). */

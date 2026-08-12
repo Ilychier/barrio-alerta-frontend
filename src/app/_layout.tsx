@@ -29,6 +29,8 @@ import {
   useAppTheme,
 } from "@/presentation/theme/ThemeContext";
 import { getModoEmergencia } from "@/constants/env";
+import { ultimoRegistroRapido } from "@/presentation/mascotas/state/ultimoRegistroRapido";
+import { ultimaVistaEmergencia } from "@/presentation/mascotas/state/ultimaVistaEmergencia";
 
 export default function RootLayout() {
   return (
@@ -56,6 +58,9 @@ function TabLayout() {
   const modoEmergencia = getModoEmergencia();
   // Vista activa en modo emergencia: la landing misma o la app normal
   const [vistaEmergencia, setVistaEmergencia] = useState<"emergencia" | "app-normal">("emergencia");
+  // Key de la landing de emergencia: al cambiar, React la desmonta y remonta
+  // (resetea todo su estado local). Se incrementa en cada logout.
+  const [landingKey, setLandingKey] = useState(0);
 
   const { width } = useWindowDimensions();
   const isSmallScreen = width < 768;
@@ -90,10 +95,15 @@ function TabLayout() {
   }, [isAuthenticated, router, modoEmergencia, vistaEmergencia]);
 
   // Logout explícito: vuelve a la landing (de emergencia o de marketing
-  // según el modo) — no a login/register ni al dashboard.
+  // según el modo) — no a login/register ni al dashboard. Limpia el estado
+  // del BC Mascotas (singletons) y fuerza el remount de la landing para que
+  // arranque en "reportar" con el formulario vacío.
   const handleLogout = async () => {
     setAuthView("landing");
     setVistaEmergencia("emergencia");
+    ultimoRegistroRapido.clear();
+    ultimaVistaEmergencia.set("reportar");
+    setLandingKey((k) => k + 1);
     await logout();
   };
 
@@ -225,6 +235,7 @@ function TabLayout() {
     if (modoEmergencia) {
       return (
         <LandingEmergenciaMascotasScreen
+          key={landingKey}
           onLoginPress={() => setAuthView("login")}
           onDashboardPress={() => {
             setVistaEmergencia("app-normal");
@@ -256,6 +267,7 @@ function TabLayout() {
     }
     return (
       <LandingEmergenciaMascotasScreen
+        key={landingKey}
         onLoginPress={() => setAuthView("login")}
         onDashboardPress={() => {
           setVistaEmergencia("app-normal");
@@ -645,7 +657,7 @@ function TabLayout() {
               <TouchableOpacity
                 onPress={async () => {
                   closeMenu();
-                  await logout();
+                  await handleLogout();
                 }}
                 style={styles.navLink}
                 activeOpacity={0.7}

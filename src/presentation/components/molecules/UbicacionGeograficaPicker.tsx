@@ -114,7 +114,7 @@ export function UbicacionGeograficaPicker({
           getDetalleInputStyles(theme),
           detalleFocused && getDetalleInputFocusedStyles(theme),
         ]}
-        placeholder="Ej: dirección, cerca al parque, casa azul..."
+        placeholder="Ej: Calle 800 # 20-30, cerca al parque, casa azul..."
         placeholderTextColor={theme.colors.textMuted}
         value={ubicacion.detalle}
         onChangeText={ubicacion.setDetalle}

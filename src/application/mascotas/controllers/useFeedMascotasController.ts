@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { DependencyContainer } from '../../../infrastructure/config/dependencyContainer';
 import { ReporteMascota } from '../../../domain/mascotas/entities/ReporteMascota';
 import { Ciudad } from '../../../domain/mascotas/entities/Ciudad';
@@ -7,6 +7,9 @@ import { FiltrosReporteMascota } from '../../../domain/mascotas/ports/IReporteMa
 import { ReferenciasMascota } from '../../mascotas/usecases/ObtenerReferenciasMascotaUseCase';
 import { nombrePorId } from '../../../infrastructure/mascotas/adapters/mappers';
 
+/** Espera entre tecleos antes de disparar la búsqueda por texto (KISS: evita 1 request por tecla). */
+const DEBOUNCE_MS = 350;
+
 /**
  * Controller del feed público de mascotas.
  * Carga progresiva: mantiene la lista acumulada y pide la siguiente
@@ -14,7 +17,6 @@ import { nombrePorId } from '../../../infrastructure/mascotas/adapters/mappers';
  */
 export function useFeedMascotasController(refreshTrigger?: number) {
   const [reportes, setReportes] = useState<ReporteMascota[]>([]);
-  const [filtros, setFiltros] = useState<FiltrosReporteMascota>({});
   const [page, setPage] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(true);
@@ -29,6 +31,13 @@ export function useFeedMascotasController(refreshTrigger?: number) {
   const container = useMemo(() => DependencyContainer.getInstance(), []);
   const useCase = useMemo(() => container.getListarReportesMascotaUseCase(), [container]);
   const referenciasUseCase = useMemo(() => container.getObtenerReferenciasMascotaUseCase(), [container]);
+
+  // Filtros "efectivos" (sin debounce) vs. "pendientes" (texto del input).
+  // La búsqueda por texto espera DEBOUNCE_MS; los demás filtros aplican al instante.
+  const [filtrosAplicados, setFiltrosAplicados] = useState<FiltrosReporteMascota>({});
+  const [busquedaPendiente, setBusquedaPendiente] = useState('');
+  const [filtrosPendientes, setFiltrosPendientes] = useState<FiltrosReporteMascota>({});
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Carga catálogos una vez (los datos geográficos cambian muy rara vez)
   useEffect(() => {
@@ -50,6 +59,17 @@ export function useFeedMascotasController(refreshTrigger?: number) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Debounce: aplica los filtros pendientes tras DEBOUNCE_MS de inactividad.
+  useEffect(() => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      setFiltrosAplicados(filtrosPendientes);
+    }, DEBOUNCE_MS);
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
+  }, [filtrosPendientes]);
+
   // Carga del feed: resetea al cambiar filtros, acumula al hacer "load more"
   const loadPage = useCallback(
     async (pagina: number, acumular: boolean) => {
@@ -57,7 +77,7 @@ export function useFeedMascotasController(refreshTrigger?: number) {
       setter(true);
       setError(null);
       try {
-        const result = await useCase.execute({ filtros, page: pagina });
+        const result = await useCase.execute({ filtros: filtrosAplicados, page: pagina });
         setPage(pagina);
         setTotalPages(result.totalPages);
         setReportes((prev) => (acumular ? [...prev, ...result.items] : result.items));
@@ -69,7 +89,7 @@ export function useFeedMascotasController(refreshTrigger?: number) {
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [filtros],
+    [filtrosAplicados],
   );
 
   // Carga inicial del feed (patrón loadData del BC Alertas: async fn dentro del effect)
@@ -79,7 +99,7 @@ export function useFeedMascotasController(refreshTrigger?: number) {
       setLoading(true);
       setError(null);
       try {
-        const result = await useCase.execute({ filtros, page: 0 });
+        const result = await useCase.execute({ filtros: filtrosAplicados, page: 0 });
         if (!active) return;
         setPage(0);
         setTotalPages(result.totalPages);
@@ -96,7 +116,7 @@ export function useFeedMascotasController(refreshTrigger?: number) {
       active = false;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filtros, refreshTrigger]);
+  }, [filtrosAplicados, refreshTrigger]);
 
   const loadMore = useCallback(() => {
     if (loadingMore || loading || page + 1 >= totalPages) return;
@@ -106,7 +126,12 @@ export function useFeedMascotasController(refreshTrigger?: number) {
   }, [loadingMore, loading, page, totalPages, loadPage]);
 
   const aplicarFiltros = useCallback((nuevos: FiltrosReporteMascota) => {
-    setFiltros(nuevos);
+    setFiltrosPendientes(nuevos);
+  }, []);
+
+  /** Actualiza el texto de búsqueda (debounced en el effect). */
+  const setBusqueda = useCallback((texto: string) => {
+    setBusquedaPendiente(texto);
   }, []);
 
   // Helpers de resolución de nombres (KISS — lookup en cliente)
@@ -119,8 +144,10 @@ export function useFeedMascotasController(refreshTrigger?: number) {
 
   return {
     reportes,
-    filtros,
+    filtros: filtrosAplicados,
     aplicarFiltros,
+    busqueda: busquedaPendiente,
+    setBusqueda,
     loading,
     loadingMore,
     error,

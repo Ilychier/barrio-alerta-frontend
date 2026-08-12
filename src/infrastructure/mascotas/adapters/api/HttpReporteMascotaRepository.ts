@@ -27,6 +27,7 @@ export class HttpReporteMascotaRepository implements IReporteMascotaRepository {
       if (filtros.estado) params.estado = filtros.estado;
       if (filtros.tipoReporte) params.tipoReporte = filtros.tipoReporte;
       if (filtros.ciudadId) params.ciudadId = filtros.ciudadId;
+      if (filtros.busqueda?.trim()) params.busqueda = filtros.busqueda.trim();
       const response = await this.http.get<any>('/mascotas/public/reportes', { params });
       return this.toPaginated(response.data, page, size);
     } catch (error) {

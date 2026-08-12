@@ -20,6 +20,7 @@ import { UbicacionGeograficaPicker } from "../../components/molecules/UbicacionG
 import { AppTheme, useAppTheme } from "../../theme/ThemeContext";
 
 const MAX_FOTO_BYTES = 8 * 1024 * 1024; // 8 MB (mismo límite que el backend)
+const PREFIJO_PAIS = "+57"; // Colombia: prefijo fijo, el usuario solo digita el número
 
 interface RegistroRapidoFormProps {
   onSuccess: (result: ReporteRapidoResult) => void;
@@ -94,6 +95,15 @@ export function RegistroRapidoForm({ onSuccess }: RegistroRapidoFormProps) {
     return null;
   };
 
+  // El input guarda solo dígitos; el prefijo +57 se concatena al enviar
+  // (formato consistente con el backend: +573001234567). Si el usuario ya
+  // escribió el prefijo (57), no se duplica.
+  const conPrefijo = (numero: string) => {
+    const digitos = numero.replace(/\D/g, "");
+    if (digitos.startsWith("57")) return `+${digitos}`;
+    return `${PREFIJO_PAIS}${digitos}`;
+  };
+
   const elegirFoto = async () => {
     try {
       const permiso = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -131,10 +141,10 @@ export function RegistroRapidoForm({ onSuccess }: RegistroRapidoFormProps) {
     setEnviando(true);
     try {
       const result = await useCase.execute({
-        phonePersonal: phonePersonal.trim(),
+        phonePersonal: conPrefijo(phonePersonal),
         telefonoContacto: usarMismoTelefono
-          ? phonePersonal.trim()
-          : telefonoContacto.trim(),
+          ? conPrefijo(phonePersonal)
+          : conPrefijo(telefonoContacto),
         tipoReporte,
         tipoMascotaId: tipoMascotaId!,
         otroTipoMascota: esOtro ? otroTipoMascota.trim() : undefined,
@@ -222,14 +232,19 @@ export function RegistroRapidoForm({ onSuccess }: RegistroRapidoFormProps) {
       {/* ── Celular personal ───────────────────────────── */}
       <View style={styles.seccion}>
         <Text style={styles.label}>Tu Número personal para registro *</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="+57 300 123 4567"
-          placeholderTextColor={theme.colors.textDim}
-          value={phonePersonal}
-          onChangeText={setPhonePersonal}
-          keyboardType="phone-pad"
-        />
+        <View style={styles.phoneRow}>
+          <View style={styles.phonePrefixBox}>
+            <Text style={styles.phonePrefixText}>{PREFIJO_PAIS}</Text>
+          </View>
+          <TextInput
+            style={styles.phoneInput}
+            placeholder="300 123 4567"
+            placeholderTextColor={theme.colors.textDim}
+            value={phonePersonal}
+            onChangeText={setPhonePersonal}
+            keyboardType="phone-pad"
+          />
+        </View>
         <Text style={styles.hint}>
           Es tu llave de acceso. Con él podrás iniciar sesión y ver tus
           reportes.
@@ -259,15 +274,25 @@ export function RegistroRapidoForm({ onSuccess }: RegistroRapidoFormProps) {
         <Text style={styles.label}>
           Whatsapp de contacto para esta mascota *
         </Text>
-        <TextInput
-          style={[styles.input, usarMismoTelefono && styles.inputDisabled]}
-          placeholder="+57 300 123 4567"
-          placeholderTextColor={theme.colors.textDim}
-          value={usarMismoTelefono ? phonePersonal : telefonoContacto}
-          onChangeText={setTelefonoContacto}
-          keyboardType="phone-pad"
-          editable={!usarMismoTelefono}
-        />
+        <View
+          style={[
+            styles.phoneRow,
+            usarMismoTelefono && styles.phoneRowDisabled,
+          ]}
+        >
+          <View style={styles.phonePrefixBox}>
+            <Text style={styles.phonePrefixText}>{PREFIJO_PAIS}</Text>
+          </View>
+          <TextInput
+            style={styles.phoneInput}
+            placeholder="300 123 4567"
+            placeholderTextColor={theme.colors.textDim}
+            value={usarMismoTelefono ? phonePersonal : telefonoContacto}
+            onChangeText={setTelefonoContacto}
+            keyboardType="phone-pad"
+            editable={!usarMismoTelefono}
+          />
+        </View>
         {usarMismoTelefono && (
           <Text style={styles.hint}>
             Se usará tu celular. Desmarca para poner otro número.
@@ -502,6 +527,35 @@ const getStyles = (theme: AppTheme, isDesktop: boolean) =>
       color: theme.colors.textPrimary,
     },
     inputDisabled: { opacity: 0.5, backgroundColor: theme.colors.surfaceLight },
+    phoneRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      backgroundColor: theme.colors.surface,
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+      borderRadius: 12,
+      overflow: "hidden",
+    },
+    phoneRowDisabled: { opacity: 0.5, backgroundColor: theme.colors.surfaceLight },
+    phonePrefixBox: {
+      paddingHorizontal: 14,
+      paddingVertical: 12,
+      borderRightWidth: 1,
+      borderRightColor: theme.colors.border,
+      backgroundColor: theme.colors.surfaceLight,
+    },
+    phonePrefixText: {
+      fontSize: 14,
+      fontWeight: "700",
+      color: theme.colors.textSecondary,
+    },
+    phoneInput: {
+      flex: 1,
+      paddingHorizontal: 14,
+      paddingVertical: 12,
+      fontSize: 14,
+      color: theme.colors.textPrimary,
+    },
     inputMultiline: { minHeight: 80, textAlignVertical: "top" },
     fotoPicker: {
       borderWidth: 1,

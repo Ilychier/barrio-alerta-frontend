@@ -17,6 +17,8 @@ import { AppTheme, useAppTheme } from "../theme/ThemeContext";
 
 interface CambiarPasswordScreenProps {
   onBackPress?: () => void;
+  /** Se llama al completar el cambio de clave con éxito. */
+  onSuccess?: () => void;
 }
 
 /**
@@ -25,7 +27,10 @@ interface CambiarPasswordScreenProps {
  *   NO se pide la clave actual (el JWT ya autentica; nunca vio la temporal).
  * - Si tiene clave real, se pide la actual para verificar.
  */
-export function CambiarPasswordScreen({ onBackPress }: CambiarPasswordScreenProps) {
+export function CambiarPasswordScreen({
+  onBackPress,
+  onSuccess,
+}: CambiarPasswordScreenProps) {
   const { user, passwordTemporal, cambiarPassword } = useAuth();
   const { theme } = useAppTheme();
   const styles = getStyles(theme);
@@ -63,6 +68,7 @@ export function CambiarPasswordScreen({ onBackPress }: CambiarPasswordScreenProp
     try {
       await cambiarPassword(identificador, passwordTemporal ? null : passwordActual, passwordNueva);
       setOk(true);
+      onSuccess?.();
     } catch (e: any) {
       setError(e.message || "No se pudo cambiar la contraseña.");
     } finally {
