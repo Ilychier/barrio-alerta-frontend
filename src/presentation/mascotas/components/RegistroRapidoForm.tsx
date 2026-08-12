@@ -12,9 +12,9 @@ import {
   View,
 } from "react-native";
 import { useReporteMascotaController } from "../../../application/mascotas/controllers/useReporteMascotaController";
+import { useRegistroRapidoController } from "../../../application/mascotas/controllers/useRegistroRapidoController";
 import { useUbicacionGeografica } from "../../../application/ubicacion/useUbicacionGeografica";
 import { ReporteRapidoResult } from "../../../domain/mascotas/ports/IReporteRapidoRepository";
-import { DependencyContainer } from "../../../infrastructure/config/dependencyContainer";
 import Icon from "../../components/atomic/Icon";
 import { SelectInput } from "../../components/atomic/SelectInput";
 import { UbicacionGeograficaPicker } from "../../components/molecules/UbicacionGeograficaPicker";
@@ -41,6 +41,7 @@ export function RegistroRapidoForm({ onSuccess }: RegistroRapidoFormProps) {
   const styles = getStyles(theme, isDesktop);
 
   const controller = useReporteMascotaController(0);
+  const registroRapido = useRegistroRapidoController();
   const ubicacion = useUbicacionGeografica(controller.ciudades);
 
   const [tipoReporte, setTipoReporte] = useState<"LOST" | "FOUND">("LOST");
@@ -58,11 +59,6 @@ export function RegistroRapidoForm({ onSuccess }: RegistroRapidoFormProps) {
   const [fotoFile, setFotoFile] = useState<any>(undefined);
   const [enviando, setEnviando] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  const useCase = useMemo(
-    () => DependencyContainer.getInstance().getRegistrarReporteRapidoUseCase(),
-    [],
-  );
 
   useEffect(() => {
     controller.cargarReferencias();
@@ -149,7 +145,7 @@ export function RegistroRapidoForm({ onSuccess }: RegistroRapidoFormProps) {
     setError(null);
     setEnviando(true);
     try {
-      const result = await useCase.execute({
+      const result = await registroRapido.registrar({
         phonePersonal: conPrefijo(phonePersonal),
         telefonoContacto: usarMismoTelefono
           ? conPrefijo(phonePersonal)

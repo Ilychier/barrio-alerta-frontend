@@ -12,7 +12,7 @@ import {
 import { Barrio } from "../../domain/entities/barrio";
 import { Localidad } from "../../domain/entities/localidad";
 import { Ciudad } from "../../domain/mascotas/entities/Ciudad";
-import { DependencyContainer } from "../../infrastructure/config/dependencyContainer";
+import { useRegisterController } from "../../application/controllers/useRegisterController";
 import Icon from "../components/atomic/Icon";
 import { SelectInput, SelectOption } from "../components/atomic/SelectInput";
 import { SectionCard } from "../components/layout/SectionCard";
@@ -36,6 +36,19 @@ export function RegisterScreen({
   const { theme } = useAppTheme();
   const styles = getStyles(theme);
 
+  // Catálogos geográficos delegados al controller de aplicación (regla hexagonal)
+  const {
+    municipios,
+    localidades,
+    barrios,
+    barriosHasMore,
+    barriosLoadingMore,
+    cargarLocalidades,
+    cargarBarrios,
+    cargarMasBarrios,
+    resetCadenaGeografica,
+  } = useRegisterController();
+
   const [nombre, setNombre] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
@@ -48,13 +61,6 @@ export function RegisterScreen({
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  // Catálogo de municipios (1125 reales) — cacheado una vez
-  const [municipios, setMunicipios] = useState<Ciudad[]>([]);
-  const [localidades, setLocalidades] = useState<Localidad[]>([]);
-  const [barrios, setBarrios] = useState<Barrio[]>([]);
-  const [barriosPage, setBarriosPage] = useState(0);
-  const [barriosHasMore, setBarriosHasMore] = useState(true);
-  const [barriosLoadingMore, setBarriosLoadingMore] = useState(false);
 
   // Departamentos únicos derivados del catálogo de municipios (KISS: sin endpoint extra)
   const departamentoOptions: SelectOption[] = [
@@ -90,84 +96,39 @@ export function RegisterScreen({
 
   const PAGE_SIZE = 20;
 
-  // 1. Carga el catálogo de municipios (1125 reales de Colombia) una sola vez
-  useEffect(() => {
-    async function fetchMunicipios() {
-      try {
-        const repo =
-          DependencyContainer.getInstance().getMascotaReferenciaRepository();
-        const todas = await repo.getCiudadesTodas();
-        setMunicipios(todas);
-      } catch (e) {
-        console.error("Error fetching municipios:", e);
-      }
-    }
-    fetchMunicipios();
-  }, []);
-
   // 2. Al elegir departamento, el handler resetea municipio/localidad/barrio
   //    (sin setState síncrono en effect — cumple react-hooks/set-state-in-effect)
 
-  // 3. Al elegir municipio, carga sus localidades
+  // 3. Al elegir municipio, carga sus localidades (auto-selecciona la primera)
   useEffect(() => {
+    let active = true;
     async function fetchLocalidades() {
-      if (!municipioId) {
-        setLocalidades([]);
-        setLocalidadId(0);
-        return;
-      }
-      try {
-        const repo =
-          DependencyContainer.getInstance().getReferenciaRepository();
-        const items = await repo.getLocalidadesByMunicipio(municipioId);
-        setLocalidades(items);
-        setLocalidadId(items.length > 0 ? items[0].id : 0);
-      } catch (e) {
-        console.error("Error fetching localidades:", e);
-      }
+      const items = await cargarLocalidades(municipioId);
+      if (!active) return;
+      setLocalidadId(items.length > 0 ? items[0].id : 0);
     }
     fetchLocalidades();
-  }, [municipioId]);
+    return () => {
+      active = false;
+    };
+  }, [municipioId, cargarLocalidades]);
 
-  // 4. Al elegir localidad, carga sus barrios
+  // 4. Al elegir localidad, carga sus barrios (auto-selecciona el primero)
   useEffect(() => {
+    let active = true;
     async function fetchBarrios() {
-      if (!localidadId) {
-        setBarrios([]);
-        setBarrioId(0);
-        return;
-      }
-      try {
-        const repo =
-          DependencyContainer.getInstance().getReferenciaRepository();
-        const result = await repo.getBarriosPaginated(0, PAGE_SIZE, localidadId);
-        setBarrios(result.items);
-        setBarriosPage(0);
-        setBarriosHasMore(result.page + 1 < result.totalPages);
-        setBarrioId(result.items.length > 0 ? result.items[0].id : 0);
-      } catch (e) {
-        console.error("Error fetching barrios:", e);
-      }
+      const items = await cargarBarrios(localidadId);
+      if (!active) return;
+      setBarrioId(items.length > 0 ? items[0].id : 0);
     }
     fetchBarrios();
-  }, [localidadId]);
+    return () => {
+      active = false;
+    };
+  }, [localidadId, cargarBarrios]);
 
-  const handleLoadMoreBarrios = async () => {
-    if (barriosLoadingMore || !barriosHasMore || !localidadId) return;
-    setBarriosLoadingMore(true);
-    try {
-      const repo =
-        DependencyContainer.getInstance().getReferenciaRepository();
-      const nextPage = barriosPage + 1;
-      const result = await repo.getBarriosPaginated(nextPage, PAGE_SIZE, localidadId);
-      setBarrios((prev) => [...prev, ...result.items]);
-      setBarriosPage(nextPage);
-      setBarriosHasMore(nextPage + 1 < result.totalPages);
-    } catch (e) {
-      console.error("Error loading more barrios:", e);
-    } finally {
-      setBarriosLoadingMore(false);
-    }
+  const handleLoadMoreBarrios = () => {
+    cargarMasBarrios(localidadId);
   };
 
   const handleDepartamentoChange = (value: number | string) => {
@@ -176,8 +137,7 @@ export function RegisterScreen({
     setMunicipioId(0);
     setLocalidadId(0);
     setBarrioId(0);
-    setLocalidades([]);
-    setBarrios([]);
+    resetCadenaGeografica();
   };
 
   const handleRegister = async () => {
