@@ -21,8 +21,13 @@ export interface CrearReporteMascotaForm {
 /**
  * Controller del formulario rápido de reporte de mascota.
  * Carga catálogos (ciudades/tipos), crea el reporte y expone estado de envío.
+ * El contenedor se inyecta por prop (regla hexagonal).
  */
-export function useReporteMascotaController(currentUserId: number, onSuccess?: (reporte: ReporteMascota) => void) {
+export function useReporteMascotaController(
+  container: DependencyContainer,
+  currentUserId: number,
+  onSuccess?: (reporte: ReporteMascota) => void,
+) {
   const [ciudades, setCiudades] = useState<Ciudad[]>([]);
   const [tiposMascota, setTiposMascota] = useState<TipoMascota[]>([]);
   const [referenciasLoading, setReferenciasLoading] = useState(true);
@@ -30,7 +35,6 @@ export function useReporteMascotaController(currentUserId: number, onSuccess?: (
   const [error, setError] = useState<string | null>(null);
 
   // Instancias memoizadas: crearlas en cada render rompe las deps de los callbacks
-  const container = useMemo(() => DependencyContainer.getInstance(), []);
   const crearUseCase = useMemo(() => container.getCrearReporteMascotaUseCase(), [container]);
   const referenciasUseCase = useMemo(() => container.getObtenerReferenciasMascotaUseCase(), [container]);
 

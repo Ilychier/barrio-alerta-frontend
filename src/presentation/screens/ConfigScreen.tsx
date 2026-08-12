@@ -5,11 +5,14 @@ import { IconRenderer } from '../components/atomic/IconRenderer';
 import { ToggleSwitch } from '../components/atomic/ToggleSwitch';
 import { SectionCard } from '../components/layout/SectionCard';
 import { useAuth } from '../context/AuthContext';
+import { useDI } from '../context/DIContext';
 import { useAppTheme, AppTheme } from '../theme/ThemeContext';
 
 export function ConfigScreen() {
   const { barrio, cuadrante, configuracion, setConfiguracion } = useAuth();
+  const container = useDI();
   const { config, handleUpdate, feedback, clearFeedback } = useConfiguracionController({
+    container,
     configuracion,
     setConfiguracion,
   });

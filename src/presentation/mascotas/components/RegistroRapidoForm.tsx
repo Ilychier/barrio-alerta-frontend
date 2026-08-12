@@ -16,6 +16,7 @@ import { useRegistroRapidoController } from "../../../application/mascotas/contr
 import { useUbicacionGeografica } from "../../../application/ubicacion/useUbicacionGeografica";
 import { ReporteRapidoResult } from "../../../domain/mascotas/ports/IReporteRapidoRepository";
 import Icon from "../../components/atomic/Icon";
+import { useDI } from "../../context/DIContext";
 import { SelectInput } from "../../components/atomic/SelectInput";
 import { UbicacionGeograficaPicker } from "../../components/molecules/UbicacionGeograficaPicker";
 import { AppTheme, useAppTheme } from "../../theme/ThemeContext";
@@ -39,10 +40,11 @@ export function RegistroRapidoForm({ onSuccess }: RegistroRapidoFormProps) {
   const { width } = useWindowDimensions();
   const isDesktop = width >= 900;
   const styles = getStyles(theme, isDesktop);
+  const container = useDI();
 
-  const controller = useReporteMascotaController(0);
-  const registroRapido = useRegistroRapidoController();
-  const ubicacion = useUbicacionGeografica(controller.ciudades);
+  const controller = useReporteMascotaController(container, 0);
+  const registroRapido = useRegistroRapidoController(container);
+  const ubicacion = useUbicacionGeografica(container, controller.ciudades);
 
   const [tipoReporte, setTipoReporte] = useState<"LOST" | "FOUND">("LOST");
   const [tipoMascotaId, setTipoMascotaId] = useState<number | undefined>(

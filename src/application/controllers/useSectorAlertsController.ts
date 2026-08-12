@@ -3,7 +3,15 @@ import { DependencyContainer } from '../../infrastructure/config/dependencyConta
 import { AlertaConDatos } from '../../application/usecases/ObtenerAlertasUseCase';
 import { Barrio } from '../../domain/entities/barrio';
 
-export function useSectorAlertsController(currentUserId: number, refreshTrigger?: number) {
+/**
+ * Controller de alertas del sector. El contenedor se inyecta por prop
+ * (regla hexagonal: application no importa infrastructure directamente).
+ */
+export function useSectorAlertsController(
+  container: DependencyContainer,
+  currentUserId: number,
+  refreshTrigger?: number,
+) {
   const [alertas, setAlertas] = useState<AlertaConDatos[]>([]);
   const [barrio, setBarrio] = useState<Barrio | undefined>(undefined);
   const [loading, setLoading] = useState(true);
@@ -33,7 +41,6 @@ export function useSectorAlertsController(currentUserId: number, refreshTrigger?
     }
 
     let active = true;
-    const container = DependencyContainer.getInstance();
     const obtenerAlertas = container.getObtenerAlertasUseCase();
     const referenciaRepo = container.getReferenciaRepository();
 
@@ -64,7 +71,7 @@ export function useSectorAlertsController(currentUserId: number, refreshTrigger?
     return () => {
       active = false;
     };
-  }, [currentUserId, refreshTrigger, fechaSeleccionada]);
+  }, [currentUserId, refreshTrigger, fechaSeleccionada, container]);
 
   return {
     alertas,

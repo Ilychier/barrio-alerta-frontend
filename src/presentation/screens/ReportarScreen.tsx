@@ -12,11 +12,13 @@ import { CategoryButton } from "../components/atomic/CategoryButton";
 import { SectionCard } from "../components/layout/SectionCard";
 import { DescriptionSelector } from "../components/molecules/DescriptionSelector";
 import { useAuth } from "../context/AuthContext";
+import { useDI } from "../context/DIContext";
 import { AppTheme, useAppTheme } from "../theme/ThemeContext";
 
 export function ReportarScreen() {
   const { user } = useAuth();
-  const ctrl = useReporteController(user?.id ?? 0);
+  const container = useDI();
+  const ctrl = useReporteController(container, user?.id ?? 0);
   const { theme } = useAppTheme();
   const styles = getStyles(theme);
   const router = useRouter();

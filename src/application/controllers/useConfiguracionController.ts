@@ -10,17 +10,16 @@ export interface FeedbackState {
 }
 
 /**
- * Dependencias que la presentación inyecta al controller.
- * La capa application NO conoce la capa presentation (regla hexagonal).
+ * Dependencias inyectadas por la presentación (regla hexagonal).
  */
 export interface ConfiguracionControllerDeps {
+  container: DependencyContainer;
   configuracion: Configuracion | null;
   setConfiguracion: (config: Configuracion | null) => void;
 }
 
 export function useConfiguracionController(deps: ConfiguracionControllerDeps) {
-  const { configuracion, setConfiguracion } = deps;
-  const container = DependencyContainer.getInstance();
+  const { container, configuracion, setConfiguracion } = deps;
   const useCase = container.getActualizarConfiguracionUseCase();
   const [feedback, setFeedback] = useState<FeedbackState | null>(null);
 

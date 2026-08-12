@@ -17,6 +17,7 @@ import { EstadoReporte } from "../../../domain/mascotas/entities/EstadoReporte";
 import { ReporteMascota } from "../../../domain/mascotas/entities/ReporteMascota";
 import { TipoReporte } from "../../../domain/mascotas/entities/TipoReporte";
 import Icon from "../../components/atomic/Icon";
+import { useDI } from "../../context/DIContext";
 import { SelectInput, SelectOption } from "../../components/atomic/SelectInput";
 import { AppTheme, useAppTheme } from "../../theme/ThemeContext";
 
@@ -48,6 +49,7 @@ export function FeedMascotasScreen({
   const isDesktop = width >= 900;
   const styles = getStyles(theme, isDesktop);
   const router = useRouter();
+  const container = useDI();
 
   const [filtroEstado, setFiltroEstado] = useState<EstadoReporte | undefined>(
     undefined,
@@ -57,7 +59,7 @@ export function FeedMascotasScreen({
   );
   const [ciudadId, setCiudadId] = useState<number | undefined>(undefined);
 
-  const feed = useFeedMascotasController(0);
+  const feed = useFeedMascotasController(container, 0);
 
   const aplicarFiltros = (
     estado?: EstadoReporte,

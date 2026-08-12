@@ -9,6 +9,7 @@ import {
 } from "react-native";
 import { useRouter } from "expo-router";
 import { useAuth } from "../../context/AuthContext";
+import { useDI } from "../../context/DIContext";
 import { useMisReportesMascotaController } from "../../../application/mascotas/controllers/useMisReportesMascotaController";
 import { useFeedMascotasController } from "../../../application/mascotas/controllers/useFeedMascotasController";
 import { ReporteMascota } from "../../../domain/mascotas/entities/ReporteMascota";
@@ -29,9 +30,10 @@ export function MisReportesMascotaScreen() {
   const router = useRouter();
   const { user } = useAuth();
   const userId = user?.id ?? 0;
+  const container = useDI();
 
-  const controller = useMisReportesMascotaController(userId);
-  const feed = useFeedMascotasController(0);
+  const controller = useMisReportesMascotaController(container, userId);
+  const feed = useFeedMascotasController(container, 0);
 
   const renderItem = ({ item }: { item: ReporteMascota }) => (
     <View style={styles.card}>

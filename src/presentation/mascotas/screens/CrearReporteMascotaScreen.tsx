@@ -15,6 +15,7 @@ import { Image } from "expo-image";
 import { useReporteMascotaController } from "../../../application/mascotas/controllers/useReporteMascotaController";
 import { useUbicacionGeografica } from "../../../application/ubicacion/useUbicacionGeografica";
 import { useAuth } from "../../context/AuthContext";
+import { useDI } from "../../context/DIContext";
 import Icon from "../../components/atomic/Icon";
 import { UbicacionGeograficaPicker } from "../../components/molecules/UbicacionGeograficaPicker";
 import { AppTheme, useAppTheme } from "../../theme/ThemeContext";
@@ -35,8 +36,9 @@ export function CrearReporteMascotaScreen() {
   const router = useRouter();
   const { user } = useAuth();
   const userId = user?.id ?? 0;
+  const container = useDI();
 
-  const controller = useReporteMascotaController(userId, () => {
+  const controller = useReporteMascotaController(container, userId, () => {
     router.push("/mascotas");
   });
 
@@ -50,7 +52,7 @@ export function CrearReporteMascotaScreen() {
   const [fotoMime, setFotoMime] = useState<string | undefined>(undefined);
   const [fotoFile, setFotoFile] = useState<any>(undefined);
 
-  const ubicacion = useUbicacionGeografica(controller.ciudades);
+  const ubicacion = useUbicacionGeografica(container, controller.ciudades);
 
   useEffect(() => {
     controller.cargarReferencias();

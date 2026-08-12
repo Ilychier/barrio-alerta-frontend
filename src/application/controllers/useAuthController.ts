@@ -54,14 +54,13 @@ const SESION_VACIA: Sesion = {
 /**
  * Controller de autenticación/sesión.
  * Vive en la capa application; la presentación (AuthContext) lo consume
- * como thin wrapper. La lógica de repositorios y token vive aquí,
- * NO en el contexto de React (regla hexagonal).
+ * como thin wrapper. El contenedor de dependencias se inyecta por prop
+ * (regla hexagonal: application no importa infrastructure directamente).
  */
-export function useAuthController() {
+export function useAuthController(container: DependencyContainer) {
   const [sesion, setSesion] = useState<Sesion>(SESION_VACIA);
   const [loading, setLoading] = useState<boolean>(true);
 
-  const container = DependencyContainer.getInstance();
   const authRepo = container.getAuthRepository();
 
   // Carga sesión inicial (auto-login con token persistido)

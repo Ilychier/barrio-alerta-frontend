@@ -1,8 +1,8 @@
 import { useCallback, useMemo, useState } from 'react';
+import { DependencyContainer } from '../../infrastructure/config/dependencyContainer';
 import { Barrio } from '../../domain/entities/barrio';
 import { Localidad } from '../../domain/entities/localidad';
 import { Ciudad } from '../../domain/mascotas/entities/Ciudad';
-import { DependencyContainer } from '../../infrastructure/config/dependencyContainer';
 
 /**
  * Catálogos geográficos en cascada para el reporte de mascota (Opción B):
@@ -64,10 +64,10 @@ export function componerUbicacion(
   return partes.join(' · ').slice(0, 255);
 }
 
-export function useUbicacionGeografica(ciudades: Ciudad[]): UbicacionGeografica {
+export function useUbicacionGeografica(container: DependencyContainer, ciudades: Ciudad[]): UbicacionGeografica {
   const referenciasRepo = useMemo(
-    () => DependencyContainer.getInstance().getReferenciaRepository(),
-    [],
+    () => container.getReferenciaRepository(),
+    [container],
   );
 
   const [departamento, setDepartamento] = useState('');

@@ -21,6 +21,7 @@ import { Header } from "@/presentation/components/layout/Header";
 import { SVGBackground } from "@/presentation/components/layout/SVGBackground";
 import { AboutDeveloperModal } from "@/presentation/components/molecules/AboutDeveloperModal";
 import { AuthProvider, useAuth } from "@/presentation/context/AuthContext";
+import { DIProvider } from "@/presentation/context/DIContext";
 import { ultimaVistaEmergencia } from "@/presentation/mascotas/state/ultimaVistaEmergencia";
 import { ultimoRegistroRapido } from "@/presentation/mascotas/state/ultimoRegistroRapido";
 import { CambiarPasswordScreen } from "@/presentation/screens/CambiarPasswordScreen";
@@ -36,11 +37,13 @@ import {
 
 export default function RootLayout() {
   return (
-    <AuthProvider>
-      <ThemeProvider>
-        <TabLayout />
-      </ThemeProvider>
-    </AuthProvider>
+    <DIProvider>
+      <AuthProvider>
+        <ThemeProvider>
+          <TabLayout />
+        </ThemeProvider>
+      </AuthProvider>
+    </DIProvider>
   );
 }
 

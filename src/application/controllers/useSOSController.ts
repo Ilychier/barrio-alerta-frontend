@@ -4,12 +4,20 @@ import { Alerta } from '../../domain/entities/alerta';
 
 export type SOSStep = 0 | 1 | 2;
 
-export function useSOSController(currentUserId: number, onSuccess?: () => void) {
+/**
+ * Controller del flujo SOS. El contenedor se inyecta por prop
+ * (regla hexagonal: application no importa infrastructure directamente).
+ */
+export function useSOSController(
+  container: DependencyContainer,
+  currentUserId: number,
+  onSuccess?: () => void,
+) {
   const [sosStep, setSosStep] = useState<SOSStep>(0);
   const [sosCountdown, setSosCountdown] = useState(3);
   const [performanceTracker, setPerformanceTracker] = useState<string | null>(null);
 
-  const useCase = DependencyContainer.getInstance().getDispararSOSUseCase();
+  const useCase = container.getDispararSOSUseCase();
 
   // Ref para evitar stale closure en el intervalo (se actualiza en efecto)
   const triggerSOSRef = useRef<() => void>(() => {});
@@ -26,6 +34,7 @@ export function useSOSController(currentUserId: number, onSuccess?: () => void) 
     }
   }, [currentUserId, useCase, onSuccess]);
 
+  // Ref para evitar stale closure en el intervalo (se actualiza en efecto)
   useEffect(() => {
     triggerSOSRef.current = triggerSOSFinal;
   }, [triggerSOSFinal]);
@@ -77,14 +86,14 @@ export function useSOSController(currentUserId: number, onSuccess?: () => void) 
       5
     );
     try {
-      await DependencyContainer.getInstance().getAlertaRepository().crearAlerta(fineAlert);
+      await container.getAlertaRepository().crearAlerta(fineAlert);
       if (onSuccess) {
         onSuccess();
       }
     } catch (err) {
       console.warn('[useSOSController] Failed to create stop emergency alert:', err);
     }
-  }, [currentUserId, onSuccess]);
+  }, [currentUserId, onSuccess, container]);
 
   return {
     sosStep,

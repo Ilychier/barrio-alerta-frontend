@@ -13,6 +13,7 @@ import { useFeedMascotasController } from "../../../application/mascotas/control
 import { ReporteMascota } from "../../../domain/mascotas/entities/ReporteMascota";
 import { TipoReporte } from "../../../domain/mascotas/entities/TipoReporte";
 import Icon from "../../components/atomic/Icon";
+import { useDI } from "../../context/DIContext";
 import { AppTheme, useAppTheme } from "../../theme/ThemeContext";
 
 /**
@@ -25,9 +26,10 @@ export function HistoriasRescateScreen() {
   const isDesktop = width >= 900;
   const styles = getStyles(theme, isDesktop);
   const router = useRouter();
+  const container = useDI();
 
-  const controller = useHistoriasRescateController(0);
-  const feed = useFeedMascotasController(0);
+  const controller = useHistoriasRescateController(container, 0);
+  const feed = useFeedMascotasController(container, 0);
 
   const renderItem = ({ item }: { item: ReporteMascota }) => (
     <Pressable

@@ -10,6 +10,7 @@ import { useSOSController } from "../../application/controllers/useSOSController
 import Icon from "../components/atomic/Icon";
 import { SOSButton } from "../components/molecules/SOSButton";
 import { useAuth } from "../context/AuthContext";
+import { useDI } from "../context/DIContext";
 import { AppTheme, useAppTheme } from "../theme/ThemeContext";
 
 const QUICK_ACTIONS = [
@@ -48,6 +49,7 @@ function getActionColors(theme: AppTheme, colorKey: string) {
 export function DashboardScreen() {
   const { user, cuadrante: authCuadrante } = useAuth();
   const userId = user?.id ?? 0;
+  const container = useDI();
   const { theme } = useAppTheme();
   const { width } = useWindowDimensions();
   const isDesktop = width >= 900;
@@ -57,7 +59,8 @@ export function DashboardScreen() {
     user: user ?? undefined,
     cuadrante: authCuadrante ?? undefined,
   });
-  const sos = useSOSController(userId, () => {});
+
+  const sos = useSOSController(container, userId, () => {});
 
   return (
     <ScrollView

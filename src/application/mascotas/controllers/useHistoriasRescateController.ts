@@ -6,8 +6,9 @@ import { EstadoReporte } from '../../../domain/mascotas/entities/EstadoReporte';
 /**
  * Controller de "Historias de rescate": feed de reportes con estado RESCUED.
  * Carga progresiva (scroll infinito) — el usuario percibe flujo continuo.
+ * El contenedor se inyecta por prop (regla hexagonal).
  */
-export function useHistoriasRescateController(refreshTrigger?: number) {
+export function useHistoriasRescateController(container: DependencyContainer, refreshTrigger?: number) {
   const [reportes, setReportes] = useState<ReporteMascota[]>([]);
   const [page, setPage] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
@@ -18,8 +19,8 @@ export function useHistoriasRescateController(refreshTrigger?: number) {
   // La instancia se memoiza: crearla en cada render causaba un loop
   // infinito de llamadas (el effect dependía de useCase → re-render → nueva instancia)
   const useCase = useMemo(
-    () => DependencyContainer.getInstance().getListarReportesMascotaUseCase(),
-    [],
+    () => container.getListarReportesMascotaUseCase(),
+    [container],
   );
 
   const loadPage = useCallback(async (pagina: number, acumular: boolean) => {

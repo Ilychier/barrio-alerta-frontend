@@ -6,9 +6,13 @@ import { EstadoReporte } from '../../../domain/mascotas/entities/EstadoReporte';
 /**
  * Controller de "Mis reportes" (usuario autenticado).
  * Lista los reportes del usuario, permite cambiar estado (rescate)
- * y eliminar (soft delete).
+ * y eliminar (soft delete). El contenedor se inyecta por prop (regla hexagonal).
  */
-export function useMisReportesMascotaController(usuarioId: number, refreshTrigger?: number) {
+export function useMisReportesMascotaController(
+  container: DependencyContainer,
+  usuarioId: number,
+  refreshTrigger?: number,
+) {
   const [reportes, setReportes] = useState<ReporteMascota[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -16,8 +20,8 @@ export function useMisReportesMascotaController(usuarioId: number, refreshTrigge
   // La instancia se memoiza: crearla en cada render causaba un loop
   // infinito de llamadas (el effect dependía de useCase → re-render → nueva instancia)
   const useCase = useMemo(
-    () => DependencyContainer.getInstance().getGestionarMisReportesMascotaUseCase(),
-    [],
+    () => container.getGestionarMisReportesMascotaUseCase(),
+    [container],
   );
   const [refresh, setRefresh] = useState(0);
 

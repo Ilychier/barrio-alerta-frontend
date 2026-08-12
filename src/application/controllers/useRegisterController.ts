@@ -9,9 +9,9 @@ const PAGE_SIZE = 20;
 /**
  * Controller del formulario de registro: carga los catálogos geográficos
  * (municipios → localidades → barrios paginados).
- * La presentación consume este controller, no el repositorio (regla hexagonal).
+ * El contenedor se inyecta por prop (regla hexagonal).
  */
-export function useRegisterController() {
+export function useRegisterController(container: DependencyContainer) {
   const [municipios, setMunicipios] = useState<Ciudad[]>([]);
   const [localidades, setLocalidades] = useState<Localidad[]>([]);
   const [barrios, setBarrios] = useState<Barrio[]>([]);
@@ -19,7 +19,6 @@ export function useRegisterController() {
   const [barriosHasMore, setBarriosHasMore] = useState(true);
   const [barriosLoadingMore, setBarriosLoadingMore] = useState(false);
 
-  const container = DependencyContainer.getInstance();
   const mascotaRefRepo = container.getMascotaReferenciaRepository();
   const refRepo = container.getReferenciaRepository();
 

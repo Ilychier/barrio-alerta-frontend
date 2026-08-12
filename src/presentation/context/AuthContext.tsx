@@ -1,5 +1,6 @@
 import React, { createContext, useContext, ReactNode } from 'react';
 import { useAuthController } from '../../application/controllers/useAuthController';
+import { useDI } from './DIContext';
 import { Usuario } from '../../domain/entities/usuario';
 import { Barrio } from '../../domain/entities/barrio';
 import { Cuadrante } from '../../domain/entities/cuadrante';
@@ -40,7 +41,8 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
  * Este provider solo conecta el controller de aplicación con el árbol de React.
  */
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const controller = useAuthController();
+  const container = useDI();
+  const controller = useAuthController(container);
   const { sesion, loading, isAuthenticated, passwordTemporal } = controller;
 
   const value: AuthContextType = {

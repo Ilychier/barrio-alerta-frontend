@@ -19,12 +19,12 @@ export interface RegistrarRapidoParams {
 
 /**
  * Controller del registro rápido de emergencia (BC Mascotas).
- * Expone el use case de application; la presentación no toca el contenedor.
+ * Expone el use case de application; el contenedor se inyecta por prop.
  */
-export function useRegistroRapidoController() {
+export function useRegistroRapidoController(container: DependencyContainer) {
   const useCase: RegistrarReporteRapidoUseCase = useMemo(
-    () => DependencyContainer.getInstance().getRegistrarReporteRapidoUseCase(),
-    [],
+    () => container.getRegistrarReporteRapidoUseCase(),
+    [container],
   );
 
   const registrar = async (params: RegistrarRapidoParams): Promise<ReporteRapidoResult> => {

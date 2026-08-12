@@ -15,7 +15,7 @@ const DEBOUNCE_MS = 350;
  * Carga progresiva: mantiene la lista acumulada y pide la siguiente
  * página al hacer scroll (el usuario percibe un flujo continuo).
  */
-export function useFeedMascotasController(refreshTrigger?: number) {
+export function useFeedMascotasController(container: DependencyContainer, refreshTrigger?: number) {
   const [reportes, setReportes] = useState<ReporteMascota[]>([]);
   const [page, setPage] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
@@ -28,7 +28,6 @@ export function useFeedMascotasController(refreshTrigger?: number) {
   const [referenciasLoading, setReferenciasLoading] = useState(true);
 
   // Instancias memoizadas: crearlas en cada render rompe las deps de los effects
-  const container = useMemo(() => DependencyContainer.getInstance(), []);
   const useCase = useMemo(() => container.getListarReportesMascotaUseCase(), [container]);
   const referenciasUseCase = useMemo(() => container.getObtenerReferenciasMascotaUseCase(), [container]);
 

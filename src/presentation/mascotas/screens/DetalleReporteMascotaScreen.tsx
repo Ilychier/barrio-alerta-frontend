@@ -20,6 +20,7 @@ import { ReporteMascota } from "../../../domain/mascotas/entities/ReporteMascota
 import { EstadoReporte } from "../../../domain/mascotas/entities/EstadoReporte";
 import { TipoReporte } from "../../../domain/mascotas/entities/TipoReporte";
 import Icon from "../../components/atomic/Icon";
+import { useDI } from "../../context/DIContext";
 import { AppTheme, useAppTheme } from "../../theme/ThemeContext";
 
 interface DetalleReporteMascotaScreenProps {
@@ -44,14 +45,15 @@ export function DetalleReporteMascotaScreen({
   const styles = getStyles(theme, isDesktop);
   const { id } = useLocalSearchParams<{ id: string }>();
   const reporteId = reporteIdProp ?? Number(id);
+  const container = useDI();
 
   const [fotoVisible, setFotoVisible] = useState(false);
 
   // Reutiliza el controller del feed para resolver nombres de catálogos
-  const feed = useFeedMascotasController(0);
+  const feed = useFeedMascotasController(container, 0);
 
   // Carga el reporte via controller de aplicación (no el repo directo)
-  const { reporte, loading, error } = useDetalleReporteMascotaController(reporteId);
+  const { reporte, loading, error } = useDetalleReporteMascotaController(container, reporteId);
 
   const abrirWhatsApp = () => {
     if (!reporte?.telefono) return;

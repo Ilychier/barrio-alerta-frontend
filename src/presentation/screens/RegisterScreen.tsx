@@ -18,6 +18,7 @@ import { SelectInput, SelectOption } from "../components/atomic/SelectInput";
 import { SectionCard } from "../components/layout/SectionCard";
 import { SVGBackground } from "../components/layout/SVGBackground";
 import { useAuth } from "../context/AuthContext";
+import { useDI } from "../context/DIContext";
 import { AppTheme, useAppTheme } from "../theme/ThemeContext";
 
 interface RegisterScreenProps {
@@ -33,6 +34,7 @@ export function RegisterScreen({
   onBackPress,
 }: RegisterScreenProps) {
   const { register } = useAuth();
+  const container = useDI();
   const { theme } = useAppTheme();
   const styles = getStyles(theme);
 
@@ -47,7 +49,7 @@ export function RegisterScreen({
     cargarBarrios,
     cargarMasBarrios,
     resetCadenaGeografica,
-  } = useRegisterController();
+  } = useRegisterController(container);
 
   const [nombre, setNombre] = useState("");
   const [email, setEmail] = useState("");

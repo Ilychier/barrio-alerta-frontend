@@ -3,7 +3,11 @@ import { DependencyContainer } from '../../infrastructure/config/dependencyConta
 import { Categoria } from '../../domain/entities/categoria';
 import { CategoriaDescripcion } from '../../domain/entities/categoriaDescripcion';
 
-export function useReporteController(currentUserId: number) {
+/**
+ * Controller del formulario de reporte. El contenedor se inyecta por prop
+ * (regla hexagonal: application no importa infrastructure directamente).
+ */
+export function useReporteController(container: DependencyContainer, currentUserId: number) {
   const [categorias, setCategorias] = useState<Categoria[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
   const [selectedDescription, setSelectedDescription] = useState('');
@@ -11,7 +15,6 @@ export function useReporteController(currentUserId: number) {
   const [descripciones, setDescripciones] = useState<CategoriaDescripcion[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const container = DependencyContainer.getInstance();
   const reportarUseCase = container.getReportarIncidenteUseCase();
 
   useEffect(() => {
@@ -19,7 +22,7 @@ export function useReporteController(currentUserId: number) {
     async function loadCategorias() {
       try {
         setLoading(true);
-        const repo = DependencyContainer.getInstance().getReferenciaRepository();
+        const repo = container.getReferenciaRepository();
         const res = await repo.getCategorias();
         if (active) {
           setCategorias(res);
@@ -36,14 +39,14 @@ export function useReporteController(currentUserId: number) {
     return () => {
       active = false;
     };
-  }, []);
+  }, [container]);
 
   const handleSelectCategory = useCallback(async (catId: number) => {
     setSelectedCategory(catId);
     setDescripcionDetallada('');
 
     try {
-      const repo = DependencyContainer.getInstance().getReferenciaRepository();
+      const repo = container.getReferenciaRepository();
       const list = await repo.getDescripcionesPorCategoria(catId);
       setDescripciones(list);
 
@@ -57,7 +60,7 @@ export function useReporteController(currentUserId: number) {
       setDescripciones([]);
       setSelectedDescription('');
     }
-  }, []);
+  }, [container]);
 
   const handleSelectDescription = useCallback((desc: string) => {
     setSelectedDescription(desc);
