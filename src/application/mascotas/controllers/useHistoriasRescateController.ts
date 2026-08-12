@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { DependencyContainer } from '../../../infrastructure/config/dependencyContainer';
 import { ReporteMascota } from '../../../domain/mascotas/entities/ReporteMascota';
 import { EstadoReporte } from '../../../domain/mascotas/entities/EstadoReporte';
@@ -15,7 +15,12 @@ export function useHistoriasRescateController(refreshTrigger?: number) {
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const useCase = DependencyContainer.getInstance().getListarReportesMascotaUseCase();
+  // La instancia se memoiza: crearla en cada render causaba un loop
+  // infinito de llamadas (el effect dependía de useCase → re-render → nueva instancia)
+  const useCase = useMemo(
+    () => DependencyContainer.getInstance().getListarReportesMascotaUseCase(),
+    [],
+  );
 
   const loadPage = useCallback(async (pagina: number, acumular: boolean) => {
     const setter = acumular ? setLoadingMore : setLoading;

@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { DependencyContainer } from '../../../infrastructure/config/dependencyContainer';
 import { ReporteMascota } from '../../../domain/mascotas/entities/ReporteMascota';
 import { Ciudad } from '../../../domain/mascotas/entities/Ciudad';
@@ -25,9 +25,10 @@ export function useReporteMascotaController(currentUserId: number, onSuccess?: (
   const [enviando, setEnviando] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const container = DependencyContainer.getInstance();
-  const crearUseCase = container.getCrearReporteMascotaUseCase();
-  const referenciasUseCase = container.getObtenerReferenciasMascotaUseCase();
+  // Instancias memoizadas: crearlas en cada render rompe las deps de los callbacks
+  const container = useMemo(() => DependencyContainer.getInstance(), []);
+  const crearUseCase = useMemo(() => container.getCrearReporteMascotaUseCase(), [container]);
+  const referenciasUseCase = useMemo(() => container.getObtenerReferenciasMascotaUseCase(), [container]);
 
   const cargarReferencias = useCallback(async () => {
     setReferenciasLoading(true);

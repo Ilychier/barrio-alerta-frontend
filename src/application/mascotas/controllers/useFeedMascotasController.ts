@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { DependencyContainer } from '../../../infrastructure/config/dependencyContainer';
 import { ReporteMascota } from '../../../domain/mascotas/entities/ReporteMascota';
 import { Ciudad } from '../../../domain/mascotas/entities/Ciudad';
@@ -25,9 +25,10 @@ export function useFeedMascotasController(refreshTrigger?: number) {
   const [referencias, setReferencias] = useState<ReferenciasMascota | null>(null);
   const [referenciasLoading, setReferenciasLoading] = useState(true);
 
-  const container = DependencyContainer.getInstance();
-  const useCase = container.getListarReportesMascotaUseCase();
-  const referenciasUseCase = container.getObtenerReferenciasMascotaUseCase();
+  // Instancias memoizadas: crearlas en cada render rompe las deps de los effects
+  const container = useMemo(() => DependencyContainer.getInstance(), []);
+  const useCase = useMemo(() => container.getListarReportesMascotaUseCase(), [container]);
+  const referenciasUseCase = useMemo(() => container.getObtenerReferenciasMascotaUseCase(), [container]);
 
   // Carga catálogos una vez (los datos geográficos cambian muy rara vez)
   useEffect(() => {
