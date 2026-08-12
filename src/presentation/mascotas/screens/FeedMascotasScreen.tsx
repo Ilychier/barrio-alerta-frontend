@@ -12,10 +12,10 @@ import {
   View,
 } from "react-native";
 import { useFeedMascotasController } from "../../../application/mascotas/controllers/useFeedMascotasController";
+import { resolverUrlFoto } from "../../../application/mascotas/services/UrlResolver";
 import { EstadoReporte } from "../../../domain/mascotas/entities/EstadoReporte";
 import { ReporteMascota } from "../../../domain/mascotas/entities/ReporteMascota";
 import { TipoReporte } from "../../../domain/mascotas/entities/TipoReporte";
-import { resolverUrlFoto } from "../../../infrastructure/mascotas/adapters/mappers";
 import Icon from "../../components/atomic/Icon";
 import { SelectInput, SelectOption } from "../../components/atomic/SelectInput";
 import { AppTheme, useAppTheme } from "../../theme/ThemeContext";

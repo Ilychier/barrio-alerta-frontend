@@ -12,13 +12,13 @@ import {
 } from "react-native";
 import { Image } from "expo-image";
 import { useLocalSearchParams } from "expo-router";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useFeedMascotasController } from "../../../application/mascotas/controllers/useFeedMascotasController";
+import { useDetalleReporteMascotaController } from "../../../application/mascotas/controllers/useDetalleReporteMascotaController";
+import { resolverUrlFoto } from "../../../application/mascotas/services/UrlResolver";
 import { ReporteMascota } from "../../../domain/mascotas/entities/ReporteMascota";
-import { resolverUrlFoto } from "../../../infrastructure/mascotas/adapters/mappers";
 import { EstadoReporte } from "../../../domain/mascotas/entities/EstadoReporte";
 import { TipoReporte } from "../../../domain/mascotas/entities/TipoReporte";
-import { DependencyContainer } from "../../../infrastructure/config/dependencyContainer";
 import Icon from "../../components/atomic/Icon";
 import { AppTheme, useAppTheme } from "../../theme/ThemeContext";
 
@@ -45,32 +45,13 @@ export function DetalleReporteMascotaScreen({
   const { id } = useLocalSearchParams<{ id: string }>();
   const reporteId = reporteIdProp ?? Number(id);
 
-  const [reporte, setReporte] = useState<ReporteMascota | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [fotoVisible, setFotoVisible] = useState(false);
 
   // Reutiliza el controller del feed para resolver nombres de catálogos
   const feed = useFeedMascotasController(0);
 
-  useEffect(() => {
-    let active = true;
-    async function cargar() {
-      try {
-        const repo = DependencyContainer.getInstance().getReporteMascotaRepository();
-        const data = await repo.obtenerPublico(reporteId);
-        if (active) setReporte(data ?? null);
-      } catch {
-        if (active) setError("No se pudo cargar el reporte");
-      } finally {
-        if (active) setLoading(false);
-      }
-    }
-    cargar();
-    return () => {
-      active = false;
-    };
-  }, [reporteId]);
+  // Carga el reporte via controller de aplicación (no el repo directo)
+  const { reporte, loading, error } = useDetalleReporteMascotaController(reporteId);
 
   const abrirWhatsApp = () => {
     if (!reporte?.telefono) return;
