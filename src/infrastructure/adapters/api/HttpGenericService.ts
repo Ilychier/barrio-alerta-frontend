@@ -25,7 +25,7 @@ export class HttpGenericService {
     });
 
     this.client.interceptors.request.use(async (config) => {
-      const token = await TokenStorage.getToken();
+      const token = await TokenStorage.instance.getToken();
       if (token && config.headers) {
         config.headers.Authorization = `Bearer ${token}`;
       }

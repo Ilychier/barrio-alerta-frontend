@@ -6,6 +6,7 @@ import { Barrio } from '../../domain/entities/barrio';
 import { Cuadrante } from '../../domain/entities/cuadrante';
 import { Configuracion } from '../../domain/entities/configuracion';
 import { SesionDTO } from '../../domain/entities/sesion';
+import { ITokenStorage } from '../../domain/ports/ITokenStorage';
 
 export interface Sesion {
   user: Usuario | null;
@@ -54,10 +55,13 @@ const SESION_VACIA: Sesion = {
 /**
  * Controller de autenticación/sesión.
  * Vive en la capa application; la presentación (AuthContext) lo consume
- * como thin wrapper. El contenedor de dependencias se inyecta por prop
- * (regla hexagonal: application no importa infrastructure directamente).
+ * como thin wrapper. El contenedor se inyecta por prop; el token storage
+ * via el puerto ITokenStorage (DIP).
  */
-export function useAuthController(container: DependencyContainer) {
+export function useAuthController(
+  container: DependencyContainer,
+  tokenStorage: ITokenStorage = TokenStorage.instance,
+) {
   const [sesion, setSesion] = useState<Sesion>(SESION_VACIA);
   const [loading, setLoading] = useState<boolean>(true);
 
@@ -68,14 +72,14 @@ export function useAuthController(container: DependencyContainer) {
     let active = true;
     async function loadSession() {
       try {
-        const token = await TokenStorage.getToken();
+        const token = await tokenStorage.getToken();
         if (token) {
           const dto = await authRepo.getMe();
           if (active) setSesion(aSesion(dto));
         }
       } catch (error) {
         console.warn('No active session or token expired', error);
-        await TokenStorage.clearToken();
+        await tokenStorage.clearToken();
         if (active) setSesion(SESION_VACIA);
       } finally {
         if (active) setLoading(false);
@@ -85,7 +89,7 @@ export function useAuthController(container: DependencyContainer) {
     return () => {
       active = false;
     };
-  }, [authRepo]);
+  }, [authRepo, tokenStorage]);
 
   const login = useCallback(
     async ({ identificador, password }: LoginParams) => {
@@ -129,12 +133,12 @@ export function useAuthController(container: DependencyContainer) {
   const logout = useCallback(async () => {
     setLoading(true);
     try {
-      await TokenStorage.clearToken();
+      await tokenStorage.clearToken();
       setSesion(SESION_VACIA);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [tokenStorage]);
 
   const cambiarPassword = useCallback(
     async (identificador: string, passwordActual: string | null, passwordNueva: string) => {
@@ -151,18 +155,18 @@ export function useAuthController(container: DependencyContainer) {
     async (token: string) => {
       setLoading(true);
       try {
-        await TokenStorage.setToken(token);
+        await tokenStorage.setToken(token);
         const dto = await authRepo.getMe();
         setSesion(aSesion(dto));
       } catch (error) {
-        await TokenStorage.clearToken();
+        await tokenStorage.clearToken();
         setSesion(SESION_VACIA);
         throw error;
       } finally {
         setLoading(false);
       }
     },
-    [authRepo],
+    [authRepo, tokenStorage],
   );
 
   const setConfiguracion = useCallback((config: Configuracion | null) => {

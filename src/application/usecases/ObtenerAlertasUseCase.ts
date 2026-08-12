@@ -4,7 +4,8 @@ import { Evidencia } from '../../domain/entities/evidencia';
 import { Usuario } from '../../domain/entities/usuario';
 import { IAlertaRepository } from '../../domain/ports/IAlertaRepository';
 import { IConfiguracionRepository } from '../../domain/ports/IConfiguracionRepository';
-import { IReferenciaRepository } from '../../domain/ports/IReferenciaRepository';
+import { ICategoriaRepository } from '../../domain/ports/ICategoriaRepository';
+import { IUsuarioRepository } from '../../domain/ports/IUsuarioRepository';
 
 export interface AlertaConDatos {
   alerta: Alerta;
@@ -21,11 +22,12 @@ export class ObtenerAlertasUseCase {
   constructor(
     private readonly alertaRepo: IAlertaRepository,
     private readonly configRepo: IConfiguracionRepository,
-    private readonly referenciaRepo: IReferenciaRepository,
+    private readonly categoriaRepo: ICategoriaRepository,
+    private readonly usuarioRepo: IUsuarioRepository,
   ) {}
 
   async execute(usuarioId: number, fecha?: string): Promise<ObtenerAlertasResponse> {
-    const userRes = await this.referenciaRepo.getUsuarioById(usuarioId);
+    const userRes = await this.usuarioRepo.getUsuarioById(usuarioId);
     const barrioId = userRes?.barrio_id;
 
     const [config, todas] = await Promise.all([
@@ -54,8 +56,8 @@ export class ObtenerAlertasUseCase {
     const alertasConDatos: AlertaConDatos[] = await Promise.all(
       ordenadas.map(async (a) => {
         const [categoria, usuario, evidencias] = await Promise.all([
-          a.categoria_id !== undefined ? this.referenciaRepo.getCategoriaById(a.categoria_id) : Promise.resolve(undefined),
-          this.referenciaRepo.getUsuarioById(a.usuario_id),
+          a.categoria_id !== undefined ? this.categoriaRepo.getCategoriaById(a.categoria_id) : Promise.resolve(undefined),
+          this.usuarioRepo.getUsuarioById(a.usuario_id),
           this.alertaRepo.obtenerEvidencias(a.id),
         ]);
         return {

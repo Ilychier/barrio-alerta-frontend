@@ -23,12 +23,25 @@ import { HttpMascotaReferenciaRepository } from '../mascotas/adapters/api/HttpMa
 import { HttpReporteRapidoRepository } from '../mascotas/adapters/api/HttpReporteRapidoRepository';
 import { InMemoryReporteMascotaRepository } from '../mascotas/adapters/memory/InMemoryReporteMascotaRepository';
 import { InMemoryMascotaReferenciaRepository } from '../mascotas/adapters/memory/InMemoryMascotaReferenciaRepository';
+import { InMemoryReporteRapidoRepository } from '../mascotas/adapters/memory/InMemoryReporteRapidoRepository';
 
 import { DispararSOSUseCase } from '../../application/usecases/DispararSOSUseCase';
 import { ReportarIncidenteUseCase } from '../../application/usecases/ReportarIncidenteUseCase';
 import { ActualizarConfiguracionUseCase } from '../../application/usecases/ActualizarConfiguracionUseCase';
 import { ObtenerAlertasUseCase } from '../../application/usecases/ObtenerAlertasUseCase';
 import { FinalizarEmergenciaUseCase } from '../../application/usecases/FinalizarEmergenciaUseCase';
+
+// Contratos (OCP: el container retorna interfaces, no clases concretas)
+import { IDispararSOSUseCase } from '../../application/usecases/contracts/IDispararSOSUseCase';
+import { IReportarIncidenteUseCase } from '../../application/usecases/contracts/IReportarIncidenteUseCase';
+import { IActualizarConfiguracionUseCase } from '../../application/usecases/contracts/IActualizarConfiguracionUseCase';
+import { IObtenerAlertasUseCase } from '../../application/usecases/contracts/IObtenerAlertasUseCase';
+import { IFinalizarEmergenciaUseCase } from '../../application/usecases/contracts/IFinalizarEmergenciaUseCase';
+import { IListarReportesMascotaUseCase } from '../../application/mascotas/usecases/contracts/IListarReportesMascotaUseCase';
+import { ICrearReporteMascotaUseCase } from '../../application/mascotas/usecases/contracts/ICrearReporteMascotaUseCase';
+import { IGestionarMisReportesMascotaUseCase } from '../../application/mascotas/usecases/contracts/IGestionarMisReportesMascotaUseCase';
+import { IObtenerReferenciasMascotaUseCase } from '../../application/mascotas/usecases/contracts/IObtenerReferenciasMascotaUseCase';
+import { IRegistrarReporteRapidoUseCase } from '../../application/mascotas/usecases/contracts/IRegistrarReporteRapidoUseCase';
 
 // BC Mascotas — casos de uso
 import { ListarReportesMascotaUseCase } from '../../application/mascotas/usecases/ListarReportesMascotaUseCase';
@@ -71,7 +84,7 @@ export class DependencyContainer {
         this._authRepo = new InMemoryAuthRepository();
         this._reporteMascotaRepo = new InMemoryReporteMascotaRepository();
         this._mascotaReferenciaRepo = new InMemoryMascotaReferenciaRepository();
-        this._reporteRapidoRepo = new HttpReporteRapidoRepository();
+        this._reporteRapidoRepo = new InMemoryReporteRapidoRepository();
         break;
     }
   }
@@ -113,49 +126,50 @@ export class DependencyContainer {
     return this._reporteRapidoRepo;
   }
 
-  // --- Casos de Uso ---
-  getDispararSOSUseCase(): DispararSOSUseCase {
+  // --- Casos de Uso (retornan interfaces — OCP) ---
+  getDispararSOSUseCase(): IDispararSOSUseCase {
     return new DispararSOSUseCase(this._alertaRepo);
   }
 
-  getReportarIncidenteUseCase(): ReportarIncidenteUseCase {
+  getReportarIncidenteUseCase(): IReportarIncidenteUseCase {
     return new ReportarIncidenteUseCase(this._alertaRepo);
   }
 
-  getActualizarConfiguracionUseCase(): ActualizarConfiguracionUseCase {
+  getActualizarConfiguracionUseCase(): IActualizarConfiguracionUseCase {
     return new ActualizarConfiguracionUseCase(this._configRepo);
   }
 
-  getObtenerAlertasUseCase(): ObtenerAlertasUseCase {
+  getObtenerAlertasUseCase(): IObtenerAlertasUseCase {
     return new ObtenerAlertasUseCase(
       this._alertaRepo,
       this._configRepo,
       this._referenciaRepo,
+      this._referenciaRepo,
     );
   }
 
-  getFinalizarEmergenciaUseCase(): FinalizarEmergenciaUseCase {
+  getFinalizarEmergenciaUseCase(): IFinalizarEmergenciaUseCase {
     return new FinalizarEmergenciaUseCase(this._alertaRepo);
   }
 
   // --- BC Mascotas: Casos de Uso ---
-  getListarReportesMascotaUseCase(): ListarReportesMascotaUseCase {
+  getListarReportesMascotaUseCase(): IListarReportesMascotaUseCase {
     return new ListarReportesMascotaUseCase(this._reporteMascotaRepo);
   }
 
-  getCrearReporteMascotaUseCase(): CrearReporteMascotaUseCase {
+  getCrearReporteMascotaUseCase(): ICrearReporteMascotaUseCase {
     return new CrearReporteMascotaUseCase(this._reporteMascotaRepo);
   }
 
-  getGestionarMisReportesMascotaUseCase(): GestionarMisReportesMascotaUseCase {
+  getGestionarMisReportesMascotaUseCase(): IGestionarMisReportesMascotaUseCase {
     return new GestionarMisReportesMascotaUseCase(this._reporteMascotaRepo);
   }
 
-  getObtenerReferenciasMascotaUseCase(): ObtenerReferenciasMascotaUseCase {
+  getObtenerReferenciasMascotaUseCase(): IObtenerReferenciasMascotaUseCase {
     return new ObtenerReferenciasMascotaUseCase(this._mascotaReferenciaRepo);
   }
 
-  getRegistrarReporteRapidoUseCase(): RegistrarReporteRapidoUseCase {
+  getRegistrarReporteRapidoUseCase(): IRegistrarReporteRapidoUseCase {
     return new RegistrarReporteRapidoUseCase(this._reporteRapidoRepo);
   }
 }

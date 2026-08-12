@@ -1,7 +1,7 @@
 import { Ciudad } from '../../../domain/mascotas/entities/Ciudad';
 import { TipoMascota } from '../../../domain/mascotas/entities/TipoMascota';
 import { IMascotaReferenciaRepository } from '../../../domain/mascotas/ports/IMascotaReferenciaRepository';
-import { buildCiudadMap, buildDepartamentoMap, buildTipoMascotaMap } from '../../../infrastructure/mascotas/adapters/mappers';
+import { buildCiudadMap, buildDepartamentoMap, buildTipoMascotaMap } from '../services/catalogos';
 
 export interface ReferenciasMascota {
   ciudades: Ciudad[];

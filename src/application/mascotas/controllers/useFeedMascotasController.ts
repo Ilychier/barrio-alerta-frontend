@@ -5,7 +5,7 @@ import { Ciudad } from '../../../domain/mascotas/entities/Ciudad';
 import { TipoMascota } from '../../../domain/mascotas/entities/TipoMascota';
 import { FiltrosReporteMascota } from '../../../domain/mascotas/ports/IReporteMascotaRepository';
 import { ReferenciasMascota } from '../../mascotas/usecases/ObtenerReferenciasMascotaUseCase';
-import { nombrePorId } from '../../../infrastructure/mascotas/adapters/mappers';
+import { nombrePorId } from '../services/catalogos';
 
 /** Espera entre tecleos antes de disparar la búsqueda por texto (KISS: evita 1 request por tecla). */
 const DEBOUNCE_MS = 350;

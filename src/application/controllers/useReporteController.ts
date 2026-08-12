@@ -2,6 +2,7 @@ import { useState, useCallback, useEffect } from 'react';
 import { DependencyContainer } from '../../infrastructure/config/dependencyContainer';
 import { Categoria } from '../../domain/entities/categoria';
 import { CategoriaDescripcion } from '../../domain/entities/categoriaDescripcion';
+import { ICategoriaRepository } from '../../domain/ports/ICategoriaRepository';
 
 /**
  * Controller del formulario de reporte. El contenedor se inyecta por prop
@@ -16,14 +17,14 @@ export function useReporteController(container: DependencyContainer, currentUser
   const [loading, setLoading] = useState(true);
 
   const reportarUseCase = container.getReportarIncidenteUseCase();
+  const categoriaRepo: ICategoriaRepository = container.getReferenciaRepository();
 
   useEffect(() => {
     let active = true;
     async function loadCategorias() {
       try {
         setLoading(true);
-        const repo = container.getReferenciaRepository();
-        const res = await repo.getCategorias();
+        const res = await categoriaRepo.getCategorias();
         if (active) {
           setCategorias(res);
         }
@@ -39,15 +40,14 @@ export function useReporteController(container: DependencyContainer, currentUser
     return () => {
       active = false;
     };
-  }, [container]);
+  }, [categoriaRepo]);
 
   const handleSelectCategory = useCallback(async (catId: number) => {
     setSelectedCategory(catId);
     setDescripcionDetallada('');
 
     try {
-      const repo = container.getReferenciaRepository();
-      const list = await repo.getDescripcionesPorCategoria(catId);
+      const list = await categoriaRepo.getDescripcionesPorCategoria(catId);
       setDescripciones(list);
 
       if (list.length > 0) {
@@ -60,7 +60,7 @@ export function useReporteController(container: DependencyContainer, currentUser
       setDescripciones([]);
       setSelectedDescription('');
     }
-  }, [container]);
+  }, [categoriaRepo]);
 
   const handleSelectDescription = useCallback((desc: string) => {
     setSelectedDescription(desc);

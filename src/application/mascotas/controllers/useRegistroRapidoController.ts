@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { DependencyContainer } from '../../../infrastructure/config/dependencyContainer';
 import { ReporteRapidoResult } from '../../../domain/mascotas/ports/IReporteRapidoRepository';
-import { RegistrarReporteRapidoUseCase } from '../usecases/RegistrarReporteRapidoUseCase';
+import { IRegistrarReporteRapidoUseCase } from '../usecases/contracts/IRegistrarReporteRapidoUseCase';
 
 export interface RegistrarRapidoParams {
   phonePersonal: string;
@@ -22,7 +22,7 @@ export interface RegistrarRapidoParams {
  * Expone el use case de application; el contenedor se inyecta por prop.
  */
 export function useRegistroRapidoController(container: DependencyContainer) {
-  const useCase: RegistrarReporteRapidoUseCase = useMemo(
+  const useCase: IRegistrarReporteRapidoUseCase = useMemo(
     () => container.getRegistrarReporteRapidoUseCase(),
     [container],
   );

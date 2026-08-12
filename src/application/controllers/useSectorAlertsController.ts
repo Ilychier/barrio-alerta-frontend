@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { DependencyContainer } from '../../infrastructure/config/dependencyContainer';
 import { AlertaConDatos } from '../../application/usecases/ObtenerAlertasUseCase';
 import { Barrio } from '../../domain/entities/barrio';
+import { IGeografiaRepository } from '../../domain/ports/IGeografiaRepository';
+import { IUsuarioRepository } from '../../domain/ports/IUsuarioRepository';
 
 /**
  * Controller de alertas del sector. El contenedor se inyecta por prop
@@ -42,21 +44,22 @@ export function useSectorAlertsController(
 
     let active = true;
     const obtenerAlertas = container.getObtenerAlertasUseCase();
-    const referenciaRepo = container.getReferenciaRepository();
+    const geografiaRepo: IGeografiaRepository = container.getReferenciaRepository();
+    const usuarioRepo: IUsuarioRepository = container.getReferenciaRepository();
 
     async function loadData() {
       try {
         setLoading(true);
         const [alertasRes, userRes] = await Promise.all([
           obtenerAlertas.execute(currentUserId, formatearFechaISO(fechaSeleccionada)),
-          referenciaRepo.getUsuarioById(currentUserId),
+          usuarioRepo.getUsuarioById(currentUserId),
         ]);
 
         if (!active) return;
         setAlertas(alertasRes.alertas);
 
         if (userRes) {
-          const resolvedBarrio = await referenciaRepo.getBarrioById(userRes.barrio_id);
+          const resolvedBarrio = await geografiaRepo.getBarrioById(userRes.barrio_id);
           if (!active) return;
           setBarrio(resolvedBarrio);
         }

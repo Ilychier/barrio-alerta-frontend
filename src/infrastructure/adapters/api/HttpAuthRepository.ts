@@ -83,7 +83,7 @@ export class HttpAuthRepository implements IAuthRepository {
 
   private async toSesion(raw: any): Promise<SesionDTO> {
     if (raw.token) {
-      await TokenStorage.setToken(raw.token);
+      await TokenStorage.instance.setToken(raw.token);
     }
 
     const user = new Usuario(

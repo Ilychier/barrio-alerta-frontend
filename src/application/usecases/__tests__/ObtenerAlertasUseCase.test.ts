@@ -14,7 +14,7 @@ describe('ObtenerAlertasUseCase (snapshot Fase 0)', () => {
     const alertaRepo = new InMemoryAlertaRepository();
     const configRepo = new InMemoryConfiguracionRepository();
     const refRepo = new InMemoryReferenciaRepository();
-    return { useCase: new ObtenerAlertasUseCase(alertaRepo, configRepo, refRepo), alertaRepo };
+    return { useCase: new ObtenerAlertasUseCase(alertaRepo, configRepo, refRepo, refRepo), alertaRepo };
   };
 
   it('enriquece cada alerta con categoria, usuario y evidencias', async () => {
