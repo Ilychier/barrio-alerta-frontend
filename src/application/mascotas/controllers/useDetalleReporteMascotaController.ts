@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { DependencyContainer } from '../../../infrastructure/config/dependencyContainer';
 import { ReporteMascota } from '../../../domain/mascotas/entities/ReporteMascota';
 
@@ -12,32 +12,29 @@ export function useDetalleReporteMascotaController(
   reporteId: number,
 ) {
   const [reporte, setReporte] = useState<ReporteMascota | null>(null);
-  const [loading, setLoading] = useState(true);
+  // Lazy init: sin reporteId no hay carga que hacer (evita setState síncrono en effect)
+  const [loading, setLoading] = useState(() => !reporteId);
   const [error, setError] = useState<string | null>(null);
 
   const repo = container.getReporteMascotaRepository();
 
-  const cargar = useCallback(async () => {
+  useEffect(() => {
     if (!reporteId) return;
     let active = true;
-    setLoading(true);
-    setError(null);
-    try {
-      const data = await repo.obtenerPublico(reporteId);
-      if (active) setReporte(data ?? null);
-    } catch {
-      if (active) setError('No se pudo cargar el reporte');
-    } finally {
-      if (active) setLoading(false);
-    }
+    (async () => {
+      try {
+        const data = await repo.obtenerPublico(reporteId);
+        if (active) setReporte(data ?? null);
+      } catch {
+        if (active) setError('No se pudo cargar el reporte');
+      } finally {
+        if (active) setLoading(false);
+      }
+    })();
     return () => {
       active = false;
     };
   }, [reporteId, repo]);
 
-  useEffect(() => {
-    cargar();
-  }, [cargar]);
-
-  return { reporte, loading, error, recargar: cargar };
+  return { reporte, loading, error };
 }

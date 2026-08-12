@@ -16,7 +16,6 @@ import { useState } from "react";
 import { useFeedMascotasController } from "../../../application/mascotas/controllers/useFeedMascotasController";
 import { useDetalleReporteMascotaController } from "../../../application/mascotas/controllers/useDetalleReporteMascotaController";
 import { resolverUrlFoto } from "../../../application/mascotas/services/UrlResolver";
-import { ReporteMascota } from "../../../domain/mascotas/entities/ReporteMascota";
 import { EstadoReporte } from "../../../domain/mascotas/entities/EstadoReporte";
 import { TipoReporte } from "../../../domain/mascotas/entities/TipoReporte";
 import Icon from "../../components/atomic/Icon";

@@ -1,6 +1,4 @@
-import { Image } from "expo-image";
-import * as ImagePicker from "expo-image-picker";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Pressable,
@@ -18,10 +16,10 @@ import { ReporteRapidoResult } from "../../../domain/mascotas/ports/IReporteRapi
 import Icon from "../../components/atomic/Icon";
 import { useDI } from "../../context/DIContext";
 import { SelectInput } from "../../components/atomic/SelectInput";
+import { FotoPicker, FotoSeleccionada } from "./FotoPicker";
 import { UbicacionGeograficaPicker } from "../../components/molecules/UbicacionGeograficaPicker";
 import { AppTheme, useAppTheme } from "../../theme/ThemeContext";
 
-const MAX_FOTO_BYTES = 8 * 1024 * 1024; // 8 MB (mismo límite que el backend)
 const PREFIJO_PAIS = "+57"; // Colombia: prefijo fijo, el usuario solo digita el número
 
 interface RegistroRapidoFormProps {
@@ -111,31 +109,10 @@ export function RegistroRapidoForm({ onSuccess }: RegistroRapidoFormProps) {
     return `${PREFIJO_PAIS}${digitos}`;
   };
 
-  const elegirFoto = async () => {
-    try {
-      const permiso = await ImagePicker.requestMediaLibraryPermissionsAsync();
-      if (!permiso.granted) {
-        alert("Necesitamos acceso a tus fotos para adjuntar la imagen.");
-        return;
-      }
-      const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ["images"],
-        allowsEditing: false,
-        quality: 1,
-      });
-      if (result.canceled) return;
-      const asset = result.assets[0];
-      if (asset.fileSize && asset.fileSize > MAX_FOTO_BYTES) {
-        alert("La foto supera 8 MB. Elige una imagen más liviana.");
-        return;
-      }
-      setFotoUri(asset.uri);
-      setFotoMime(asset.mimeType ?? "image/jpeg");
-      setFotoFile(asset.file ?? undefined);
-    } catch (e) {
-      console.warn("[RegistroRapidoForm] Error al elegir foto:", e);
-      alert("No se pudo abrir la galería. Intenta de nuevo.");
-    }
+  const handleFotoChange = (foto: FotoSeleccionada | null) => {
+    setFotoUri(foto?.uri ?? undefined);
+    setFotoMime(foto?.mime ?? undefined);
+    setFotoFile(foto?.file ?? undefined);
   };
 
   const handleSubmit = async () => {
@@ -370,46 +347,12 @@ export function RegistroRapidoForm({ onSuccess }: RegistroRapidoFormProps) {
       </View>
 
       {/* ── Foto (opcional) ─────────────────────────────── */}
-      <View style={styles.seccion}>
-        <Text style={styles.label}>Foto (opcional)</Text>
-        {fotoUri ? (
-          <View style={styles.fotoPreviewBox}>
-            <Image
-              source={{ uri: fotoUri }}
-              style={styles.fotoPreview}
-              contentFit="cover"
-            />
-            <View style={styles.fotoActions}>
-              <Pressable style={styles.fotoBtn} onPress={elegirFoto}>
-                <Icon name="RefreshCw" size={16} color={theme.colors.green} />
-                <Text style={styles.fotoBtnText}>Cambiar</Text>
-              </Pressable>
-              <Pressable
-                style={styles.fotoBtn}
-                onPress={() => {
-                  setFotoUri(undefined);
-                  setFotoFile(undefined);
-                }}
-              >
-                <Icon name="Trash2" size={16} color={theme.colors.red} />
-                <Text style={[styles.fotoBtnText, { color: theme.colors.red }]}>
-                  Quitar
-                </Text>
-              </Pressable>
-            </View>
-          </View>
-        ) : (
-          <Pressable style={styles.fotoPicker} onPress={elegirFoto}>
-            <Icon name="Camera" size={22} color={theme.colors.green} />
-            <Text style={styles.fotoPickerText}>
-              Agregar foto del animalito
-            </Text>
-            <Text style={styles.fotoPickerHint}>
-              JPEG, PNG, HEIC... hasta 8 MB. Ayuda a identificarlo más rápido.
-            </Text>
-          </Pressable>
-        )}
-      </View>
+      <FotoPicker
+        foto={fotoUri ? { uri: fotoUri, mime: fotoMime ?? "image/jpeg", file: fotoFile } : null}
+        theme={theme}
+        styles={styles as unknown as Record<string, any>}
+        onChange={handleFotoChange}
+      />
 
       {error && <Text style={styles.error}>{error}</Text>}
 

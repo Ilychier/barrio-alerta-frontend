@@ -9,9 +9,6 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { Barrio } from "../../domain/entities/barrio";
-import { Localidad } from "../../domain/entities/localidad";
-import { Ciudad } from "../../domain/mascotas/entities/Ciudad";
 import { useRegisterController } from "../../application/controllers/useRegisterController";
 import Icon from "../components/atomic/Icon";
 import { SelectInput, SelectOption } from "../components/atomic/SelectInput";
@@ -95,8 +92,6 @@ export function RegisterScreen({
   const [localidadFocused, setLocalidadFocused] = useState(false);
   const [barrioFocused, setBarrioFocused] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-
-  const PAGE_SIZE = 20;
 
   // 2. Al elegir departamento, el handler resetea municipio/localidad/barrio
   //    (sin setState síncrono en effect — cumple react-hooks/set-state-in-effect)
