@@ -46,14 +46,17 @@ function getActionColors(theme: AppTheme, colorKey: string) {
 }
 
 export function DashboardScreen() {
-  const { user } = useAuth();
+  const { user, cuadrante: authCuadrante } = useAuth();
   const userId = user?.id ?? 0;
   const { theme } = useAppTheme();
   const { width } = useWindowDimensions();
   const isDesktop = width >= 900;
   const styles = getStyles(theme, isDesktop);
 
-  const { cuadrante } = useDashboardController();
+  const { cuadrante } = useDashboardController({
+    user: user ?? undefined,
+    cuadrante: authCuadrante ?? undefined,
+  });
   const sos = useSOSController(userId, () => {});
 
   return (

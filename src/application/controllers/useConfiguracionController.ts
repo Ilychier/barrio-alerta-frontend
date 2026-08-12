@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { DependencyContainer } from '../../infrastructure/config/dependencyContainer';
-import { useAuth } from '../../presentation/context/AuthContext';
+import { Configuracion } from '../../domain/entities/configuracion';
 
 type CampoConfig = 'recibir_notificaciones' | 'modo_silencioso';
 
@@ -9,10 +9,19 @@ export interface FeedbackState {
   type: 'success' | 'error';
 }
 
-export function useConfiguracionController() {
+/**
+ * Dependencias que la presentación inyecta al controller.
+ * La capa application NO conoce la capa presentation (regla hexagonal).
+ */
+export interface ConfiguracionControllerDeps {
+  configuracion: Configuracion | null;
+  setConfiguracion: (config: Configuracion | null) => void;
+}
+
+export function useConfiguracionController(deps: ConfiguracionControllerDeps) {
+  const { configuracion, setConfiguracion } = deps;
   const container = DependencyContainer.getInstance();
   const useCase = container.getActualizarConfiguracionUseCase();
-  const { configuracion, setConfiguracion } = useAuth();
   const [feedback, setFeedback] = useState<FeedbackState | null>(null);
 
   const handleUpdate = useCallback(

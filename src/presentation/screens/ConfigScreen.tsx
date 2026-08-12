@@ -1,15 +1,18 @@
 import { useEffect, useRef } from 'react';
 import { Animated, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useConfiguracionController } from '../../application/controllers/useConfiguracionController';
-import { useDashboardController } from '../../application/controllers/useDashboardController';
 import { IconRenderer } from '../components/atomic/IconRenderer';
 import { ToggleSwitch } from '../components/atomic/ToggleSwitch';
 import { SectionCard } from '../components/layout/SectionCard';
+import { useAuth } from '../context/AuthContext';
 import { useAppTheme, AppTheme } from '../theme/ThemeContext';
 
 export function ConfigScreen() {
-  const { config, handleUpdate, feedback, clearFeedback } = useConfiguracionController();
-  const { barrio, cuadrante } = useDashboardController();
+  const { barrio, cuadrante, configuracion, setConfiguracion } = useAuth();
+  const { config, handleUpdate, feedback, clearFeedback } = useConfiguracionController({
+    configuracion,
+    setConfiguracion,
+  });
   const { theme, themeType, toggleTheme } = useAppTheme();
   const styles = getStyles(theme);
   const feedbackOpacity = useRef(new Animated.Value(0)).current;
