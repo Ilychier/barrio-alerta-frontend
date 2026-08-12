@@ -16,6 +16,7 @@ import { useUbicacionGeografica } from "../../../application/ubicacion/useUbicac
 import { ReporteRapidoResult } from "../../../domain/mascotas/ports/IReporteRapidoRepository";
 import { DependencyContainer } from "../../../infrastructure/config/dependencyContainer";
 import Icon from "../../components/atomic/Icon";
+import { SelectInput } from "../../components/atomic/SelectInput";
 import { UbicacionGeograficaPicker } from "../../components/molecules/UbicacionGeograficaPicker";
 import { AppTheme, useAppTheme } from "../../theme/ThemeContext";
 
@@ -80,6 +81,11 @@ export function RegistroRapidoForm({ onSuccess }: RegistroRapidoFormProps) {
     if (!phonePersonal.trim() || phonePersonal.trim().length < 7) {
       return "Indica tu celular (WhatsApp) para poder contactarte";
     }
+    // Máx 13 dígitos: con el prefijo +57 el string completo cabe en
+    // varchar(15) del backend (ej: +573001234567 = 13 chars).
+    if (conPrefijo(phonePersonal).length > 15) {
+      return "El número de celular es demasiado largo (máx 13 dígitos)";
+    }
     if (!tipoMascotaId) return "Selecciona el tipo de mascota";
     if (esOtro && !otroTipoMascota.trim())
       return "Especifica qué tipo de mascota es";
@@ -91,6 +97,12 @@ export function RegistroRapidoForm({ onSuccess }: RegistroRapidoFormProps) {
       (!telefonoContacto.trim() || telefonoContacto.trim().length < 7)
     ) {
       return "Indica un teléfono de contacto válido para la mascota";
+    }
+    if (
+      !usarMismoTelefono &&
+      conPrefijo(telefonoContacto).length > 15
+    ) {
+      return "El teléfono de contacto es demasiado largo (máx 13 dígitos)";
     }
     return null;
   };
@@ -243,6 +255,7 @@ export function RegistroRapidoForm({ onSuccess }: RegistroRapidoFormProps) {
             value={phonePersonal}
             onChangeText={setPhonePersonal}
             keyboardType="phone-pad"
+            maxLength={13}
           />
         </View>
         <Text style={styles.hint}>
@@ -291,6 +304,7 @@ export function RegistroRapidoForm({ onSuccess }: RegistroRapidoFormProps) {
             onChangeText={setTelefonoContacto}
             keyboardType="phone-pad"
             editable={!usarMismoTelefono}
+            maxLength={13}
           />
         </View>
         {usarMismoTelefono && (
@@ -306,27 +320,21 @@ export function RegistroRapidoForm({ onSuccess }: RegistroRapidoFormProps) {
         {controller.referenciasLoading ? (
           <ActivityIndicator color={theme.colors.green} />
         ) : (
-          <View style={styles.chips}>
-            {controller.tiposMascota.map((t) => (
-              <Pressable
-                key={t.id}
-                style={[
-                  styles.chip,
-                  tipoMascotaId === t.id && styles.chipActivo,
-                ]}
-                onPress={() => setTipoMascotaId(t.id)}
-              >
-                <Text
-                  style={[
-                    styles.chipText,
-                    tipoMascotaId === t.id && styles.chipTextActivo,
-                  ]}
-                >
-                  {t.nombre}
-                </Text>
-              </Pressable>
-            ))}
-          </View>
+          <SelectInput
+            label="Tipo de mascota"
+            icon="PawPrint"
+            options={controller.tiposMascota.map((t) => ({
+              value: t.id,
+              label: t.nombre,
+            }))}
+            selectedValue={tipoMascotaId ?? 0}
+            onSelect={(v) => setTipoMascotaId(Number(v))}
+            placeholder="Elige el tipo de mascota..."
+            theme={theme}
+            focused={false}
+            onFocus={() => {}}
+            onBlur={() => {}}
+          />
         )}
         {esOtro && (
           <TextInput
@@ -497,25 +505,6 @@ const getStyles = (theme: AppTheme, isDesktop: boolean) =>
       color: theme.colors.textSecondary,
       flex: 1,
     },
-    chips: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-    chip: {
-      paddingVertical: 8,
-      paddingHorizontal: 16,
-      borderRadius: 20,
-      borderWidth: 1,
-      borderColor: theme.colors.border,
-      backgroundColor: theme.colors.surface,
-    },
-    chipActivo: {
-      backgroundColor: theme.colors.green,
-      borderColor: theme.colors.green,
-    },
-    chipText: {
-      fontSize: 13,
-      fontWeight: "600",
-      color: theme.colors.textSecondary,
-    },
-    chipTextActivo: { color: theme.colors.white },
     input: {
       backgroundColor: theme.colors.surface,
       borderWidth: 1,

@@ -15,6 +15,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import Icon from "@/presentation/components/atomic/Icon";
 import { IconRenderer } from "@/presentation/components/atomic/IconRenderer";
+import { AboutDeveloperModal } from "@/presentation/components/molecules/AboutDeveloperModal";
 import { Header } from "@/presentation/components/layout/Header";
 import { SVGBackground } from "@/presentation/components/layout/SVGBackground";
 import { AuthProvider, useAuth } from "@/presentation/context/AuthContext";
@@ -43,7 +44,7 @@ export default function RootLayout() {
 }
 
 function TabLayout() {
-  const { user, barrio, ciudadNombre, isAuthenticated, loading, logout } =
+  const { user, barrio, ciudadNombre, isAuthenticated, loading, passwordTemporal, logout } =
     useAuth();
   const { theme } = useAppTheme();
   const styles = getStyles(theme);
@@ -69,6 +70,7 @@ function TabLayout() {
   const insets = useSafeAreaInsets();
 
   const [visible, setVisible] = useState(false);
+  const [aboutModalVisible, setAboutModalVisible] = useState(false);
 
   // Use state instead of useRef to avoid ESLint rules about accessing ref during render
   const [slideAnim] = useState(() => new Animated.Value(-280));
@@ -93,6 +95,15 @@ function TabLayout() {
       wasAuthenticated.current = false;
     }
   }, [isAuthenticated, router, modoEmergencia, vistaEmergencia]);
+
+  // Forzar cambio de clave cuando el usuario autenticado tiene clave
+  // temporal (registro rápido de emergencia). Se deriva durante el render
+  // (no en un effect) para evitar renders en cascada: si el flag está activo,
+  // el _layout renderiza CambiarPasswordScreen a nivel de root (sin landing
+  // ni drawer), así el "atrás" no tiene destino — el usuario no puede evadir
+  // el cambio y quedarse navegando con credenciales temporales.
+  const forzarCambioClave =
+    isAuthenticated && passwordTemporal && modoEmergencia && vistaEmergencia === "emergencia";
 
   // Logout explícito: vuelve a la landing (de emergencia o de marketing
   // según el modo) — no a login/register ni al dashboard. Limpia el estado
@@ -242,6 +253,7 @@ function TabLayout() {
             router.replace("/mascotas");
           }}
           onCambiarPasswordPress={() => setAuthView("cambiar-password")}
+          onForzarCambioClave={() => setAuthView("cambiar-password")}
           onLogoutPress={handleLogout}
         />
       );
@@ -258,7 +270,19 @@ function TabLayout() {
   // "emergencia" (auto-login del registro rápido), se queda en la landing
   // de emergencia en lugar de entrar al dashboard.
   if (modoEmergencia && vistaEmergencia === "emergencia") {
+    // Flujo forzado (passwordTemporal): CambiarPasswordScreen a nivel de
+    // root, sin flecha atrás — el usuario no puede evadir el cambio. Al
+    // completarlo, passwordTemporal pasa a false y el render deriva a la
+    // landing de emergencia (sin effect, sin setState en cascada).
+    if (forzarCambioClave) {
+      return (
+        <CambiarPasswordScreen
+          onSuccess={() => setAuthView("landing")}
+        />
+      );
+    }
     if (authView === "cambiar-password") {
+      // Flujo voluntario (sin passwordTemporal): con flecha atrás a landing.
       return (
         <CambiarPasswordScreen
           onBackPress={() => setAuthView("landing")}
@@ -274,6 +298,7 @@ function TabLayout() {
           router.replace("/mascotas");
         }}
         onCambiarPasswordPress={() => setAuthView("cambiar-password")}
+        onForzarCambioClave={() => setAuthView("cambiar-password")}
         onLogoutPress={handleLogout}
       />
     );
@@ -667,6 +692,18 @@ function TabLayout() {
                   Cerrar Sesión
                 </Text>
               </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={() => {
+                  closeMenu();
+                  setAboutModalVisible(true);
+                }}
+                style={styles.navLink}
+                activeOpacity={0.7}
+              >
+                <Icon name="Info" size={16} color={theme.colors.textMuted} />
+                <Text style={styles.navLinkText}>Sobre el desarrollador</Text>
+              </TouchableOpacity>
             </View>
 
             {/* Footer */}
@@ -677,6 +714,11 @@ function TabLayout() {
           </Animated.View>
         </View>
       )}
+
+      <AboutDeveloperModal
+        visible={aboutModalVisible}
+        onClose={() => setAboutModalVisible(false)}
+      />
     </SVGBackground>
   );
 }

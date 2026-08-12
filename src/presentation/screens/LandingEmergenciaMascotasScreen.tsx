@@ -12,9 +12,9 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { ReporteRapidoResult } from "../../domain/mascotas/ports/IReporteRapidoRepository";
 import Icon from "../components/atomic/Icon";
+import { AboutDeveloperModal } from "../components/molecules/AboutDeveloperModal";
 import { SVGBackground } from "../components/layout/SVGBackground";
 import { useAuth } from "../context/AuthContext";
-import { CambiarPasswordScreen } from "./CambiarPasswordScreen";
 import { RegistroRapidoForm } from "../mascotas/components/RegistroRapidoForm";
 import { FeedMascotasScreen } from "../mascotas/screens/FeedMascotasScreen";
 import { DetalleReporteMascotaScreen } from "../mascotas/screens/DetalleReporteMascotaScreen";
@@ -27,11 +27,15 @@ interface LandingEmergenciaMascotasScreenProps {
   onLoginPress: () => void;
   onDashboardPress: () => void;
   onCambiarPasswordPress: () => void;
+  /** Forzar el cambio de clave a nivel de root (registro rápido con clave temporal).
+   *  La landing delega al _layout, que renderiza CambiarPasswordScreen sin landing
+   *  ni drawer — el usuario no puede evadir el cambio. */
+  onForzarCambioClave: () => void;
   onLogoutPress: () => void;
 }
 
 type Vista = "reportar" | "ver";
-type EstadoRegistro = "idle" | "cambiando-clave" | "exito" | "existente";
+type EstadoRegistro = "idle" | "exito" | "existente";
 /**
  * Landing de emergencia (BC Mascotas) — pantalla inicial cuando
  * MODO_EMERGENCIA=true. Reemplaza a la landing de marketing (que queda
@@ -49,6 +53,7 @@ export function LandingEmergenciaMascotasScreen({
   onLoginPress,
   onDashboardPress,
   onCambiarPasswordPress,
+  onForzarCambioClave,
   onLogoutPress,
 }: LandingEmergenciaMascotasScreenProps) {
   const { theme } = useAppTheme();
@@ -60,14 +65,17 @@ export function LandingEmergenciaMascotasScreen({
 
   const [vista, setVista] = useState<Vista>(() => ultimaVistaEmergencia.get());
   const [menuVisible, setMenuVisible] = useState(false);
+  const [aboutModalVisible, setAboutModalVisible] = useState(false);
   const [detalleReporte, setDetalleReporte] = useState<ReporteMascota | null>(
     null,
   );
   const [estadoRegistro, setEstadoRegistro] = useState<EstadoRegistro>(() => {
     const res = ultimoRegistroRapido.get();
     if (!res) return "idle";
-    // Si la clave sigue temporal (no se completó el cambio), forzar el cambio
-    if (passwordTemporal) return "cambiando-clave";
+    // Si la clave sigue temporal, el _layout ya debió forzar la pantalla
+    // de cambio de clave a nivel de root. Llegar aquí con passwordTemporal
+    // es un edge case: disparamos el callback para no mostrar la landing.
+    if (passwordTemporal) return "exito";
     return "exito";
   });
   const [resultado, setResultado] = useState<ReporteRapidoResult | null>(() =>
@@ -116,9 +124,10 @@ export function LandingEmergenciaMascotasScreen({
     if (result.token) {
       try {
         await autenticarConToken(result.token);
-        // Clave temporal: forzar el cambio de clave ANTES de las gracias
+        // Clave temporal: el _layout fuerza la pantalla de cambio de clave
+        // a nivel de root (sin landing ni drawer). La landing delega.
         if (result.passwordTemporal) {
-          setEstadoRegistro("cambiando-clave");
+          onForzarCambioClave();
         } else {
           setEstadoRegistro("exito");
         }
@@ -140,12 +149,6 @@ export function LandingEmergenciaMascotasScreen({
     ultimoRegistroRapido.clear();
     setVista("reportar");
     ultimaVistaEmergencia.set("reportar");
-  };
-
-  // El cambio de clave terminó con éxito: la clave ya no es temporal,
-  // mostrar la pantalla de gracias (sin aviso de clave temporal).
-  const handleClaveCambiada = () => {
-    setEstadoRegistro("exito");
   };
 
   return (
@@ -254,14 +257,6 @@ export function LandingEmergenciaMascotasScreen({
         {vista === "reportar" ? (
           estadoRegistro === "idle" ? (
             <RegistroRapidoForm onSuccess={handleRegistroExitoso} />
-          ) : estadoRegistro === "cambiando-clave" ? (
-            // Cambio de clave OBLIGATORIO tras el registro rápido con clave
-            // temporal. Si el usuario presiona atrás, se cierra la sesión
-            // (no puede quedar navegando con credenciales temporales).
-            <CambiarPasswordScreen
-              onBackPress={onLogoutPress}
-              onSuccess={handleClaveCambiada}
-            />
           ) : estadoRegistro === "exito" ? (
             <View style={styles.graciasCard}>
               <View style={styles.graciasIcon}>
@@ -467,6 +462,18 @@ export function LandingEmergenciaMascotasScreen({
                   <Text style={styles.navLinkText}>Iniciar sesión</Text>
                 </TouchableOpacity>
               )}
+
+              <TouchableOpacity
+                style={styles.navLink}
+                onPress={() => {
+                  closeMenu();
+                  setAboutModalVisible(true);
+                }}
+                activeOpacity={0.7}
+              >
+                <Icon name="Info" size={16} color={theme.colors.textMuted} />
+                <Text style={styles.navLinkText}>Sobre el desarrollador</Text>
+              </TouchableOpacity>
             </View>
 
             <View style={styles.drawerFooter}>
@@ -476,6 +483,11 @@ export function LandingEmergenciaMascotasScreen({
           </Animated.View>
         </View>
       )}
+
+      <AboutDeveloperModal
+        visible={aboutModalVisible}
+        onClose={() => setAboutModalVisible(false)}
+      />
     </SVGBackground>
   );
 }
