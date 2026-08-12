@@ -9,4 +9,6 @@ export interface SesionDTO {
   barrio: Barrio | null;
   cuadrante: Cuadrante | null;
   configuracion: Configuracion | null;
+  ciudadNombre: string | null;
+  paisNombre: string | null;
 }

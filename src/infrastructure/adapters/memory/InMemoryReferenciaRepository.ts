@@ -11,8 +11,8 @@ const INITIAL_CUADRANTES: Cuadrante[] = [
 ];
 
 const INITIAL_BARRIOS: Barrio[] = [
-  new Barrio(1, 'Soacha Centro', 101),
-  new Barrio(2, 'Compartir', 102),
+  new Barrio(1, 'Soacha Centro', 101, 2),
+  new Barrio(2, 'Compartir', 102, 2),
 ];
 
 const INITIAL_USUARIOS: Usuario[] = [

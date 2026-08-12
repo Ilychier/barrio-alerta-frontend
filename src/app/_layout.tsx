@@ -38,7 +38,7 @@ export default function RootLayout() {
 }
 
 function TabLayout() {
-  const { user, barrio, cuadrante, isAuthenticated, loading, logout } =
+  const { user, barrio, cuadrante, ciudadNombre, isAuthenticated, loading, logout } =
     useAuth();
   const { theme } = useAppTheme();
   const styles = getStyles(theme);
@@ -271,7 +271,7 @@ function TabLayout() {
                     </View>
                   </View>
                 )}
-                {barrio?.nombre && cuadrante?.nombre_unidad && (
+                {barrio?.nombre && (
                   <View style={styles.drawerLocationBadge}>
                     <Icon name="MapPin" size={14} color={theme.colors.green} />
                     <View style={styles.locationTextContainer}>
@@ -279,7 +279,7 @@ function TabLayout() {
                         Ciudad / Barrio
                       </Text>
                       <Text style={styles.drawerCuadranteText}>
-                        {barrio.nombre} / {cuadrante.nombre_unidad}
+                        {ciudadNombre ?? "—"} / {barrio.nombre}
                       </Text>
                     </View>
                   </View>

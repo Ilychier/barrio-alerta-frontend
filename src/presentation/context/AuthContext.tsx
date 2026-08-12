@@ -11,6 +11,8 @@ interface AuthContextType {
   barrio: Barrio | null;
   cuadrante: Cuadrante | null;
   configuracion: Configuracion | null;
+  ciudadNombre: string | null;
+  paisNombre: string | null;
   isAuthenticated: boolean;
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
@@ -33,6 +35,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [barrio, setBarrio] = useState<Barrio | null>(null);
   const [cuadrante, setCuadrante] = useState<Cuadrante | null>(null);
   const [configuracion, setConfiguracion] = useState<Configuracion | null>(null);
+  const [ciudadNombre, setCiudadNombre] = useState<string | null>(null);
+  const [paisNombre, setPaisNombre] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
 
   const applySesion = (sesion: {
@@ -40,11 +44,15 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     barrio: Barrio | null;
     cuadrante: Cuadrante | null;
     configuracion: Configuracion | null;
+    ciudadNombre: string | null;
+    paisNombre: string | null;
   }) => {
     setUser(sesion.user);
     setBarrio(sesion.barrio);
     setCuadrante(sesion.cuadrante);
     setConfiguracion(sesion.configuracion);
+    setCiudadNombre(sesion.ciudadNombre);
+    setPaisNombre(sesion.paisNombre);
   };
 
   useEffect(() => {
@@ -63,6 +71,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         setBarrio(null);
         setCuadrante(null);
         setConfiguracion(null);
+        setCiudadNombre(null);
+        setPaisNombre(null);
       } finally {
         setLoading(false);
       }
@@ -81,6 +91,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       setBarrio(null);
       setCuadrante(null);
       setConfiguracion(null);
+      setCiudadNombre(null);
+      setPaisNombre(null);
       throw error;
     } finally {
       setLoading(false);
@@ -105,6 +117,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       setBarrio(null);
       setCuadrante(null);
       setConfiguracion(null);
+      setCiudadNombre(null);
+      setPaisNombre(null);
       throw error;
     } finally {
       setLoading(false);
@@ -119,6 +133,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       setBarrio(null);
       setCuadrante(null);
       setConfiguracion(null);
+      setCiudadNombre(null);
+      setPaisNombre(null);
     } finally {
       setLoading(false);
     }
@@ -131,6 +147,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         barrio,
         cuadrante,
         configuracion,
+        ciudadNombre,
+        paisNombre,
         isAuthenticated: !!user,
         loading,
         login,

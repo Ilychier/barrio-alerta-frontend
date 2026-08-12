@@ -78,7 +78,8 @@ export class HttpAuthRepository implements IAuthRepository {
       ? new Barrio(
           raw.barrio.id,
           raw.barrio.nombre,
-          raw.barrio.cuadranteId ?? raw.barrio.cuadrante_id ?? raw.barrio.cuadrante?.id
+          raw.barrio.cuadranteId ?? raw.barrio.cuadrante_id ?? raw.barrio.cuadrante?.id,
+          raw.barrio.ciudadId ?? raw.barrio.ciudad_id
         )
       : null;
 
@@ -99,6 +100,14 @@ export class HttpAuthRepository implements IAuthRepository {
         )
       : null;
 
-    return { token: raw.token, user, barrio, cuadrante, configuracion };
+    return {
+      token: raw.token,
+      user,
+      barrio,
+      cuadrante,
+      configuracion,
+      ciudadNombre: raw.ciudadNombre ?? null,
+      paisNombre: raw.paisNombre ?? null,
+    };
   }
 }
