@@ -13,6 +13,9 @@ export interface CrearReporteMascotaForm {
   ubicacion: string;
   telefono: string;
   descripcion?: string;
+  fotoUri?: string;
+  fotoMime?: string;
+  fotoFile?: any;
 }
 
 /**
@@ -57,6 +60,9 @@ export function useReporteMascotaController(currentUserId: number, onSuccess?: (
           ubicacion: form.ubicacion,
           telefono: form.telefono,
           descripcion: form.descripcion,
+          fotoUri: form.fotoUri,
+          fotoMime: form.fotoMime,
+          fotoFile: form.fotoFile,
           usuarioId: currentUserId,
         });
         if (onSuccess) onSuccess(reporte);

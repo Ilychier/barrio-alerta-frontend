@@ -10,14 +10,20 @@ import {
 } from "react-native";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
+import * as ImagePicker from "expo-image-picker";
+import { Image } from "expo-image";
 import { useReporteMascotaController } from "../../../application/mascotas/controllers/useReporteMascotaController";
 import { useAuth } from "../../context/AuthContext";
 import Icon from "../../components/atomic/Icon";
 import { AppTheme, useAppTheme } from "../../theme/ThemeContext";
 
+const MAX_FOTO_BYTES = 8 * 1024 * 1024; // 8 MB (mismo límite que el backend)
+
 /**
  * Formulario rápido de reporte de mascota (BC Mascotas).
  * Fricción baja de entrada: tipo, especie, ciudad, ubicación, teléfono.
+ * Foto opcional: se acepta cualquier imagen (JPEG, PNG, HEIC...) sin
+ * conversión — en emergencia no hay tiempo de cambiar formato.
  */
 export function CrearReporteMascotaScreen() {
   const { theme } = useAppTheme();
@@ -39,6 +45,9 @@ export function CrearReporteMascotaScreen() {
   const [ubicacion, setUbicacion] = useState("");
   const [telefono, setTelefono] = useState(user?.email ? "" : "");
   const [descripcion, setDescripcion] = useState("");
+  const [fotoUri, setFotoUri] = useState<string | undefined>(undefined);
+  const [fotoMime, setFotoMime] = useState<string | undefined>(undefined);
+  const [fotoFile, setFotoFile] = useState<any>(undefined);
 
   useEffect(() => {
     controller.cargarReferencias();
@@ -57,6 +66,36 @@ export function CrearReporteMascotaScreen() {
     return null;
   };
 
+  const elegirFoto = async () => {
+    try {
+      const permiso = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (!permiso.granted) {
+        alert("Necesitamos acceso a tus fotos para adjuntar la imagen.");
+        return;
+      }
+      // allowsEditing:false + quality:1.0 devuelven el archivo original
+      // (incluido HEIC) sin comprimir — clave en emergencias.
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ["images"],
+        allowsEditing: false,
+        quality: 1,
+      });
+      if (result.canceled) return;
+      const asset = result.assets[0];
+      if (asset.fileSize && asset.fileSize > MAX_FOTO_BYTES) {
+        alert("La foto supera 8 MB. Elige una imagen más liviana.");
+        return;
+      }
+      setFotoUri(asset.uri);
+      setFotoMime(asset.mimeType ?? "image/jpeg");
+      // Web: expo-image-picker devuelve el File nativo en asset.file
+      setFotoFile(asset.file ?? undefined);
+    } catch (e) {
+      console.warn("[CrearReporteMascotaScreen] Error al elegir foto:", e);
+      alert("No se pudo abrir la galería. Intenta de nuevo.");
+    }
+  };
+
   const handleSubmit = async () => {
     const error = validar();
     if (error) {
@@ -71,6 +110,9 @@ export function CrearReporteMascotaScreen() {
       ubicacion: ubicacion.trim(),
       telefono: telefono.trim(),
       descripcion: descripcion.trim() || undefined,
+      fotoUri,
+      fotoMime,
+      fotoFile,
     });
   };
 
@@ -203,6 +245,32 @@ export function CrearReporteMascotaScreen() {
         />
       </View>
 
+      {/* ── Foto (opcional) ─────────────────────────────── */}
+      <View style={styles.seccion}>
+        <Text style={styles.label}>Foto (opcional)</Text>
+        {fotoUri ? (
+          <View style={styles.fotoPreviewBox}>
+            <Image source={{ uri: fotoUri }} style={styles.fotoPreview} contentFit="cover" />
+            <View style={styles.fotoActions}>
+              <Pressable style={styles.fotoBtn} onPress={elegirFoto}>
+                <Icon name="RefreshCw" size={16} color={theme.colors.green} />
+                <Text style={styles.fotoBtnText}>Cambiar</Text>
+              </Pressable>
+              <Pressable style={styles.fotoBtn} onPress={() => { setFotoUri(undefined); setFotoFile(undefined); }}>
+                <Icon name="Trash2" size={16} color={theme.colors.red} />
+                <Text style={[styles.fotoBtnText, { color: theme.colors.red }]}>Quitar</Text>
+              </Pressable>
+            </View>
+          </View>
+        ) : (
+          <Pressable style={styles.fotoPicker} onPress={elegirFoto}>
+            <Icon name="Camera" size={22} color={theme.colors.green} />
+            <Text style={styles.fotoPickerText}>Agregar foto del animalito</Text>
+            <Text style={styles.fotoPickerHint}>JPEG, PNG, HEIC... hasta 8 MB. Ayuda a identificarlo más rápido.</Text>
+          </Pressable>
+        )}
+      </View>
+
       {controller.error && <Text style={styles.error}>{controller.error}</Text>}
 
       <Pressable
@@ -328,6 +396,56 @@ const getStyles = (theme: AppTheme, isDesktop: boolean) =>
     inputMultiline: {
       minHeight: 80,
       textAlignVertical: "top",
+    },
+    fotoPicker: {
+      borderWidth: 1,
+      borderStyle: "dashed",
+      borderColor: theme.colors.green,
+      borderRadius: 14,
+      paddingVertical: 20,
+      alignItems: "center",
+      gap: 6,
+      backgroundColor: theme.colors.surfaceLight,
+    },
+    fotoPickerText: {
+      fontSize: 14,
+      fontWeight: "700",
+      color: theme.colors.green,
+    },
+    fotoPickerHint: {
+      fontSize: 12,
+      color: theme.colors.textDim,
+      textAlign: "center",
+      paddingHorizontal: 16,
+    },
+    fotoPreviewBox: {
+      gap: 8,
+    },
+    fotoPreview: {
+      width: "100%",
+      height: 200,
+      borderRadius: 14,
+      backgroundColor: theme.colors.surfaceLight,
+    },
+    fotoActions: {
+      flexDirection: "row",
+      gap: 12,
+    },
+    fotoBtn: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 6,
+      paddingVertical: 8,
+      paddingHorizontal: 14,
+      borderRadius: 10,
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+      backgroundColor: theme.colors.surface,
+    },
+    fotoBtnText: {
+      fontSize: 13,
+      fontWeight: "600",
+      color: theme.colors.green,
     },
     error: {
       color: theme.colors.red,

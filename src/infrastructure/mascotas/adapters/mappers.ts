@@ -1,6 +1,18 @@
 import { ReporteMascota } from '../../../domain/mascotas/entities/ReporteMascota';
 import { Ciudad } from '../../../domain/mascotas/entities/Ciudad';
 import { TipoMascota } from '../../../domain/mascotas/entities/TipoMascota';
+import { HttpGenericService } from '../../adapters/api/HttpGenericService';
+
+/**
+ * Resuelve la URL pública de una foto. El backend devuelve rutas relativas
+ * (/uploads/xxx.jpg) que Nginx sirve en el mismo origen en producción;
+ * en dev (frontend 8081, backend 8080) se prefija la base de la API.
+ */
+export function resolverUrlFoto(fotoUrl: string | null | undefined): string | null {
+  if (!fotoUrl) return null;
+  if (fotoUrl.startsWith('http://') || fotoUrl.startsWith('https://')) return fotoUrl;
+  return `${HttpGenericService.getInstance().getBaseUrl()}${fotoUrl}`;
+}
 
 export function mapReporteMascota(raw: any): ReporteMascota {
   return new ReporteMascota(
@@ -8,6 +20,7 @@ export function mapReporteMascota(raw: any): ReporteMascota {
     raw.tipoReporte === 'LOST' || raw.tipoReporte === 'FOUND' ? raw.tipoReporte : 'LOST',
     raw.tipoMascotaId ?? raw.tipo_mascota_id ?? 0,
     raw.otroTipoMascota ?? raw.otro_tipo_mascota ?? null,
+    raw.fotoUrl ?? raw.foto_url ?? null,
     raw.ciudadId ?? raw.ciudad_id ?? 0,
     raw.ubicacion ?? '',
     raw.telefono ?? null,

@@ -13,6 +13,9 @@ export interface CrearReporteMascotaRequest {
   ubicacion: string;
   telefono: string;
   descripcion?: string;
+  fotoUri?: string;
+  fotoMime?: string;
+  fotoFile?: any;
   usuarioId: number;
 }
 
@@ -32,6 +35,9 @@ export class CrearReporteMascotaUseCase {
       ubicacion: request.ubicacion,
       telefono: request.telefono,
       descripcion: request.descripcion,
+      fotoUri: request.fotoUri,
+      fotoMime: request.fotoMime,
+      fotoFile: request.fotoFile,
       usuarioId: request.usuarioId,
     };
     return this.reporteRepo.crear(command);

@@ -64,7 +64,8 @@ export class HttpReporteMascotaRepository implements IReporteMascotaRepository {
 
   async crear(command: CrearReporteMascotaCommand): Promise<ReporteMascota> {
     try {
-      const response = await this.http.post<any>('/mascotas/reportes', {
+      const form = new FormData();
+      form.append('datos', JSON.stringify({
         tipoReporte: command.tipoReporte,
         tipoMascotaId: command.tipoMascotaId,
         otroTipoMascota: command.otroTipoMascota,
@@ -73,6 +74,22 @@ export class HttpReporteMascotaRepository implements IReporteMascotaRepository {
         telefono: command.telefono,
         descripcion: command.descripcion,
         usuarioId: command.usuarioId,
+      }) as any);
+      if (command.fotoFile) {
+        // Web: expo-image-picker devuelve un File nativo listo para FormData
+        form.append('foto', command.fotoFile);
+      } else if (command.fotoUri) {
+        // Mobile: se envía el archivo local con nombre y tipo
+        const mime = command.fotoMime ?? 'image/jpeg';
+        const ext = mime === 'image/png' ? 'png' : mime === 'image/webp' ? 'webp' : mime === 'image/gif' ? 'gif' : mime === 'image/heic' ? 'heic' : mime === 'image/heif' ? 'heif' : 'jpg';
+        form.append('foto', {
+          uri: command.fotoUri,
+          name: `foto.${ext}`,
+          type: mime,
+        } as any);
+      }
+      const response = await this.http.post<any>('/mascotas/reportes', form, {
+        headers: { 'Content-Type': 'multipart/form-data' },
       });
       return mapReporteMascota(response.data);
     } catch (error) {

@@ -8,10 +8,12 @@ import {
   useWindowDimensions,
   View,
 } from "react-native";
+import { Image } from "expo-image";
 import { useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
 import { useFeedMascotasController } from "../../../application/mascotas/controllers/useFeedMascotasController";
 import { ReporteMascota } from "../../../domain/mascotas/entities/ReporteMascota";
+import { resolverUrlFoto } from "../../../infrastructure/mascotas/adapters/mappers";
 import { EstadoReporte } from "../../../domain/mascotas/entities/EstadoReporte";
 import { TipoReporte } from "../../../domain/mascotas/entities/TipoReporte";
 import { DependencyContainer } from "../../../infrastructure/config/dependencyContainer";
@@ -122,6 +124,10 @@ export function DetalleReporteMascotaScreen() {
 
         <Text style={styles.tipo}>{feed.nombreTipoMascota(reporte)}</Text>
 
+        {reporte.fotoUrl ? (
+          <Image source={{ uri: resolverUrlFoto(reporte.fotoUrl) ?? undefined }} style={styles.foto} contentFit="cover" />
+        ) : null}
+
         <View style={styles.infoRow}>
           <Icon name="MapPin" size={16} color={theme.colors.green} />
           <Text style={styles.infoText}>{reporte.ubicacion}</Text>
@@ -209,6 +215,12 @@ const getStyles = (theme: AppTheme, isDesktop: boolean) =>
       fontSize: 24,
       fontWeight: "700",
       color: theme.colors.textPrimary,
+    },
+    foto: {
+      width: "100%",
+      height: 260,
+      borderRadius: 14,
+      backgroundColor: theme.colors.surfaceLight,
     },
     infoRow: {
       flexDirection: "row",

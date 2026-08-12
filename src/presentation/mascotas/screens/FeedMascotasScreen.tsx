@@ -7,12 +7,14 @@ import {
   useWindowDimensions,
   View,
 } from "react-native";
+import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import { useFeedMascotasController } from "../../../application/mascotas/controllers/useFeedMascotasController";
 import { EstadoReporte } from "../../../domain/mascotas/entities/EstadoReporte";
 import { TipoReporte } from "../../../domain/mascotas/entities/TipoReporte";
 import { ReporteMascota } from "../../../domain/mascotas/entities/ReporteMascota";
+import { resolverUrlFoto } from "../../../infrastructure/mascotas/adapters/mappers";
 import Icon from "../../components/atomic/Icon";
 import { AppTheme, useAppTheme } from "../../theme/ThemeContext";
 
@@ -69,6 +71,9 @@ export function FeedMascotasScreen() {
       </View>
 
       <Text style={styles.cardTipo}>{feed.nombreTipoMascota(item)}</Text>
+      {item.fotoUrl ? (
+        <Image source={{ uri: resolverUrlFoto(item.fotoUrl) ?? undefined }} style={styles.cardFoto} contentFit="cover" />
+      ) : null}
       <Text style={styles.cardUbicacion}>
         <Icon name="MapPin" size={12} color={theme.colors.textMuted} /> {item.ubicacion}
       </Text>
@@ -278,6 +283,13 @@ const getStyles = (theme: AppTheme, isDesktop: boolean) =>
       fontSize: 17,
       fontWeight: "700",
       color: theme.colors.textPrimary,
+    },
+    cardFoto: {
+      width: "100%",
+      height: 180,
+      borderRadius: 12,
+      marginTop: 8,
+      backgroundColor: theme.colors.surfaceLight,
     },
     cardUbicacion: {
       fontSize: 13,

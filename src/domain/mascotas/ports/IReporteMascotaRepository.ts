@@ -20,6 +20,12 @@ export interface CrearReporteMascotaCommand {
   telefono: string;
   descripcion?: string;
   usuarioId: number;
+  /** URI local de la foto (expo-image-picker, mobile). Se envía como multipart. */
+  fotoUri?: string;
+  /** MIME real del asset (image/jpeg, image/heic...). El backend valida por bytes mágicos. */
+  fotoMime?: string;
+  /** File nativo (expo-image-picker en web devuelve asset.file). */
+  fotoFile?: any;
 }
 
 /** Command para actualizar campos editables. */
