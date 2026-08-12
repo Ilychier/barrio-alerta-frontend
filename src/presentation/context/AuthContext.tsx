@@ -15,7 +15,9 @@ interface AuthContextType {
   paisNombre: string | null;
   isAuthenticated: boolean;
   loading: boolean;
-  login: (email: string, password: string) => Promise<void>;
+  /** true si el usuario tiene clave temporal (registro rápido de emergencia) y debe cambiarla. */
+  passwordTemporal: boolean;
+  login: (identificador: string, password: string) => Promise<void>;
   register: (
     nombre: string,
     email: string,
@@ -24,6 +26,10 @@ interface AuthContextType {
     barrioId: number,
     password: string
   ) => Promise<void>;
+  /** Cambia la clave. Si el usuario es temporal, no exige la actual. */
+  cambiarPassword: (identificador: string, passwordActual: string | null, passwordNueva: string) => Promise<void>;
+  /** Auto-login con un JWT recién emitido (registro rápido de emergencia). */
+  autenticarConToken: (token: string) => Promise<void>;
   logout: () => Promise<void>;
   setConfiguracion: (config: Configuracion | null) => void;
 }
@@ -54,7 +60,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setCiudadNombre(sesion.ciudadNombre);
     setPaisNombre(sesion.paisNombre);
   };
-
   useEffect(() => {
     async function loadSession() {
       try {
@@ -140,6 +145,42 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
+  const cambiarPassword = async (
+    identificador: string,
+    passwordActual: string | null,
+    passwordNueva: string
+  ) => {
+    try {
+      const authRepo = DependencyContainer.getInstance().getAuthRepository();
+      await authRepo.cambiarPassword(identificador, passwordActual, passwordNueva);
+      // Tras cambiar la clave, el flag temporal se limpia en el usuario local
+      setUser((prev) => (prev ? new Usuario(prev.id, prev.nombre, prev.email, prev.barrio_id, false) : prev));
+    } catch (error) {
+      throw error;
+    }
+  };
+
+  const autenticarConToken = async (token: string) => {
+    setLoading(true);
+    try {
+      await TokenStorage.setToken(token);
+      const authRepo = DependencyContainer.getInstance().getAuthRepository();
+      const sesion = await authRepo.getMe();
+      applySesion(sesion);
+    } catch (error) {
+      await TokenStorage.clearToken();
+      setUser(null);
+      setBarrio(null);
+      setCuadrante(null);
+      setConfiguracion(null);
+      setCiudadNombre(null);
+      setPaisNombre(null);
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -151,8 +192,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         paisNombre,
         isAuthenticated: !!user,
         loading,
+        passwordTemporal: user?.passwordTemporal ?? false,
         login,
         register,
+        cambiarPassword,
+        autenticarConToken,
         logout,
         setConfiguracion,
       }}

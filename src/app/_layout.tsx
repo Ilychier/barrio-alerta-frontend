@@ -21,11 +21,14 @@ import { AuthProvider, useAuth } from "@/presentation/context/AuthContext";
 import { LandingScreen } from "@/presentation/screens/LandingScreen";
 import { LoginScreen } from "@/presentation/screens/LoginScreen";
 import { RegisterScreen } from "@/presentation/screens/RegisterScreen";
+import { CambiarPasswordScreen } from "@/presentation/screens/CambiarPasswordScreen";
+import { LandingEmergenciaMascotasScreen } from "@/presentation/screens/LandingEmergenciaMascotasScreen";
 import {
   AppTheme,
   ThemeProvider,
   useAppTheme,
 } from "@/presentation/theme/ThemeContext";
+import { getModoEmergencia } from "@/constants/env";
 
 export default function RootLayout() {
   return (
@@ -38,17 +41,21 @@ export default function RootLayout() {
 }
 
 function TabLayout() {
-  const { user, barrio, cuadrante, ciudadNombre, isAuthenticated, loading, logout } =
+  const { user, barrio, ciudadNombre, isAuthenticated, loading, logout } =
     useAuth();
   const { theme } = useAppTheme();
   const styles = getStyles(theme);
-  const [authView, setAuthView] = useState<"landing" | "login" | "register">(
+  const [authView, setAuthView] = useState<"landing" | "login" | "register" | "cambiar-password">(
     "landing",
   );
   // Modo del drawer: por defecto "desaparecidos" (BC Mascotas)
   const [menuMode, setMenuMode] = useState<"desaparecidos" | "alertas">(
     "desaparecidos",
   );
+  // Modo emergencia (runtime, frontend): la app abre en la landing de mascotas
+  const modoEmergencia = getModoEmergencia();
+  // Vista activa en modo emergencia: la landing misma o la app normal
+  const [vistaEmergencia, setVistaEmergencia] = useState<"emergencia" | "app-normal">("emergencia");
 
   const { width } = useWindowDimensions();
   const isSmallScreen = width < 768;
@@ -64,17 +71,31 @@ function TabLayout() {
 
   // Al iniciar sesión (transición !isAuthenticated → isAuthenticated),
   // el modo por defecto es "desaparecidos" y navega a su primera opción (/mascotas)
+  // EXCEPTO en modo emergencia: el usuario se queda en la landing de emergencia
+  // hasta que clickee "Ver Dashboard" explícitamente.
   const wasAuthenticated = useRef(false);
   useEffect(() => {
     if (isAuthenticated && !wasAuthenticated.current) {
       wasAuthenticated.current = true;
       setMenuMode("desaparecidos");
+      if (modoEmergencia && vistaEmergencia === "emergencia") {
+        // Quedarse en la landing de emergencia (auto-login del registro rápido)
+        return;
+      }
       router.replace("/mascotas");
     }
     if (!isAuthenticated) {
       wasAuthenticated.current = false;
     }
-  }, [isAuthenticated, router]);
+  }, [isAuthenticated, router, modoEmergencia, vistaEmergencia]);
+
+  // Logout explícito: vuelve a la landing (de emergencia o de marketing
+  // según el modo) — no a login/register ni al dashboard.
+  const handleLogout = async () => {
+    setAuthView("landing");
+    setVistaEmergencia("emergencia");
+    await logout();
+  };
 
   const openMenu = () => {
     // Sincroniza el toggle con la ruta activa al abrir el drawer
@@ -193,10 +214,55 @@ function TabLayout() {
         />
       );
     }
+    if (authView === "cambiar-password") {
+      return (
+        <CambiarPasswordScreen
+          onBackPress={() => setAuthView("landing")}
+        />
+      );
+    }
+    // Modo emergencia: la landing de mascotas reemplaza a la de marketing
+    if (modoEmergencia) {
+      return (
+        <LandingEmergenciaMascotasScreen
+          onLoginPress={() => setAuthView("login")}
+          onDashboardPress={() => {
+            setVistaEmergencia("app-normal");
+            router.replace("/mascotas");
+          }}
+          onCambiarPasswordPress={() => setAuthView("cambiar-password")}
+          onLogoutPress={handleLogout}
+        />
+      );
+    }
     return (
       <LandingScreen
         onLoginPress={() => setAuthView("login")}
         onRegisterPress={() => setAuthView("register")}
+      />
+    );
+  }
+
+  // Autenticado en modo emergencia: si el usuario aún está en la vista
+  // "emergencia" (auto-login del registro rápido), se queda en la landing
+  // de emergencia en lugar de entrar al dashboard.
+  if (modoEmergencia && vistaEmergencia === "emergencia") {
+    if (authView === "cambiar-password") {
+      return (
+        <CambiarPasswordScreen
+          onBackPress={() => setAuthView("landing")}
+        />
+      );
+    }
+    return (
+      <LandingEmergenciaMascotasScreen
+        onLoginPress={() => setAuthView("login")}
+        onDashboardPress={() => {
+          setVistaEmergencia("app-normal");
+          router.replace("/mascotas");
+        }}
+        onCambiarPasswordPress={() => setAuthView("cambiar-password")}
+        onLogoutPress={handleLogout}
       />
     );
   }
@@ -208,9 +274,7 @@ function TabLayout() {
         isMobile={isSmallScreen}
         onMenuPress={openMenu}
         onBackPress={isSubRoute ? handleBack : undefined}
-        onLogoutPress={async () => {
-          await logout();
-        }}
+        onLogoutPress={handleLogout}
       />
 
       {/* Active Screen Area */}

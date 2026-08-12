@@ -62,6 +62,25 @@ export class HttpAuthRepository implements IAuthRepository {
     }
   }
 
+  async cambiarPassword(
+    identificador: string,
+    passwordActual: string | null,
+    passwordNueva: string
+  ): Promise<void> {
+    try {
+      await this.http.post<any>('/auth/cambiar-password', {
+        identificador,
+        passwordActual,
+        passwordNueva,
+      });
+    } catch (error) {
+      if (isAxiosError(error)) {
+        throw new Error(error.response?.data?.error || 'No se pudo cambiar la contraseña');
+      }
+      throw error;
+    }
+  }
+
   private async toSesion(raw: any): Promise<SesionDTO> {
     if (raw.token) {
       await TokenStorage.setToken(raw.token);
@@ -71,7 +90,8 @@ export class HttpAuthRepository implements IAuthRepository {
       raw.user.id,
       raw.user.name || raw.user.nombre || 'Usuario',
       raw.user.email,
-      raw.user.barrioId ?? raw.user.barrio_id ?? 1
+      raw.user.barrioId ?? raw.user.barrio_id ?? 1,
+      raw.user.passwordTemporal ?? false,
     );
 
     const barrio = raw.barrio

@@ -6,6 +6,7 @@ import { IAuthRepository } from '../../domain/ports/IAuthRepository';
 // BC Mascotas
 import { IReporteMascotaRepository } from '../../domain/mascotas/ports/IReporteMascotaRepository';
 import { IMascotaReferenciaRepository } from '../../domain/mascotas/ports/IMascotaReferenciaRepository';
+import { IReporteRapidoRepository } from '../../domain/mascotas/ports/IReporteRapidoRepository';
 
 import { InMemoryAlertaRepository } from '../adapters/memory/InMemoryAlertaRepository';
 import { InMemoryConfiguracionRepository } from '../adapters/memory/InMemoryConfiguracionRepository';
@@ -19,6 +20,7 @@ import { HttpAuthRepository } from '../adapters/api/HttpAuthRepository';
 // BC Mascotas — adapters
 import { HttpReporteMascotaRepository } from '../mascotas/adapters/api/HttpReporteMascotaRepository';
 import { HttpMascotaReferenciaRepository } from '../mascotas/adapters/api/HttpMascotaReferenciaRepository';
+import { HttpReporteRapidoRepository } from '../mascotas/adapters/api/HttpReporteRapidoRepository';
 import { InMemoryReporteMascotaRepository } from '../mascotas/adapters/memory/InMemoryReporteMascotaRepository';
 import { InMemoryMascotaReferenciaRepository } from '../mascotas/adapters/memory/InMemoryMascotaReferenciaRepository';
 
@@ -32,6 +34,7 @@ import { ListarReportesMascotaUseCase } from '../../application/mascotas/usecase
 import { CrearReporteMascotaUseCase } from '../../application/mascotas/usecases/CrearReporteMascotaUseCase';
 import { GestionarMisReportesMascotaUseCase } from '../../application/mascotas/usecases/GestionarMisReportesMascotaUseCase';
 import { ObtenerReferenciasMascotaUseCase } from '../../application/mascotas/usecases/ObtenerReferenciasMascotaUseCase';
+import { RegistrarReporteRapidoUseCase } from '../../application/mascotas/usecases/RegistrarReporteRapidoUseCase';
 
 import { getRepositoryType } from '../../constants/env';
 
@@ -44,6 +47,7 @@ export class DependencyContainer {
   private readonly _authRepo: IAuthRepository;
   private readonly _reporteMascotaRepo: IReporteMascotaRepository;
   private readonly _mascotaReferenciaRepo: IMascotaReferenciaRepository;
+  private readonly _reporteRapidoRepo: IReporteRapidoRepository;
 
   private constructor() {
     const repoType = getRepositoryType();
@@ -56,6 +60,7 @@ export class DependencyContainer {
         this._authRepo = new HttpAuthRepository();
         this._reporteMascotaRepo = new HttpReporteMascotaRepository();
         this._mascotaReferenciaRepo = new HttpMascotaReferenciaRepository();
+        this._reporteRapidoRepo = new HttpReporteRapidoRepository();
         break;
       case 'memory':
       default:
@@ -65,6 +70,7 @@ export class DependencyContainer {
         this._authRepo = new InMemoryAuthRepository();
         this._reporteMascotaRepo = new InMemoryReporteMascotaRepository();
         this._mascotaReferenciaRepo = new InMemoryMascotaReferenciaRepository();
+        this._reporteRapidoRepo = new HttpReporteRapidoRepository();
         break;
     }
   }
@@ -100,6 +106,10 @@ export class DependencyContainer {
 
   getMascotaReferenciaRepository(): IMascotaReferenciaRepository {
     return this._mascotaReferenciaRepo;
+  }
+
+  getReporteRapidoRepository(): IReporteRapidoRepository {
+    return this._reporteRapidoRepo;
   }
 
   // --- Casos de Uso ---
@@ -138,5 +148,9 @@ export class DependencyContainer {
 
   getObtenerReferenciasMascotaUseCase(): ObtenerReferenciasMascotaUseCase {
     return new ObtenerReferenciasMascotaUseCase(this._mascotaReferenciaRepo);
+  }
+
+  getRegistrarReporteRapidoUseCase(): RegistrarReporteRapidoUseCase {
+    return new RegistrarReporteRapidoUseCase(this._reporteRapidoRepo);
   }
 }
