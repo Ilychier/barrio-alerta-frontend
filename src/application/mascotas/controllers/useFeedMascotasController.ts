@@ -114,8 +114,8 @@ export function useFeedMascotasController(refreshTrigger?: number) {
     nombrePorId(referencias?.ciudadMap ?? new Map(), ciudadId);
   const departamentoCiudad = (ciudadId: number): string =>
     nombrePorId(referencias?.departamentoMap ?? new Map(), ciudadId);
-  const nombreTipoMascota = (tipoMascotaId: number): string =>
-    nombrePorId(referencias?.tipoMascotaMap ?? new Map(), tipoMascotaId);
+  const nombreTipoMascota = (reporte: ReporteMascota): string =>
+    reporte.otroTipoMascota ?? nombrePorId(referencias?.tipoMascotaMap ?? new Map(), reporte.tipoMascotaId);
 
   return {
     reportes,

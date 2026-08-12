@@ -67,6 +67,7 @@ export class HttpReporteMascotaRepository implements IReporteMascotaRepository {
       const response = await this.http.post<any>('/mascotas/reportes', {
         tipoReporte: command.tipoReporte,
         tipoMascotaId: command.tipoMascotaId,
+        otroTipoMascota: command.otroTipoMascota,
         ciudadId: command.ciudadId,
         ubicacion: command.ubicacion,
         telefono: command.telefono,

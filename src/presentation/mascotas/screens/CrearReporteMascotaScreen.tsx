@@ -34,6 +34,7 @@ export function CrearReporteMascotaScreen() {
 
   const [tipoReporte, setTipoReporte] = useState<"LOST" | "FOUND">("LOST");
   const [tipoMascotaId, setTipoMascotaId] = useState<number | undefined>(undefined);
+  const [otroTipoMascota, setOtroTipoMascota] = useState("");
   const [ciudadId, setCiudadId] = useState<number | undefined>(undefined);
   const [ubicacion, setUbicacion] = useState("");
   const [telefono, setTelefono] = useState(user?.email ? "" : "");
@@ -44,8 +45,12 @@ export function CrearReporteMascotaScreen() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const tipoOtro = controller.tiposMascota.find((t) => t.nombre.toLowerCase() === "otro");
+  const esOtro = tipoMascotaId !== undefined && tipoOtro !== undefined && tipoMascotaId === tipoOtro.id;
+
   const validar = (): string | null => {
     if (!tipoMascotaId) return "Selecciona el tipo de mascota";
+    if (esOtro && !otroTipoMascota.trim()) return "Especifica qué tipo de mascota es";
     if (!ciudadId) return "Selecciona la ciudad";
     if (!ubicacion.trim()) return "Indica el sector o barrio";
     if (!telefono.trim() || telefono.trim().length < 7) return "Indica un teléfono de contacto válido";
@@ -61,6 +66,7 @@ export function CrearReporteMascotaScreen() {
     await controller.crear({
       tipoReporte,
       tipoMascotaId: tipoMascotaId!,
+      otroTipoMascota: esOtro ? otroTipoMascota.trim() : undefined,
       ciudadId: ciudadId!,
       ubicacion: ubicacion.trim(),
       telefono: telefono.trim(),
@@ -121,6 +127,16 @@ export function CrearReporteMascotaScreen() {
               </Pressable>
             ))}
           </View>
+        )}
+        {esOtro && (
+          <TextInput
+            style={styles.input}
+            placeholder="Ej: Conejo, loro, hámster..."
+            placeholderTextColor={theme.colors.textDim}
+            value={otroTipoMascota}
+            onChangeText={setOtroTipoMascota}
+            maxLength={50}
+          />
         )}
       </View>
 

@@ -13,6 +13,7 @@ export class ReporteMascota {
     public readonly id: number,
     public readonly tipoReporte: TipoReporte,
     public readonly tipoMascotaId: number,
+    public readonly otroTipoMascota: string | null,
     public readonly ciudadId: number,
     public readonly ubicacion: string,
     public readonly telefono: string | null,

@@ -42,7 +42,7 @@ export function HistoriasRescateScreen() {
       </View>
 
       <Text style={styles.cardTipo}>
-        {feed.nombreTipoMascota(item.tipoMascotaId)}{" "}
+        {feed.nombreTipoMascota(item)}{" "}
         {item.tipoReporte === TipoReporte.LOST ? "perdida" : "encontrada"} y rescatada
       </Text>
       <Text style={styles.cardUbicacion}>{item.ubicacion}</Text>

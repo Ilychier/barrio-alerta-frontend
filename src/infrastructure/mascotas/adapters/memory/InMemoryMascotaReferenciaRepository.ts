@@ -15,6 +15,7 @@ const CIUDADES: Ciudad[] = [
 const TIPOS: TipoMascota[] = [
   new TipoMascota(1, 'Perro', true),
   new TipoMascota(2, 'Gato', true),
+  new TipoMascota(3, 'Otro', true),
 ];
 
 export class InMemoryMascotaReferenciaRepository implements IMascotaReferenciaRepository {

@@ -120,7 +120,7 @@ export function DetalleReporteMascotaScreen() {
           )}
         </View>
 
-        <Text style={styles.tipo}>{feed.nombreTipoMascota(reporte.tipoMascotaId)}</Text>
+        <Text style={styles.tipo}>{feed.nombreTipoMascota(reporte)}</Text>
 
         <View style={styles.infoRow}>
           <Icon name="MapPin" size={16} color={theme.colors.green} />

@@ -14,6 +14,7 @@ export interface FiltrosReporteMascota {
 export interface CrearReporteMascotaCommand {
   tipoReporte: TipoReporte;
   tipoMascotaId: number;
+  otroTipoMascota?: string;
   ciudadId: number;
   ubicacion: string;
   telefono: string;

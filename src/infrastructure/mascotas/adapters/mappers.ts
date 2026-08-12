@@ -7,6 +7,7 @@ export function mapReporteMascota(raw: any): ReporteMascota {
     raw.id,
     raw.tipoReporte === 'LOST' || raw.tipoReporte === 'FOUND' ? raw.tipoReporte : 'LOST',
     raw.tipoMascotaId ?? raw.tipo_mascota_id ?? 0,
+    raw.otroTipoMascota ?? raw.otro_tipo_mascota ?? null,
     raw.ciudadId ?? raw.ciudad_id ?? 0,
     raw.ubicacion ?? '',
     raw.telefono ?? null,

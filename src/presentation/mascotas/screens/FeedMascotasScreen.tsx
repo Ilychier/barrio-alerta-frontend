@@ -68,7 +68,7 @@ export function FeedMascotasScreen() {
         )}
       </View>
 
-      <Text style={styles.cardTipo}>{feed.nombreTipoMascota(item.tipoMascotaId)}</Text>
+      <Text style={styles.cardTipo}>{feed.nombreTipoMascota(item)}</Text>
       <Text style={styles.cardUbicacion}>
         <Icon name="MapPin" size={12} color={theme.colors.textMuted} /> {item.ubicacion}
       </Text>

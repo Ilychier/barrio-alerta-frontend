@@ -8,6 +8,7 @@ import { ReferenciasMascota } from '../../mascotas/usecases/ObtenerReferenciasMa
 export interface CrearReporteMascotaForm {
   tipoReporte: 'LOST' | 'FOUND';
   tipoMascotaId: number;
+  otroTipoMascota?: string;
   ciudadId: number;
   ubicacion: string;
   telefono: string;
@@ -51,6 +52,7 @@ export function useReporteMascotaController(currentUserId: number, onSuccess?: (
         const reporte = await crearUseCase.execute({
           tipoReporte: form.tipoReporte,
           tipoMascotaId: form.tipoMascotaId,
+          otroTipoMascota: form.otroTipoMascota,
           ciudadId: form.ciudadId,
           ubicacion: form.ubicacion,
           telefono: form.telefono,

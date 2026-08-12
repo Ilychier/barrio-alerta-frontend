@@ -8,6 +8,7 @@ import {
 export interface CrearReporteMascotaRequest {
   tipoReporte: 'LOST' | 'FOUND';
   tipoMascotaId: number;
+  otroTipoMascota?: string;
   ciudadId: number;
   ubicacion: string;
   telefono: string;
@@ -26,6 +27,7 @@ export class CrearReporteMascotaUseCase {
     const command: CrearReporteMascotaCommand = {
       tipoReporte: tipoReporteFromString(request.tipoReporte) as TipoReporte,
       tipoMascotaId: request.tipoMascotaId,
+      otroTipoMascota: request.otroTipoMascota,
       ciudadId: request.ciudadId,
       ubicacion: request.ubicacion,
       telefono: request.telefono,

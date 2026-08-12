@@ -73,7 +73,7 @@ export function MisReportesMascotaScreen() {
         )}
       </View>
 
-      <Text style={styles.cardTipo}>{feed.nombreTipoMascota(item.tipoMascotaId)}</Text>
+      <Text style={styles.cardTipo}>{feed.nombreTipoMascota(item)}</Text>
       <Text style={styles.cardUbicacion}>{item.ubicacion}</Text>
       <Text style={styles.cardCiudad}>{feed.nombreCiudad(item.ciudadId)}</Text>
       <Text style={styles.cardFecha}>{new Date(item.createdAt).toLocaleString("es-CO")}</Text>
