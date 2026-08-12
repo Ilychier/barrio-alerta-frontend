@@ -27,6 +27,12 @@ import { ReportarIncidenteUseCase } from '../../application/usecases/ReportarInc
 import { ActualizarConfiguracionUseCase } from '../../application/usecases/ActualizarConfiguracionUseCase';
 import { ObtenerAlertasUseCase } from '../../application/usecases/ObtenerAlertasUseCase';
 
+// BC Mascotas — casos de uso
+import { ListarReportesMascotaUseCase } from '../../application/mascotas/usecases/ListarReportesMascotaUseCase';
+import { CrearReporteMascotaUseCase } from '../../application/mascotas/usecases/CrearReporteMascotaUseCase';
+import { GestionarMisReportesMascotaUseCase } from '../../application/mascotas/usecases/GestionarMisReportesMascotaUseCase';
+import { ObtenerReferenciasMascotaUseCase } from '../../application/mascotas/usecases/ObtenerReferenciasMascotaUseCase';
+
 import { getRepositoryType } from '../../constants/env';
 
 export class DependencyContainer {
@@ -115,5 +121,22 @@ export class DependencyContainer {
       this._configRepo,
       this._referenciaRepo,
     );
+  }
+
+  // --- BC Mascotas: Casos de Uso ---
+  getListarReportesMascotaUseCase(): ListarReportesMascotaUseCase {
+    return new ListarReportesMascotaUseCase(this._reporteMascotaRepo);
+  }
+
+  getCrearReporteMascotaUseCase(): CrearReporteMascotaUseCase {
+    return new CrearReporteMascotaUseCase(this._reporteMascotaRepo);
+  }
+
+  getGestionarMisReportesMascotaUseCase(): GestionarMisReportesMascotaUseCase {
+    return new GestionarMisReportesMascotaUseCase(this._reporteMascotaRepo);
+  }
+
+  getObtenerReferenciasMascotaUseCase(): ObtenerReferenciasMascotaUseCase {
+    return new ObtenerReferenciasMascotaUseCase(this._mascotaReferenciaRepo);
   }
 }
