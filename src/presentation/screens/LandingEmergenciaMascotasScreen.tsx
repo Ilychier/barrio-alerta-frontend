@@ -479,7 +479,7 @@ export function LandingEmergenciaMascotasScreen({
             <View style={styles.drawerFooter}>
               <Text style={styles.footerText}>Barrio Alerta</Text>
               <Text style={styles.footerSubtext}>
-                {"\n"}Hecho con ❤️ por desarrolladores colombianos
+                Hecho con ❤️ por desarrolladores colombianos
               </Text>
             </View>
           </Animated.View>

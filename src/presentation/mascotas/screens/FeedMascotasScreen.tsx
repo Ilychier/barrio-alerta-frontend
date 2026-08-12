@@ -40,7 +40,9 @@ interface FeedMascotasScreenProps {
   onVerDetalle?: (reporte: ReporteMascota) => void;
 }
 
-export function FeedMascotasScreen({ onVerDetalle }: FeedMascotasScreenProps = {}) {
+export function FeedMascotasScreen({
+  onVerDetalle,
+}: FeedMascotasScreenProps = {}) {
   const { theme } = useAppTheme();
   const { width } = useWindowDimensions();
   const isDesktop = width >= 900;
@@ -96,7 +98,9 @@ export function FeedMascotasScreen({ onVerDetalle }: FeedMascotasScreenProps = {
   const renderItem = ({ item }: { item: ReporteMascota }) => (
     <Pressable
       style={styles.card}
-      onPress={() => (onVerDetalle ? onVerDetalle(item) : router.push(`/mascotas/${item.id}`))}
+      onPress={() =>
+        onVerDetalle ? onVerDetalle(item) : router.push(`/mascotas/${item.id}`)
+      }
     >
       <View style={styles.cardHeader}>
         <View
@@ -384,7 +388,8 @@ const getStyles = (theme: AppTheme, isDesktop: boolean) =>
     },
     cardFoto: {
       width: "100%",
-      height: 180,
+      height: 300,
+      resizeMode: "cover",
       borderRadius: 12,
       marginTop: 8,
       backgroundColor: theme.colors.surfaceLight,

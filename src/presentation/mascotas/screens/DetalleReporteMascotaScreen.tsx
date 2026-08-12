@@ -1,6 +1,7 @@
 import {
   ActivityIndicator,
   Linking,
+  Modal,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -47,6 +48,7 @@ export function DetalleReporteMascotaScreen({
   const [reporte, setReporte] = useState<ReporteMascota | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [fotoVisible, setFotoVisible] = useState(false);
 
   // Reutiliza el controller del feed para resolver nombres de catálogos
   const feed = useFeedMascotasController(0);
@@ -78,7 +80,7 @@ export function DetalleReporteMascotaScreen({
     // solo funciona en Android/iOS y los navegadores web no lo manejan.
     const telefono = reporte.telefono.replace(/[^0-9]/g, "");
     const mensaje = encodeURIComponent(
-      `Hola, vi tu reporte en Barrio Alerta sobre ${reporte.tipoReporte === TipoReporte.LOST ? "una mascota perdida" : "una mascota encontrada"}. Quiero ayudarte.`,
+      `Hola, vi tu reporte en barrio-alerta.com sobre ${reporte.tipoReporte === TipoReporte.LOST ? "una mascota perdida" : "una mascota encontrada"}. Quiero ayudarte.`,
     );
     Linking.openURL(`https://wa.me/${telefono}?text=${mensaje}`).catch((e) => {
       console.warn("[DetalleReporteMascotaScreen] No se pudo abrir WhatsApp:", e);
@@ -142,8 +144,27 @@ export function DetalleReporteMascotaScreen({
         <Text style={styles.tipo}>{feed.nombreTipoMascota(reporte)}</Text>
 
         {reporte.fotoUrl ? (
-          <Image source={{ uri: resolverUrlFoto(reporte.fotoUrl) ?? undefined }} style={styles.foto} contentFit="cover" />
+          <Pressable onPress={() => setFotoVisible(true)}>
+            <Image
+              source={{ uri: resolverUrlFoto(reporte.fotoUrl) ?? undefined }}
+              style={styles.foto}
+              contentFit="cover"
+            />
+          </Pressable>
         ) : null}
+
+        <Modal visible={fotoVisible} transparent animationType="fade" onRequestClose={() => setFotoVisible(false)}>
+          <Pressable style={styles.modalBackdrop} onPress={() => setFotoVisible(false)}>
+            <View style={styles.modalCloseBtn}>
+              <Icon name="X" size={24} color={theme.colors.white} />
+            </View>
+            <Image
+              source={{ uri: resolverUrlFoto(reporte.fotoUrl) ?? undefined }}
+              style={styles.modalFoto}
+              contentFit="contain"
+            />
+          </Pressable>
+        </Modal>
 
         <View style={styles.infoRow}>
           <Icon name="MapPin" size={16} color={theme.colors.green} />
@@ -167,10 +188,16 @@ export function DetalleReporteMascotaScreen({
 
         {/* Contacto: solo si el teléfono está visible (no RESCUED) */}
         {reporte.telefono ? (
-          <Pressable style={styles.whatsappBtn} onPress={abrirWhatsApp}>
-            <Icon name="MessageCircle" size={18} color={theme.colors.white} />
-            <Text style={styles.whatsappText}>Contactar por WhatsApp</Text>
-          </Pressable>
+          <View style={styles.contactoBox}>
+            <View style={styles.telefonoRow}>
+              <Icon name="Phone" size={14} color={theme.colors.textSecondary} />
+              <Text style={styles.telefonoText}>{reporte.telefono}</Text>
+            </View>
+            <Pressable style={styles.whatsappBtn} onPress={abrirWhatsApp}>
+              <Icon name="MessageCircle" size={18} color={theme.colors.white} />
+              <Text style={styles.whatsappText}>Contactar por WhatsApp</Text>
+            </Pressable>
+          </View>
         ) : (
           <View style={styles.rescuedBox}>
             <Icon name="HeartHandshake" size={18} color={theme.colors.green} />
@@ -277,6 +304,22 @@ const getStyles = (theme: AppTheme, isDesktop: boolean) =>
       fontSize: 12,
       color: theme.colors.textDim,
     },
+    contactoBox: {
+      marginTop: 8,
+      gap: 10,
+    },
+    telefonoRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 6,
+    },
+    telefonoText: {
+      fontSize: 15,
+      fontWeight: "700",
+      color: theme.colors.textPrimary,
+      letterSpacing: 0.5,
+    },
     whatsappBtn: {
       flexDirection: "row",
       alignItems: "center",
@@ -285,12 +328,32 @@ const getStyles = (theme: AppTheme, isDesktop: boolean) =>
       backgroundColor: "#25D366",
       borderRadius: 14,
       paddingVertical: 14,
-      marginTop: 8,
     },
     whatsappText: {
       color: theme.colors.white,
       fontSize: 15,
       fontWeight: "700",
+    },
+    modalBackdrop: {
+      flex: 1,
+      backgroundColor: "rgba(0,0,0,0.92)",
+      justifyContent: "center",
+      alignItems: "center",
+      padding: 20,
+    },
+    modalFoto: {
+      width: "100%",
+      height: "80%",
+      borderRadius: 12,
+    },
+    modalCloseBtn: {
+      position: "absolute",
+      top: 50,
+      right: 24,
+      zIndex: 10,
+      backgroundColor: "rgba(255,255,255,0.15)",
+      borderRadius: 20,
+      padding: 8,
     },
     rescuedBox: {
       flexDirection: "row",

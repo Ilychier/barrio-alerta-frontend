@@ -19,8 +19,10 @@ ENV NODE_ENV=production
 # Defaults = PRODUCCIÓN (barrio-alerta.com)
 ARG EXPO_PUBLIC_REPOSITORY_TYPE=api
 ARG EXPO_PUBLIC_API_URL=https://barrio-alerta.com/api
+ARG EXPO_PUBLIC_MODO_EMERGENCIA=true
 ENV EXPO_PUBLIC_REPOSITORY_TYPE=${EXPO_PUBLIC_REPOSITORY_TYPE}
 ENV EXPO_PUBLIC_API_URL=${EXPO_PUBLIC_API_URL}
+ENV EXPO_PUBLIC_MODO_EMERGENCIA=${EXPO_PUBLIC_MODO_EMERGENCIA}
 
 # Copiar solo dependencias para cachear capa
 COPY package*.json ./
@@ -28,6 +30,11 @@ RUN npm ci --silent --no-audit --legacy-peer-deps
 
 # Copiar el resto del código
 COPY . .
+
+# Limpiar .env del repo: con NODE_ENV=production, Expo prioriza .env.production
+# y los .env locales (dev) contaminan el bundle. Las variables se reinyectan
+# solo via build args (EXPO_PUBLIC_* arriba).
+RUN rm -f .env .env.local .env.development .env.staging .env.production
 
 # Construir web estática
 RUN npx expo export -p web --clear
