@@ -59,11 +59,15 @@ export function DetalleReporteMascotaScreen() {
 
   const abrirWhatsApp = () => {
     if (!reporte?.telefono) return;
-    const telefono = reporte.telefono.replace(/[^0-9+]/g, "");
+    // Click to Chat oficial de WhatsApp: https://wa.me/<numero>?text=<mensaje>
+    // (https://faq.whatsapp.com/general/chats/how-to-use-click-to-chat)
+    // Funciona en móvil y en WhatsApp Web. El esquema nativo whatsapp://
+    // solo funciona en Android/iOS y los navegadores web no lo manejan.
+    const telefono = reporte.telefono.replace(/[^0-9]/g, "");
     const mensaje = encodeURIComponent(
       `Hola, vi tu reporte en Barrio Alerta sobre ${reporte.tipoReporte === TipoReporte.LOST ? "una mascota perdida" : "una mascota encontrada"}. Quiero ayudarte.`,
     );
-    Linking.openURL(`whatsapp://send?phone=${telefono}&text=${mensaje}`).catch((e) => {
+    Linking.openURL(`https://wa.me/${telefono}?text=${mensaje}`).catch((e) => {
       console.warn("[DetalleReporteMascotaScreen] No se pudo abrir WhatsApp:", e);
       alert("No se pudo abrir WhatsApp. Llama al número directamente.");
     });

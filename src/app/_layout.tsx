@@ -1,5 +1,5 @@
 import { Slot, usePathname, useRouter } from "expo-router";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Animated,
@@ -45,6 +45,10 @@ function TabLayout() {
   const [authView, setAuthView] = useState<"landing" | "login" | "register">(
     "landing",
   );
+  // Modo del drawer: por defecto "desaparecidos" (BC Mascotas)
+  const [menuMode, setMenuMode] = useState<"desaparecidos" | "alertas">(
+    "desaparecidos",
+  );
 
   const { width } = useWindowDimensions();
   const isSmallScreen = width < 768;
@@ -58,7 +62,27 @@ function TabLayout() {
   const [slideAnim] = useState(() => new Animated.Value(-280));
   const [fadeAnim] = useState(() => new Animated.Value(0));
 
+  // Al iniciar sesión (transición !isAuthenticated → isAuthenticated),
+  // el modo por defecto es "desaparecidos" y navega a su primera opción (/mascotas)
+  const wasAuthenticated = useRef(false);
+  useEffect(() => {
+    if (isAuthenticated && !wasAuthenticated.current) {
+      wasAuthenticated.current = true;
+      setMenuMode("desaparecidos");
+      router.replace("/mascotas");
+    }
+    if (!isAuthenticated) {
+      wasAuthenticated.current = false;
+    }
+  }, [isAuthenticated, router]);
+
   const openMenu = () => {
+    // Sincroniza el toggle con la ruta activa al abrir el drawer
+    if (pathname.startsWith("/mascotas")) {
+      setMenuMode("desaparecidos");
+    } else {
+      setMenuMode("alertas");
+    }
     setVisible(true);
     Animated.parallel([
       Animated.timing(fadeAnim, {
@@ -96,9 +120,24 @@ function TabLayout() {
     closeMenu();
   };
 
+  // Al cambiar el modo con el toggle, navega a la primera opción de cada menú
+  const handleModeChange = (mode: "desaparecidos" | "alertas") => {
+    setMenuMode(mode);
+    if (mode === "desaparecidos") {
+      handleNavigate("/mascotas");
+    } else {
+      handleNavigate("/");
+    }
+  };
+
   const isRouteActive = (route: string) => {
     if (route === "/") {
       return pathname === "/" || pathname === "/index" || pathname === "";
+    }
+    // El feed de mascotas solo se marca activo en su ruta exacta,
+    // no en sub-rutas (reportar, mis-reportes, historias, detalle)
+    if (route === "/mascotas") {
+      return pathname === "/mascotas" || pathname === "/mascotas/index";
     }
     return pathname.startsWith(route);
   };
@@ -150,9 +189,11 @@ function TabLayout() {
       <Header
         barrioNombre={barrio?.nombre}
         cuadranteNombre={cuadrante?.nombre_unidad}
-        usuarioNombre={user?.nombre}
         isMobile={isSmallScreen}
         onMenuPress={openMenu}
+        onLogoutPress={async () => {
+          await logout();
+        }}
       />
 
       {/* Active Screen Area */}
@@ -231,233 +272,294 @@ function TabLayout() {
 
             {/* Navigation list */}
             <View style={styles.navLinks}>
-              <Text style={styles.sectionLabel}>Navegación</Text>
-
-              <TouchableOpacity
-                onPress={() => handleNavigate("/")}
-                style={[
-                  styles.navLink,
-                  isRouteActive("/") && styles.navLinkActive,
-                ]}
-                activeOpacity={0.7}
-              >
-                <IconRenderer
-                  name="Activity"
-                  size={16}
-                  color={
-                    isRouteActive("/")
-                      ? theme.colors.textPrimary
-                      : theme.colors.textMuted
-                  }
-                />
-                <Text
+              {/* Toggle de módulo: Desaparecidos (Mascotas) / Alertas (Barrio Alerta) */}
+              <View style={styles.modeToggle}>
+                <Pressable
                   style={[
-                    styles.navLinkText,
-                    isRouteActive("/") && styles.navLinkTextActive,
+                    styles.modeBtn,
+                    menuMode === "desaparecidos" && styles.modeBtnActive,
                   ]}
+                  onPress={() => handleModeChange("desaparecidos")}
                 >
-                  Dashboard
-                </Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                onPress={() => handleNavigate("/alertas-sector")}
-                style={[
-                  styles.navLink,
-                  isRouteActive("/alertas-sector") && styles.navLinkActive,
-                ]}
-                activeOpacity={0.7}
-              >
-                <Icon
-                  name="Bell"
-                  size={16}
-                  color={
-                    isRouteActive("/alertas-sector")
-                      ? theme.colors.textPrimary
-                      : theme.colors.textMuted
-                  }
-                />
-                <Text
+                  <Icon
+                    name="PawPrint"
+                    size={14}
+                    color={
+                      menuMode === "desaparecidos"
+                        ? theme.colors.white
+                        : theme.colors.textMuted
+                    }
+                  />
+                  <Text
+                    style={[
+                      styles.modeBtnText,
+                      menuMode === "desaparecidos" && styles.modeBtnTextActive,
+                    ]}
+                  >
+                    Desaparecidos
+                  </Text>
+                </Pressable>
+                <Pressable
                   style={[
-                    styles.navLinkText,
-                    isRouteActive("/alertas-sector") &&
-                      styles.navLinkTextActive,
+                    styles.modeBtn,
+                    menuMode === "alertas" && styles.modeBtnActive,
                   ]}
+                  onPress={() => handleModeChange("alertas")}
                 >
-                  Alertas del Sector
-                </Text>
-              </TouchableOpacity>
+                  <Icon
+                    name="Bell"
+                    size={14}
+                    color={
+                      menuMode === "alertas"
+                        ? theme.colors.white
+                        : theme.colors.textMuted
+                    }
+                  />
+                  <Text
+                    style={[
+                      styles.modeBtnText,
+                      menuMode === "alertas" && styles.modeBtnTextActive,
+                    ]}
+                  >
+                    Alertas
+                  </Text>
+                </Pressable>
+              </View>
 
-              <TouchableOpacity
-                onPress={() => handleNavigate("/reportar")}
-                style={[
-                  styles.navLink,
-                  isRouteActive("/reportar") && styles.navLinkActive,
-                ]}
-                activeOpacity={0.7}
-              >
-                <Icon
-                  name="ClockAlert"
-                  size={16}
-                  color={
-                    isRouteActive("/reportar")
-                      ? theme.colors.textPrimary
-                      : theme.colors.textMuted
-                  }
-                />
-                <Text
-                  style={[
-                    styles.navLinkText,
-                    isRouteActive("/reportar") && styles.navLinkTextActive,
-                  ]}
-                >
-                  Reportar
-                </Text>
-              </TouchableOpacity>
+              {menuMode === "desaparecidos" ? (
+                <>
+                  {/* ── BC MASCOTAS ─────────────────────────── */}
+                  <Text style={styles.sectionLabel}>Mascotas</Text>
 
-              <TouchableOpacity
-                onPress={() => handleNavigate("/config")}
-                style={[
-                  styles.navLink,
-                  isRouteActive("/config") && styles.navLinkActive,
-                ]}
-                activeOpacity={0.7}
-              >
-                <Icon
-                  name="Settings"
-                  size={16}
-                  color={
-                    isRouteActive("/config")
-                      ? theme.colors.textPrimary
-                      : theme.colors.textMuted
-                  }
-                />
-                <Text
-                  style={[
-                    styles.navLinkText,
-                    isRouteActive("/config") && styles.navLinkTextActive,
-                  ]}
-                >
-                  Configuración (Notificaciones)
-                </Text>
-              </TouchableOpacity>
+                  <TouchableOpacity
+                    onPress={() => handleNavigate("/mascotas")}
+                    style={[
+                      styles.navLink,
+                      isRouteActive("/mascotas") && styles.navLinkActive,
+                    ]}
+                    activeOpacity={0.7}
+                  >
+                    <Icon
+                      name="PawPrint"
+                      size={16}
+                      color={
+                        isRouteActive("/mascotas")
+                          ? theme.colors.textPrimary
+                          : theme.colors.textMuted
+                      }
+                    />
+                    <Text
+                      style={[
+                        styles.navLinkText,
+                        isRouteActive("/mascotas") && styles.navLinkTextActive,
+                      ]}
+                    >
+                      Mascotas en Emergencia
+                    </Text>
+                  </TouchableOpacity>
 
-              {/* Separador visual + sección BC Mascotas */}
-              <View style={styles.drawerDivider} />
+                  <TouchableOpacity
+                    onPress={() => handleNavigate("/mascotas/reportar")}
+                    style={[
+                      styles.navLink,
+                      isRouteActive("/mascotas/reportar") &&
+                        styles.navLinkActive,
+                    ]}
+                    activeOpacity={0.7}
+                  >
+                    <Icon
+                      name="CirclePlus"
+                      size={16}
+                      color={
+                        isRouteActive("/mascotas/reportar")
+                          ? theme.colors.textPrimary
+                          : theme.colors.textMuted
+                      }
+                    />
+                    <Text
+                      style={[
+                        styles.navLinkText,
+                        isRouteActive("/mascotas/reportar") &&
+                          styles.navLinkTextActive,
+                      ]}
+                    >
+                      Reportar Mascota
+                    </Text>
+                  </TouchableOpacity>
 
-              <Text style={styles.sectionLabel}>Mascotas</Text>
+                  <TouchableOpacity
+                    onPress={() => handleNavigate("/mascotas/mis-reportes")}
+                    style={[
+                      styles.navLink,
+                      isRouteActive("/mascotas/mis-reportes") &&
+                        styles.navLinkActive,
+                    ]}
+                    activeOpacity={0.7}
+                  >
+                    <Icon
+                      name="List"
+                      size={16}
+                      color={
+                        isRouteActive("/mascotas/mis-reportes")
+                          ? theme.colors.textPrimary
+                          : theme.colors.textMuted
+                      }
+                    />
+                    <Text
+                      style={[
+                        styles.navLinkText,
+                        isRouteActive("/mascotas/mis-reportes") &&
+                          styles.navLinkTextActive,
+                      ]}
+                    >
+                      Mis Reportes de Mascotas
+                    </Text>
+                  </TouchableOpacity>
 
-              <TouchableOpacity
-                onPress={() => handleNavigate("/mascotas")}
-                style={[
-                  styles.navLink,
-                  isRouteActive("/mascotas") && styles.navLinkActive,
-                ]}
-                activeOpacity={0.7}
-              >
-                <Icon
-                  name="PawPrint"
-                  size={16}
-                  color={
-                    isRouteActive("/mascotas")
-                      ? theme.colors.textPrimary
-                      : theme.colors.textMuted
-                  }
-                />
-                <Text
-                  style={[
-                    styles.navLinkText,
-                    isRouteActive("/mascotas") && styles.navLinkTextActive,
-                  ]}
-                >
-                  Mascotas en Emergencia
-                </Text>
-              </TouchableOpacity>
+                  <TouchableOpacity
+                    onPress={() => handleNavigate("/mascotas/historias")}
+                    style={[
+                      styles.navLink,
+                      isRouteActive("/mascotas/historias") &&
+                        styles.navLinkActive,
+                    ]}
+                    activeOpacity={0.7}
+                  >
+                    <Icon
+                      name="HeartHandshake"
+                      size={16}
+                      color={
+                        isRouteActive("/mascotas/historias")
+                          ? theme.colors.textPrimary
+                          : theme.colors.textMuted
+                      }
+                    />
+                    <Text
+                      style={[
+                        styles.navLinkText,
+                        isRouteActive("/mascotas/historias") &&
+                          styles.navLinkTextActive,
+                      ]}
+                    >
+                      Historias de Rescate
+                    </Text>
+                  </TouchableOpacity>
+                </>
+              ) : (
+                <>
+                  {/* ── BC ALERTAS ─────────────────────────── */}
+                  <Text style={styles.sectionLabel}>Navegación</Text>
 
-              <TouchableOpacity
-                onPress={() => handleNavigate("/mascotas/reportar")}
-                style={[
-                  styles.navLink,
-                  isRouteActive("/mascotas/reportar") && styles.navLinkActive,
-                ]}
-                activeOpacity={0.7}
-              >
-                <Icon
-                  name="CirclePlus"
-                  size={16}
-                  color={
-                    isRouteActive("/mascotas/reportar")
-                      ? theme.colors.textPrimary
-                      : theme.colors.textMuted
-                  }
-                />
-                <Text
-                  style={[
-                    styles.navLinkText,
-                    isRouteActive("/mascotas/reportar") &&
-                      styles.navLinkTextActive,
-                  ]}
-                >
-                  Reportar Mascota
-                </Text>
-              </TouchableOpacity>
+                  <TouchableOpacity
+                    onPress={() => handleNavigate("/")}
+                    style={[
+                      styles.navLink,
+                      isRouteActive("/") && styles.navLinkActive,
+                    ]}
+                    activeOpacity={0.7}
+                  >
+                    <IconRenderer
+                      name="Activity"
+                      size={16}
+                      color={
+                        isRouteActive("/")
+                          ? theme.colors.textPrimary
+                          : theme.colors.textMuted
+                      }
+                    />
+                    <Text
+                      style={[
+                        styles.navLinkText,
+                        isRouteActive("/") && styles.navLinkTextActive,
+                      ]}
+                    >
+                      Dashboard
+                    </Text>
+                  </TouchableOpacity>
 
-              <TouchableOpacity
-                onPress={() => handleNavigate("/mascotas/mis-reportes")}
-                style={[
-                  styles.navLink,
-                  isRouteActive("/mascotas/mis-reportes") &&
-                    styles.navLinkActive,
-                ]}
-                activeOpacity={0.7}
-              >
-                <Icon
-                  name="List"
-                  size={16}
-                  color={
-                    isRouteActive("/mascotas/mis-reportes")
-                      ? theme.colors.textPrimary
-                      : theme.colors.textMuted
-                  }
-                />
-                <Text
-                  style={[
-                    styles.navLinkText,
-                    isRouteActive("/mascotas/mis-reportes") &&
-                      styles.navLinkTextActive,
-                  ]}
-                >
-                  Mis Reportes de Mascotas
-                </Text>
-              </TouchableOpacity>
+                  <TouchableOpacity
+                    onPress={() => handleNavigate("/alertas-sector")}
+                    style={[
+                      styles.navLink,
+                      isRouteActive("/alertas-sector") && styles.navLinkActive,
+                    ]}
+                    activeOpacity={0.7}
+                  >
+                    <Icon
+                      name="Bell"
+                      size={16}
+                      color={
+                        isRouteActive("/alertas-sector")
+                          ? theme.colors.textPrimary
+                          : theme.colors.textMuted
+                      }
+                    />
+                    <Text
+                      style={[
+                        styles.navLinkText,
+                        isRouteActive("/alertas-sector") &&
+                          styles.navLinkTextActive,
+                      ]}
+                    >
+                      Alertas del Sector
+                    </Text>
+                  </TouchableOpacity>
 
-              <TouchableOpacity
-                onPress={() => handleNavigate("/mascotas/historias")}
-                style={[
-                  styles.navLink,
-                  isRouteActive("/mascotas/historias") && styles.navLinkActive,
-                ]}
-                activeOpacity={0.7}
-              >
-                <Icon
-                  name="HeartHandshake"
-                  size={16}
-                  color={
-                    isRouteActive("/mascotas/historias")
-                      ? theme.colors.textPrimary
-                      : theme.colors.textMuted
-                  }
-                />
-                <Text
-                  style={[
-                    styles.navLinkText,
-                    isRouteActive("/mascotas/historias") &&
-                      styles.navLinkTextActive,
-                  ]}
-                >
-                  Historias de Rescate
-                </Text>
-              </TouchableOpacity>
+                  <TouchableOpacity
+                    onPress={() => handleNavigate("/reportar")}
+                    style={[
+                      styles.navLink,
+                      isRouteActive("/reportar") && styles.navLinkActive,
+                    ]}
+                    activeOpacity={0.7}
+                  >
+                    <Icon
+                      name="ClockAlert"
+                      size={16}
+                      color={
+                        isRouteActive("/reportar")
+                          ? theme.colors.textPrimary
+                          : theme.colors.textMuted
+                      }
+                    />
+                    <Text
+                      style={[
+                        styles.navLinkText,
+                        isRouteActive("/reportar") && styles.navLinkTextActive,
+                      ]}
+                    >
+                      Reportar
+                    </Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    onPress={() => handleNavigate("/config")}
+                    style={[
+                      styles.navLink,
+                      isRouteActive("/config") && styles.navLinkActive,
+                    ]}
+                    activeOpacity={0.7}
+                  >
+                    <Icon
+                      name="Settings"
+                      size={16}
+                      color={
+                        isRouteActive("/config")
+                          ? theme.colors.textPrimary
+                          : theme.colors.textMuted
+                      }
+                    />
+                    <Text
+                      style={[
+                        styles.navLinkText,
+                        isRouteActive("/config") && styles.navLinkTextActive,
+                      ]}
+                    >
+                      Configuración (Notificaciones)
+                    </Text>
+                  </TouchableOpacity>
+                </>
+              )}
 
               <TouchableOpacity
                 onPress={async () => {
@@ -536,6 +638,36 @@ const getStyles = (theme: AppTheme) =>
       height: 1,
       backgroundColor: theme.colors.border,
       marginVertical: 12,
+    },
+    modeToggle: {
+      flexDirection: "row",
+      backgroundColor: theme.colors.surfaceLight,
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+      padding: 4,
+      marginBottom: 16,
+      gap: 4,
+    },
+    modeBtn: {
+      flex: 1,
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 6,
+      paddingVertical: 8,
+      borderRadius: 9,
+    },
+    modeBtnActive: {
+      backgroundColor: theme.colors.green,
+    },
+    modeBtnText: {
+      fontSize: 12,
+      fontWeight: "700",
+      color: theme.colors.textMuted,
+    },
+    modeBtnTextActive: {
+      color: theme.colors.white,
     },
     drawerUserBadge: {
       flexDirection: "row",

@@ -6,17 +6,17 @@ import { IconRenderer } from "../atomic/IconRenderer";
 interface HeaderProps {
   barrioNombre?: string;
   cuadranteNombre?: string;
-  usuarioNombre?: string;
   isMobile?: boolean;
   onMenuPress?: () => void;
+  onLogoutPress?: () => void;
 }
 
 export function Header({
   barrioNombre,
   cuadranteNombre,
-  usuarioNombre,
   isMobile = false,
   onMenuPress,
+  onLogoutPress,
 }: HeaderProps) {
   const { theme, themeType, toggleTheme } = useAppTheme();
   const styles = getStyles(theme);
@@ -71,11 +71,14 @@ export function Header({
           />
         </TouchableOpacity>
 
-        {!isMobile && usuarioNombre && (
-          <View style={styles.userBadge}>
-            <IconRenderer name="User" size={14} color={theme.colors.green} />
-            <Text style={styles.userName}>{usuarioNombre}</Text>
-          </View>
+        {onLogoutPress && (
+          <TouchableOpacity
+            onPress={onLogoutPress}
+            style={styles.logoutButton}
+            activeOpacity={0.7}
+          >
+            <Icon name="LogOut" size={18} color={theme.colors.red} />
+          </TouchableOpacity>
         )}
       </View>
     </View>
@@ -148,20 +151,11 @@ const getStyles = (theme: AppTheme) =>
       alignItems: "center",
       justifyContent: "center",
     },
-    userBadge: {
-      flexDirection: "row",
-      alignItems: "center",
-      gap: 8,
+    logoutButton: {
+      padding: 6,
+      borderRadius: 32,
       backgroundColor: theme.colors.surfaceLight,
-      paddingVertical: 6,
-      paddingHorizontal: 12,
-      borderRadius: 12,
-      borderWidth: 1,
-      borderColor: theme.colors.surfaceBorder,
-    },
-    userName: {
-      fontSize: 12,
-      fontWeight: "500",
-      color: theme.colors.textSecondary,
+      alignItems: "center",
+      justifyContent: "center",
     },
   });
