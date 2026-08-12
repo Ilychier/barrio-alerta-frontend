@@ -1,6 +1,4 @@
 import { ReporteMascota } from '../../../domain/mascotas/entities/ReporteMascota';
-import { EstadoReporte } from '../../../domain/mascotas/entities/EstadoReporte';
-import { TipoReporte } from '../../../domain/mascotas/entities/TipoReporte';
 import { Ciudad } from '../../../domain/mascotas/entities/Ciudad';
 import { TipoMascota } from '../../../domain/mascotas/entities/TipoMascota';
 

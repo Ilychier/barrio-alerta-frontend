@@ -342,6 +342,123 @@ function TabLayout() {
                 </Text>
               </TouchableOpacity>
 
+              {/* Separador visual + sección BC Mascotas */}
+              <View style={styles.drawerDivider} />
+
+              <Text style={styles.sectionLabel}>Mascotas</Text>
+
+              <TouchableOpacity
+                onPress={() => handleNavigate("/mascotas")}
+                style={[
+                  styles.navLink,
+                  isRouteActive("/mascotas") && styles.navLinkActive,
+                ]}
+                activeOpacity={0.7}
+              >
+                <Icon
+                  name="PawPrint"
+                  size={16}
+                  color={
+                    isRouteActive("/mascotas")
+                      ? theme.colors.textPrimary
+                      : theme.colors.textMuted
+                  }
+                />
+                <Text
+                  style={[
+                    styles.navLinkText,
+                    isRouteActive("/mascotas") && styles.navLinkTextActive,
+                  ]}
+                >
+                  Mascotas en Emergencia
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={() => handleNavigate("/mascotas/reportar")}
+                style={[
+                  styles.navLink,
+                  isRouteActive("/mascotas/reportar") && styles.navLinkActive,
+                ]}
+                activeOpacity={0.7}
+              >
+                <Icon
+                  name="CirclePlus"
+                  size={16}
+                  color={
+                    isRouteActive("/mascotas/reportar")
+                      ? theme.colors.textPrimary
+                      : theme.colors.textMuted
+                  }
+                />
+                <Text
+                  style={[
+                    styles.navLinkText,
+                    isRouteActive("/mascotas/reportar") &&
+                      styles.navLinkTextActive,
+                  ]}
+                >
+                  Reportar Mascota
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={() => handleNavigate("/mascotas/mis-reportes")}
+                style={[
+                  styles.navLink,
+                  isRouteActive("/mascotas/mis-reportes") &&
+                    styles.navLinkActive,
+                ]}
+                activeOpacity={0.7}
+              >
+                <Icon
+                  name="List"
+                  size={16}
+                  color={
+                    isRouteActive("/mascotas/mis-reportes")
+                      ? theme.colors.textPrimary
+                      : theme.colors.textMuted
+                  }
+                />
+                <Text
+                  style={[
+                    styles.navLinkText,
+                    isRouteActive("/mascotas/mis-reportes") &&
+                      styles.navLinkTextActive,
+                  ]}
+                >
+                  Mis Reportes de Mascotas
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={() => handleNavigate("/mascotas/historias")}
+                style={[
+                  styles.navLink,
+                  isRouteActive("/mascotas/historias") && styles.navLinkActive,
+                ]}
+                activeOpacity={0.7}
+              >
+                <Icon
+                  name="HeartHandshake"
+                  size={16}
+                  color={
+                    isRouteActive("/mascotas/historias")
+                      ? theme.colors.textPrimary
+                      : theme.colors.textMuted
+                  }
+                />
+                <Text
+                  style={[
+                    styles.navLinkText,
+                    isRouteActive("/mascotas/historias") &&
+                      styles.navLinkTextActive,
+                  ]}
+                >
+                  Historias de Rescate
+                </Text>
+              </TouchableOpacity>
+
               <TouchableOpacity
                 onPress={async () => {
                   closeMenu();
@@ -414,6 +531,11 @@ const getStyles = (theme: AppTheme) =>
       borderBottomWidth: 1,
       borderBottomColor: theme.colors.border,
       paddingBottom: 20,
+    },
+    drawerDivider: {
+      height: 1,
+      backgroundColor: theme.colors.border,
+      marginVertical: 12,
     },
     drawerUserBadge: {
       flexDirection: "row",

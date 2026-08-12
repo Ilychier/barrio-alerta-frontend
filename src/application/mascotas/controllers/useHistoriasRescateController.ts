@@ -26,6 +26,7 @@ export function useHistoriasRescateController(refreshTrigger?: number) {
         filtros: { estado: EstadoReporte.RESCUED },
         page: pagina,
       });
+      setPage(pagina);
       setTotalPages(result.totalPages);
       setReportes((prev) => (acumular ? [...prev, ...result.items] : result.items));
     } catch (e) {
@@ -36,10 +37,33 @@ export function useHistoriasRescateController(refreshTrigger?: number) {
     }
   }, [useCase]);
 
+  // Carga inicial (patrón loadData del BC Alertas: async fn dentro del effect)
   useEffect(() => {
-    setPage(0);
-    loadPage(0, false);
-  }, [loadPage, refreshTrigger]);
+    let active = true;
+    async function loadData() {
+      setLoading(true);
+      setError(null);
+      try {
+        const result = await useCase.execute({
+          filtros: { estado: EstadoReporte.RESCUED },
+          page: 0,
+        });
+        if (!active) return;
+        setPage(0);
+        setTotalPages(result.totalPages);
+        setReportes(result.items);
+      } catch (e) {
+        if (active) setError('No se pudieron cargar las historias de rescate');
+        console.warn('[useHistoriasRescateController] Error:', e);
+      } finally {
+        if (active) setLoading(false);
+      }
+    }
+    loadData();
+    return () => {
+      active = false;
+    };
+  }, [useCase, refreshTrigger]);
 
   const loadMore = useCallback(() => {
     if (loadingMore || loading || page + 1 >= totalPages) return;

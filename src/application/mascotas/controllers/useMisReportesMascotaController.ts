@@ -14,28 +14,36 @@ export function useMisReportesMascotaController(usuarioId: number, refreshTrigge
   const [error, setError] = useState<string | null>(null);
 
   const useCase = DependencyContainer.getInstance().getGestionarMisReportesMascotaUseCase();
-
-  const cargar = useCallback(async () => {
-    if (!usuarioId || usuarioId === 0) {
-      setLoading(false);
-      return;
-    }
-    setLoading(true);
-    setError(null);
-    try {
-      const result = await useCase.listarMios(usuarioId, 0, 100);
-      setReportes(result.items);
-    } catch (e) {
-      setError('No se pudieron cargar tus reportes');
-      console.warn('[useMisReportesMascotaController] Error:', e);
-    } finally {
-      setLoading(false);
-    }
-  }, [usuarioId, useCase]);
+  const [refresh, setRefresh] = useState(0);
 
   useEffect(() => {
-    cargar();
-  }, [cargar, refreshTrigger]);
+    let active = true;
+    async function loadData() {
+      if (!usuarioId || usuarioId === 0) {
+        setLoading(false);
+        return;
+      }
+      setLoading(true);
+      setError(null);
+      try {
+        const result = await useCase.listarMios(usuarioId, 0, 100);
+        if (active) setReportes(result.items);
+      } catch (e) {
+        if (active) setError('No se pudieron cargar tus reportes');
+        console.warn('[useMisReportesMascotaController] Error:', e);
+      } finally {
+        if (active) setLoading(false);
+      }
+    }
+    loadData();
+    return () => {
+      active = false;
+    };
+  }, [usuarioId, useCase, refresh, refreshTrigger]);
+
+  const recargar = useCallback(() => {
+    setRefresh((r) => r + 1);
+  }, []);
 
   const marcarRescatado = useCallback(
     async (id: number): Promise<ReporteMascota | null> => {
@@ -69,7 +77,7 @@ export function useMisReportesMascotaController(usuarioId: number, refreshTrigge
     reportes,
     loading,
     error,
-    recargar: cargar,
+    recargar,
     marcarRescatado,
     eliminar,
   };

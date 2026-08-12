@@ -4,7 +4,6 @@ import { ReporteMascota } from '../../../domain/mascotas/entities/ReporteMascota
 import { Ciudad } from '../../../domain/mascotas/entities/Ciudad';
 import { TipoMascota } from '../../../domain/mascotas/entities/TipoMascota';
 import { FiltrosReporteMascota } from '../../../domain/mascotas/ports/IReporteMascotaRepository';
-import { PAGE_SIZE_DEFAULT } from '../../mascotas/usecases/ListarReportesMascotaUseCase';
 import { ReferenciasMascota } from '../../mascotas/usecases/ObtenerReferenciasMascotaUseCase';
 import { nombrePorId } from '../../../infrastructure/mascotas/adapters/mappers';
 
@@ -33,7 +32,6 @@ export function useFeedMascotasController(refreshTrigger?: number) {
   // Carga catálogos una vez (los datos geográficos cambian muy rara vez)
   useEffect(() => {
     let active = true;
-    setReferenciasLoading(true);
     referenciasUseCase
       .execute()
       .then((refs) => {
@@ -59,6 +57,7 @@ export function useFeedMascotasController(refreshTrigger?: number) {
       setError(null);
       try {
         const result = await useCase.execute({ filtros, page: pagina });
+        setPage(pagina);
         setTotalPages(result.totalPages);
         setReportes((prev) => (acumular ? [...prev, ...result.items] : result.items));
       } catch (e) {
@@ -72,9 +71,29 @@ export function useFeedMascotasController(refreshTrigger?: number) {
     [filtros],
   );
 
+  // Carga inicial del feed (patrón loadData del BC Alertas: async fn dentro del effect)
   useEffect(() => {
-    setPage(0);
-    loadPage(0, false);
+    let active = true;
+    async function loadData() {
+      setLoading(true);
+      setError(null);
+      try {
+        const result = await useCase.execute({ filtros, page: 0 });
+        if (!active) return;
+        setPage(0);
+        setTotalPages(result.totalPages);
+        setReportes(result.items);
+      } catch (e) {
+        if (active) setError('No se pudieron cargar los reportes de mascotas');
+        console.warn('[useFeedMascotasController] Error cargando feed:', e);
+      } finally {
+        if (active) setLoading(false);
+      }
+    }
+    loadData();
+    return () => {
+      active = false;
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filtros, refreshTrigger]);
 

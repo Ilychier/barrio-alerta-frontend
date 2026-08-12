@@ -40,7 +40,7 @@ export function useReporteMascotaController(currentUserId: number, onSuccess?: (
     } finally {
       setReferenciasLoading(false);
     }
-  }, []);
+  }, [referenciasUseCase]);
 
   const crear = useCallback(
     async (form: CrearReporteMascotaForm): Promise<ReporteMascota | null> => {
@@ -66,7 +66,7 @@ export function useReporteMascotaController(currentUserId: number, onSuccess?: (
         setEnviando(false);
       }
     },
-    [currentUserId, onSuccess],
+    [currentUserId, onSuccess, crearUseCase],
   );
 
   return {
