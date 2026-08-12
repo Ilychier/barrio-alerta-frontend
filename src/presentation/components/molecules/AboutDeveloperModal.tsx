@@ -8,8 +8,8 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import Icon from "../atomic/Icon";
 import { AppTheme, useAppTheme } from "../../theme/ThemeContext";
+import Icon from "../atomic/Icon";
 
 interface AboutDeveloperModalProps {
   visible: boolean;
@@ -28,14 +28,14 @@ const DESARROLLADORES: Desarrollador[] = [
   {
     nombre: "Ariel David Herrera Ahumada",
     linkedin: "https://www.linkedin.com/in/ariel-david-herrera-ahumada-/",
-    contacto: "Arieldavidherreraahumada@gmail.com",
+    contacto: "arieldavidherreraahumada@gmail.com",
     esEmail: true,
   },
   {
     nombre: "Julián Camilo Herrera Ahumada",
     linkedin:
       "https://www.linkedin.com/in/juli%C3%A1n-camilo-herrera-ahumada-496586314/",
-    contacto: "LinkedIn",
+    contacto: "juliancamilohah@gmail.com",
     esEmail: false,
   },
 ];

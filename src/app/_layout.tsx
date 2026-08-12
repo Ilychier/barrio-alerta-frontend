@@ -4,6 +4,7 @@ import {
   ActivityIndicator,
   Animated,
   Image,
+  Modal,
   Pressable,
   StyleSheet,
   Text,
@@ -13,25 +14,25 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { getModoEmergencia } from "@/constants/env";
 import Icon from "@/presentation/components/atomic/Icon";
 import { IconRenderer } from "@/presentation/components/atomic/IconRenderer";
-import { AboutDeveloperModal } from "@/presentation/components/molecules/AboutDeveloperModal";
 import { Header } from "@/presentation/components/layout/Header";
 import { SVGBackground } from "@/presentation/components/layout/SVGBackground";
+import { AboutDeveloperModal } from "@/presentation/components/molecules/AboutDeveloperModal";
 import { AuthProvider, useAuth } from "@/presentation/context/AuthContext";
+import { ultimaVistaEmergencia } from "@/presentation/mascotas/state/ultimaVistaEmergencia";
+import { ultimoRegistroRapido } from "@/presentation/mascotas/state/ultimoRegistroRapido";
+import { CambiarPasswordScreen } from "@/presentation/screens/CambiarPasswordScreen";
+import { LandingEmergenciaMascotasScreen } from "@/presentation/screens/LandingEmergenciaMascotasScreen";
 import { LandingScreen } from "@/presentation/screens/LandingScreen";
 import { LoginScreen } from "@/presentation/screens/LoginScreen";
 import { RegisterScreen } from "@/presentation/screens/RegisterScreen";
-import { CambiarPasswordScreen } from "@/presentation/screens/CambiarPasswordScreen";
-import { LandingEmergenciaMascotasScreen } from "@/presentation/screens/LandingEmergenciaMascotasScreen";
 import {
   AppTheme,
   ThemeProvider,
   useAppTheme,
 } from "@/presentation/theme/ThemeContext";
-import { getModoEmergencia } from "@/constants/env";
-import { ultimoRegistroRapido } from "@/presentation/mascotas/state/ultimoRegistroRapido";
-import { ultimaVistaEmergencia } from "@/presentation/mascotas/state/ultimaVistaEmergencia";
 
 export default function RootLayout() {
   return (
@@ -44,13 +45,20 @@ export default function RootLayout() {
 }
 
 function TabLayout() {
-  const { user, barrio, ciudadNombre, isAuthenticated, loading, passwordTemporal, logout } =
-    useAuth();
+  const {
+    user,
+    barrio,
+    ciudadNombre,
+    isAuthenticated,
+    loading,
+    passwordTemporal,
+    logout,
+  } = useAuth();
   const { theme } = useAppTheme();
   const styles = getStyles(theme);
-  const [authView, setAuthView] = useState<"landing" | "login" | "register" | "cambiar-password">(
-    "landing",
-  );
+  const [authView, setAuthView] = useState<
+    "landing" | "login" | "register" | "cambiar-password"
+  >("landing");
   // Modo del drawer: por defecto "desaparecidos" (BC Mascotas)
   const [menuMode, setMenuMode] = useState<"desaparecidos" | "alertas">(
     "desaparecidos",
@@ -58,10 +66,14 @@ function TabLayout() {
   // Modo emergencia (runtime, frontend): la app abre en la landing de mascotas
   const modoEmergencia = getModoEmergencia();
   // Vista activa en modo emergencia: la landing misma o la app normal
-  const [vistaEmergencia, setVistaEmergencia] = useState<"emergencia" | "app-normal">("emergencia");
+  const [vistaEmergencia, setVistaEmergencia] = useState<
+    "emergencia" | "app-normal"
+  >("emergencia");
   // Key de la landing de emergencia: al cambiar, React la desmonta y remonta
   // (resetea todo su estado local). Se incrementa en cada logout.
   const [landingKey, setLandingKey] = useState(0);
+  // Modal "Próximamente" del módulo Alertas (bloqueado en el drawer).
+  const [proximamenteVisible, setProximamenteVisible] = useState(false);
 
   const { width } = useWindowDimensions();
   const isSmallScreen = width < 768;
@@ -103,7 +115,10 @@ function TabLayout() {
   // ni drawer), así el "atrás" no tiene destino — el usuario no puede evadir
   // el cambio y quedarse navegando con credenciales temporales.
   const forzarCambioClave =
-    isAuthenticated && passwordTemporal && modoEmergencia && vistaEmergencia === "emergencia";
+    isAuthenticated &&
+    passwordTemporal &&
+    modoEmergencia &&
+    vistaEmergencia === "emergencia";
 
   // Logout explícito: vuelve a la landing (de emergencia o de marketing
   // según el modo) — no a login/register ni al dashboard. Limpia el estado
@@ -237,9 +252,7 @@ function TabLayout() {
     }
     if (authView === "cambiar-password") {
       return (
-        <CambiarPasswordScreen
-          onBackPress={() => setAuthView("landing")}
-        />
+        <CambiarPasswordScreen onBackPress={() => setAuthView("landing")} />
       );
     }
     // Modo emergencia: la landing de mascotas reemplaza a la de marketing
@@ -275,18 +288,12 @@ function TabLayout() {
     // completarlo, passwordTemporal pasa a false y el render deriva a la
     // landing de emergencia (sin effect, sin setState en cascada).
     if (forzarCambioClave) {
-      return (
-        <CambiarPasswordScreen
-          onSuccess={() => setAuthView("landing")}
-        />
-      );
+      return <CambiarPasswordScreen onSuccess={() => setAuthView("landing")} />;
     }
     if (authView === "cambiar-password") {
       // Flujo voluntario (sin passwordTemporal): con flecha atrás a landing.
       return (
-        <CambiarPasswordScreen
-          onBackPress={() => setAuthView("landing")}
-        />
+        <CambiarPasswordScreen onBackPress={() => setAuthView("landing")} />
       );
     }
     return (
@@ -422,7 +429,7 @@ function TabLayout() {
                     styles.modeBtn,
                     menuMode === "alertas" && styles.modeBtnActive,
                   ]}
-                  onPress={() => handleModeChange("alertas")}
+                  onPress={() => setProximamenteVisible(true)}
                 >
                   <Icon
                     name="Bell"
@@ -441,6 +448,15 @@ function TabLayout() {
                   >
                     Alertas
                   </Text>
+                  <Icon
+                    name="Lock"
+                    size={10}
+                    color={
+                      menuMode === "alertas"
+                        ? theme.colors.white
+                        : theme.colors.textMuted
+                    }
+                  />
                 </Pressable>
               </View>
 
@@ -709,7 +725,9 @@ function TabLayout() {
             {/* Footer */}
             <View style={styles.drawerFooter}>
               <Text style={styles.footerText}>Barrio Alerta</Text>
-              <Text style={styles.footerSubtext}>v1.0.0 — Ing. Software I</Text>
+              <Text style={styles.footerSubtext}>
+                Hecho con ❤️ por desarrolladores colombianos
+              </Text>
             </View>
           </Animated.View>
         </View>
@@ -719,6 +737,41 @@ function TabLayout() {
         visible={aboutModalVisible}
         onClose={() => setAboutModalVisible(false)}
       />
+
+      {/* Modal "Próximamente" — módulo Alertas bloqueado */}
+      <Modal
+        visible={proximamenteVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setProximamenteVisible(false)}
+      >
+        <Pressable
+          style={styles.proximamenteOverlay}
+          onPress={() => setProximamenteVisible(false)}
+        >
+          <View
+            style={styles.proximamenteCard}
+            onStartShouldSetResponder={() => true}
+          >
+            <View style={styles.proximamenteHeader}>
+              <Text style={styles.proximamenteTitle}>Próximamente</Text>
+              <TouchableOpacity
+                onPress={() => setProximamenteVisible(false)}
+                style={styles.proximamenteClose}
+                activeOpacity={0.7}
+              >
+                <Icon name="X" size={20} color={theme.colors.textPrimary} />
+              </TouchableOpacity>
+            </View>
+            <View style={styles.proximamenteBody}>
+              <Icon name="Bell" size={32} color={theme.colors.green} />
+              <Text style={styles.proximamenteText}>
+                El módulo de Alertas del Sector estará disponible pronto.
+              </Text>
+            </View>
+          </View>
+        </Pressable>
+      </Modal>
     </SVGBackground>
   );
 }
@@ -894,5 +947,46 @@ const getStyles = (theme: AppTheme) =>
     footerSubtext: {
       fontSize: 9,
       color: theme.colors.textMuted,
+    },
+    proximamenteOverlay: {
+      flex: 1,
+      backgroundColor: "rgba(0, 0, 0, 0.6)",
+      justifyContent: "center",
+      alignItems: "center",
+      padding: 24,
+    },
+    proximamenteCard: {
+      backgroundColor: theme.colors.surface,
+      borderRadius: 20,
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+      padding: 24,
+      maxWidth: 420,
+      width: "100%",
+    },
+    proximamenteHeader: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+      marginBottom: 16,
+    },
+    proximamenteTitle: {
+      fontSize: 18,
+      fontWeight: "800",
+      color: theme.colors.textPrimary,
+      flex: 1,
+    },
+    proximamenteClose: {
+      padding: 6,
+    },
+    proximamenteBody: {
+      alignItems: "center",
+      gap: 12,
+    },
+    proximamenteText: {
+      fontSize: 14,
+      color: theme.colors.textSecondary,
+      textAlign: "center",
+      lineHeight: 21,
     },
   });

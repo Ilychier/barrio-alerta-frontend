@@ -10,17 +10,17 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { ReporteMascota } from "../../domain/mascotas/entities/ReporteMascota";
 import { ReporteRapidoResult } from "../../domain/mascotas/ports/IReporteRapidoRepository";
 import Icon from "../components/atomic/Icon";
-import { AboutDeveloperModal } from "../components/molecules/AboutDeveloperModal";
 import { SVGBackground } from "../components/layout/SVGBackground";
+import { AboutDeveloperModal } from "../components/molecules/AboutDeveloperModal";
 import { useAuth } from "../context/AuthContext";
 import { RegistroRapidoForm } from "../mascotas/components/RegistroRapidoForm";
-import { FeedMascotasScreen } from "../mascotas/screens/FeedMascotasScreen";
 import { DetalleReporteMascotaScreen } from "../mascotas/screens/DetalleReporteMascotaScreen";
-import { ReporteMascota } from "../../domain/mascotas/entities/ReporteMascota";
-import { ultimoRegistroRapido } from "../mascotas/state/ultimoRegistroRapido";
+import { FeedMascotasScreen } from "../mascotas/screens/FeedMascotasScreen";
 import { ultimaVistaEmergencia } from "../mascotas/state/ultimaVistaEmergencia";
+import { ultimoRegistroRapido } from "../mascotas/state/ultimoRegistroRapido";
 import { AppTheme, useAppTheme } from "../theme/ThemeContext";
 
 interface LandingEmergenciaMascotasScreenProps {
@@ -478,7 +478,9 @@ export function LandingEmergenciaMascotasScreen({
 
             <View style={styles.drawerFooter}>
               <Text style={styles.footerText}>Barrio Alerta</Text>
-              <Text style={styles.footerSubtext}>v1.0.0 — Ing. Software I</Text>
+              <Text style={styles.footerSubtext}>
+                {"\n"}Hecho con ❤️ por desarrolladores colombianos
+              </Text>
             </View>
           </Animated.View>
         </View>
