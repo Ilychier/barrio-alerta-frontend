@@ -3,6 +3,10 @@ import { IConfiguracionRepository } from '../../domain/ports/IConfiguracionRepos
 import { IReferenciaRepository } from '../../domain/ports/IReferenciaRepository';
 import { IAuthRepository } from '../../domain/ports/IAuthRepository';
 
+// BC Mascotas
+import { IReporteMascotaRepository } from '../../domain/mascotas/ports/IReporteMascotaRepository';
+import { IMascotaReferenciaRepository } from '../../domain/mascotas/ports/IMascotaReferenciaRepository';
+
 import { InMemoryAlertaRepository } from '../adapters/memory/InMemoryAlertaRepository';
 import { InMemoryConfiguracionRepository } from '../adapters/memory/InMemoryConfiguracionRepository';
 import { InMemoryReferenciaRepository } from '../adapters/memory/InMemoryReferenciaRepository';
@@ -11,6 +15,12 @@ import { ApiReferenciaRepository } from '../adapters/api/ApiReferenciaRepository
 import { HttpAlertaRepository } from '../adapters/api/HttpAlertaRepository';
 import { HttpConfiguracionRepository } from '../adapters/api/HttpConfiguracionRepository';
 import { HttpAuthRepository } from '../adapters/api/HttpAuthRepository';
+
+// BC Mascotas — adapters
+import { HttpReporteMascotaRepository } from '../mascotas/adapters/api/HttpReporteMascotaRepository';
+import { HttpMascotaReferenciaRepository } from '../mascotas/adapters/api/HttpMascotaReferenciaRepository';
+import { InMemoryReporteMascotaRepository } from '../mascotas/adapters/memory/InMemoryReporteMascotaRepository';
+import { InMemoryMascotaReferenciaRepository } from '../mascotas/adapters/memory/InMemoryMascotaReferenciaRepository';
 
 import { DispararSOSUseCase } from '../../application/usecases/DispararSOSUseCase';
 import { ReportarIncidenteUseCase } from '../../application/usecases/ReportarIncidenteUseCase';
@@ -26,6 +36,8 @@ export class DependencyContainer {
   private readonly _configRepo: IConfiguracionRepository;
   private readonly _referenciaRepo: IReferenciaRepository;
   private readonly _authRepo: IAuthRepository;
+  private readonly _reporteMascotaRepo: IReporteMascotaRepository;
+  private readonly _mascotaReferenciaRepo: IMascotaReferenciaRepository;
 
   private constructor() {
     const repoType = getRepositoryType();
@@ -36,6 +48,8 @@ export class DependencyContainer {
         this._configRepo = new HttpConfiguracionRepository();
         this._referenciaRepo = new ApiReferenciaRepository();
         this._authRepo = new HttpAuthRepository();
+        this._reporteMascotaRepo = new HttpReporteMascotaRepository();
+        this._mascotaReferenciaRepo = new HttpMascotaReferenciaRepository();
         break;
       case 'memory':
       default:
@@ -43,6 +57,8 @@ export class DependencyContainer {
         this._configRepo = new InMemoryConfiguracionRepository();
         this._referenciaRepo = new InMemoryReferenciaRepository();
         this._authRepo = new InMemoryAuthRepository();
+        this._reporteMascotaRepo = new InMemoryReporteMascotaRepository();
+        this._mascotaReferenciaRepo = new InMemoryMascotaReferenciaRepository();
         break;
     }
   }
@@ -69,6 +85,15 @@ export class DependencyContainer {
 
   getAuthRepository(): IAuthRepository {
     return this._authRepo;
+  }
+
+  // --- BC Mascotas: Repositorios ---
+  getReporteMascotaRepository(): IReporteMascotaRepository {
+    return this._reporteMascotaRepo;
+  }
+
+  getMascotaReferenciaRepository(): IMascotaReferenciaRepository {
+    return this._mascotaReferenciaRepo;
   }
 
   // --- Casos de Uso ---
