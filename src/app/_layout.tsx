@@ -142,6 +142,24 @@ function TabLayout() {
     return pathname.startsWith(route);
   };
 
+  // Es sub-ruta (ej: /mascotas/1) → muestra flecha "atrás" en el header
+  const isSubRoute =
+    pathname !== "/" &&
+    pathname !== "/mascotas" &&
+    pathname !== "/mascotas/index" &&
+    pathname !== "/index" &&
+    pathname !== "";
+
+  const handleBack = () => {
+    if (router.canGoBack()) {
+      router.back();
+    } else if (pathname.startsWith("/mascotas")) {
+      router.replace("/mascotas");
+    } else {
+      router.replace("/");
+    }
+  };
+
   if (loading) {
     return (
       <SVGBackground>
@@ -187,10 +205,9 @@ function TabLayout() {
     <SVGBackground>
       {/* Header with hamburger menu toggle - badges conditionally visible outside based on screen size */}
       <Header
-        barrioNombre={barrio?.nombre}
-        cuadranteNombre={cuadrante?.nombre_unidad}
         isMobile={isSmallScreen}
         onMenuPress={openMenu}
+        onBackPress={isSubRoute ? handleBack : undefined}
         onLogoutPress={async () => {
           await logout();
         }}
@@ -259,7 +276,7 @@ function TabLayout() {
                     <Icon name="MapPin" size={14} color={theme.colors.green} />
                     <View style={styles.locationTextContainer}>
                       <Text style={styles.drawerLocationTitle}>
-                        Barrio / CAI
+                        Ciudad / Barrio
                       </Text>
                       <Text style={styles.drawerCuadranteText}>
                         {barrio.nombre} / {cuadrante.nombre_unidad}

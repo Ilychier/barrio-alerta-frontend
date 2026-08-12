@@ -4,18 +4,16 @@ import Icon from "../atomic/Icon";
 import { IconRenderer } from "../atomic/IconRenderer";
 
 interface HeaderProps {
-  barrioNombre?: string;
-  cuadranteNombre?: string;
   isMobile?: boolean;
   onMenuPress?: () => void;
+  onBackPress?: () => void;
   onLogoutPress?: () => void;
 }
 
 export function Header({
-  barrioNombre,
-  cuadranteNombre,
   isMobile = false,
   onMenuPress,
+  onBackPress,
   onLogoutPress,
 }: HeaderProps) {
   const { theme, themeType, toggleTheme } = useAppTheme();
@@ -37,6 +35,15 @@ export function Header({
             />
           </TouchableOpacity>
         )}
+        {onBackPress && (
+          <TouchableOpacity
+            onPress={onBackPress}
+            style={styles.backButton}
+            activeOpacity={0.7}
+          >
+            <Icon name="ArrowLeft" size={22} color={theme.colors.textPrimary} />
+          </TouchableOpacity>
+        )}
         <View style={styles.logoContainer}>
           <Image
             source={require("@/assets/images/logo.png")}
@@ -48,14 +55,6 @@ export function Header({
           <Text style={styles.title}>Barrio Alerta</Text>
           <Text style={styles.subtitle}>Red de Apoyo</Text>
         </View>
-        {!isMobile && barrioNombre && cuadranteNombre && (
-          <View style={styles.locationBadge}>
-            <IconRenderer name="MapPin" size={12} color={theme.colors.green} />
-            <Text style={styles.locationText}>
-              {barrioNombre} — {cuadranteNombre}
-            </Text>
-          </View>
-        )}
       </View>
 
       <View style={styles.rightGroup}>
@@ -107,6 +106,11 @@ const getStyles = (theme: AppTheme) =>
       marginRight: 2,
       borderRadius: 8,
     },
+    backButton: {
+      padding: 6,
+      marginRight: 2,
+      borderRadius: 8,
+    },
     logoContainer: {
       borderRadius: 12,
     },
@@ -123,21 +127,6 @@ const getStyles = (theme: AppTheme) =>
     subtitle: {
       fontSize: 11,
       color: theme.colors.textMuted,
-    },
-    locationBadge: {
-      flexDirection: "row",
-      alignItems: "center",
-      gap: 6,
-      backgroundColor: theme.colors.surfaceLight,
-      paddingHorizontal: 10,
-      paddingVertical: 4,
-      borderRadius: 8,
-      borderWidth: 1,
-      borderColor: theme.colors.surfaceBorder,
-    },
-    locationText: {
-      fontSize: 11,
-      color: theme.colors.textTertiary,
     },
     rightGroup: {
       flexDirection: "row",
