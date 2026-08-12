@@ -201,7 +201,9 @@ export function LandingEmergenciaMascotasScreen({
             name="CirclePlus"
             size={16}
             color={
-              vista === "reportar" ? theme.colors.white : theme.colors.textMuted
+              vista === "reportar"
+                ? theme.colors.white
+                : theme.colors.textSecondary
             }
           />
           <Text
@@ -224,7 +226,7 @@ export function LandingEmergenciaMascotasScreen({
             name="PawPrint"
             size={16}
             color={
-              vista === "ver" ? theme.colors.white : theme.colors.textMuted
+              vista === "ver" ? theme.colors.white : theme.colors.textSecondary
             }
           />
           <Text
@@ -584,10 +586,13 @@ const getStyles = (theme: AppTheme, isDesktop: boolean) =>
     toggleText: {
       fontSize: 13,
       fontWeight: "700",
-      color: theme.colors.textMuted,
+      color: theme.colors.textSecondary,
     },
     toggleTextActivo: { color: theme.colors.white },
-    content: { flex: 1, marginTop: 16 },
+    content: {
+      flex: 1,
+      marginTop: 16,
+    },
     graciasCard: {
       backgroundColor: theme.colors.surface,
       borderRadius: 20,

@@ -98,10 +98,7 @@ export function RegistroRapidoForm({ onSuccess }: RegistroRapidoFormProps) {
     ) {
       return "Indica un teléfono de contacto válido para la mascota";
     }
-    if (
-      !usarMismoTelefono &&
-      conPrefijo(telefonoContacto).length > 15
-    ) {
+    if (!usarMismoTelefono && conPrefijo(telefonoContacto).length > 15) {
       return "El teléfono de contacto es demasiado largo (máx 13 dígitos)";
     }
     return null;
@@ -243,7 +240,7 @@ export function RegistroRapidoForm({ onSuccess }: RegistroRapidoFormProps) {
 
       {/* ── Celular personal ───────────────────────────── */}
       <View style={styles.seccion}>
-        <Text style={styles.label}>Tu Número personal para registro *</Text>
+        <Text style={styles.label}>Registrate con tu número de celular *</Text>
         <View style={styles.phoneRow}>
           <View style={styles.phonePrefixBox}>
             <Text style={styles.phonePrefixText}>{PREFIJO_PAIS}</Text>
@@ -525,7 +522,10 @@ const getStyles = (theme: AppTheme, isDesktop: boolean) =>
       borderRadius: 12,
       overflow: "hidden",
     },
-    phoneRowDisabled: { opacity: 0.5, backgroundColor: theme.colors.surfaceLight },
+    phoneRowDisabled: {
+      opacity: 0.5,
+      backgroundColor: theme.colors.surfaceLight,
+    },
     phonePrefixBox: {
       paddingHorizontal: 14,
       paddingVertical: 12,
