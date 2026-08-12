@@ -13,16 +13,16 @@ export class DispararSOSUseCase {
   constructor(private readonly alertaRepo: IAlertaRepository) {}
 
   async execute(request: DispararSOSRequest): Promise<DispararSOSResponse> {
-    const newId = Math.floor(Math.random() * 1000) + 1000;
-
-    const sosAlert = Alerta.crearEmergenciaSOS(
-      newId,
+    // El ID lo asigna el repositorio (backend en producción, in-memory en dev).
+    // El use case construye un borrador y usa la entidad persistida.
+    const draft = Alerta.crearEmergenciaSOS(
+      0,
       'Alerta S.O.S Activada',
       new Date().toISOString(),
       request.usuarioId,
     );
 
-    await this.alertaRepo.crearAlerta(sosAlert);
-    return { alerta: sosAlert };
+    const alerta = await this.alertaRepo.crearAlerta(draft);
+    return { alerta };
   }
 }

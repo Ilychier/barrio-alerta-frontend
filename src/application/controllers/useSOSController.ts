@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { DependencyContainer } from '../../infrastructure/config/dependencyContainer';
-import { Alerta } from '../../domain/entities/alerta';
 
 export type SOSStep = 0 | 1 | 2;
 
@@ -18,6 +17,7 @@ export function useSOSController(
   const [performanceTracker, setPerformanceTracker] = useState<string | null>(null);
 
   const useCase = container.getDispararSOSUseCase();
+  const finalizarUseCase = container.getFinalizarEmergenciaUseCase();
 
   // Ref para evitar stale closure en el intervalo (se actualiza en efecto)
   const triggerSOSRef = useRef<() => void>(() => {});
@@ -77,23 +77,15 @@ export function useSOSController(
     setSosStep(0);
     setPerformanceTracker(null);
 
-    const newId = Math.floor(Math.random() * 1000) + 1000;
-    const fineAlert = Alerta.crearDesdeFormulario(
-      newId,
-      '¡Todo está bien ahora! Emergencia finalizada.',
-      new Date().toISOString(),
-      currentUserId,
-      5
-    );
     try {
-      await container.getAlertaRepository().crearAlerta(fineAlert);
+      await finalizarUseCase.execute(currentUserId);
       if (onSuccess) {
         onSuccess();
       }
     } catch (err) {
       console.warn('[useSOSController] Failed to create stop emergency alert:', err);
     }
-  }, [currentUserId, onSuccess, container]);
+  }, [currentUserId, onSuccess, finalizarUseCase]);
 
   return {
     sosStep,

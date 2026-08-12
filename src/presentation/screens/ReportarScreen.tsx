@@ -40,7 +40,7 @@ export function ReportarScreen() {
           <Text style={styles.label}>Selecciona la Categoría de la Alerta</Text>
           <View style={styles.categoriesGrid}>
             {ctrl.categorias
-              .filter((cat) => cat.id !== 4 && cat.id !== 5)
+              .filter((cat) => cat.esReportableEnFormulario())
               .map((cat) => (
                 <CategoryButton
                   key={cat.id}

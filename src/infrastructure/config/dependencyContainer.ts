@@ -28,6 +28,7 @@ import { DispararSOSUseCase } from '../../application/usecases/DispararSOSUseCas
 import { ReportarIncidenteUseCase } from '../../application/usecases/ReportarIncidenteUseCase';
 import { ActualizarConfiguracionUseCase } from '../../application/usecases/ActualizarConfiguracionUseCase';
 import { ObtenerAlertasUseCase } from '../../application/usecases/ObtenerAlertasUseCase';
+import { FinalizarEmergenciaUseCase } from '../../application/usecases/FinalizarEmergenciaUseCase';
 
 // BC Mascotas — casos de uso
 import { ListarReportesMascotaUseCase } from '../../application/mascotas/usecases/ListarReportesMascotaUseCase';
@@ -131,6 +132,10 @@ export class DependencyContainer {
       this._configRepo,
       this._referenciaRepo,
     );
+  }
+
+  getFinalizarEmergenciaUseCase(): FinalizarEmergenciaUseCase {
+    return new FinalizarEmergenciaUseCase(this._alertaRepo);
   }
 
   // --- BC Mascotas: Casos de Uso ---
