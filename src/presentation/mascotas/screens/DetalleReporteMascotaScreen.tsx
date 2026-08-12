@@ -5,6 +5,7 @@ import {
   ScrollView,
   StyleSheet,
   Text,
+  TouchableOpacity,
   useWindowDimensions,
   View,
 } from "react-native";
@@ -20,18 +21,28 @@ import { DependencyContainer } from "../../../infrastructure/config/dependencyCo
 import Icon from "../../components/atomic/Icon";
 import { AppTheme, useAppTheme } from "../../theme/ThemeContext";
 
+interface DetalleReporteMascotaScreenProps {
+  /** ID del reporte. Si no se provee, se lee del query param de la ruta. */
+  reporteId?: number;
+  /** Callback al volver atrás. Si no se provee, se usa el router. */
+  onBack?: () => void;
+}
+
 /**
  * Detalle público de un reporte de mascota + contacto via WhatsApp.
  * Cuando el reporte está RESCUED, el backend oculta el teléfono
  * (Ley 1581 de 2012) y el botón de WhatsApp no se muestra.
  */
-export function DetalleReporteMascotaScreen() {
+export function DetalleReporteMascotaScreen({
+  reporteId: reporteIdProp,
+  onBack,
+}: DetalleReporteMascotaScreenProps = {}) {
   const { theme } = useAppTheme();
   const { width } = useWindowDimensions();
   const isDesktop = width >= 900;
   const styles = getStyles(theme, isDesktop);
   const { id } = useLocalSearchParams<{ id: string }>();
-  const reporteId = Number(id);
+  const reporteId = reporteIdProp ?? Number(id);
 
   const [reporte, setReporte] = useState<ReporteMascota | null>(null);
   const [loading, setLoading] = useState(true);
@@ -98,6 +109,12 @@ export function DetalleReporteMascotaScreen() {
       contentContainerStyle={styles.content}
       showsVerticalScrollIndicator={false}
     >
+      {onBack && (
+        <TouchableOpacity style={styles.backBtn} onPress={onBack} activeOpacity={0.7}>
+          <Icon name="ArrowLeft" size={18} color={theme.colors.green} />
+          <Text style={styles.backBtnText}>Volver a los reportes</Text>
+        </TouchableOpacity>
+      )}
       <View style={styles.card}>
         <View style={styles.cardHeader}>
           <View
@@ -183,6 +200,20 @@ const getStyles = (theme: AppTheme, isDesktop: boolean) =>
       borderColor: theme.colors.border,
       padding: isDesktop ? 28 : 20,
       gap: 12,
+    },
+    backBtn: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 6,
+      alignSelf: "flex-start",
+      paddingVertical: 6,
+      paddingHorizontal: 4,
+      marginBottom: 4,
+    },
+    backBtnText: {
+      fontSize: 13,
+      fontWeight: "700",
+      color: theme.colors.green,
     },
     cardHeader: {
       flexDirection: "row",

@@ -34,7 +34,12 @@ const ESTADO_OPTIONS: SelectOption[] = [
   { value: EstadoReporte.RESCUED, label: "Rescatados" },
 ];
 
-export function FeedMascotasScreen() {
+interface FeedMascotasScreenProps {
+  /** Callback al tocar una tarjeta. Si no se provee, navega a /mascotas/[id]. */
+  onVerDetalle?: (reporte: ReporteMascota) => void;
+}
+
+export function FeedMascotasScreen({ onVerDetalle }: FeedMascotasScreenProps = {}) {
   const { theme } = useAppTheme();
   const { width } = useWindowDimensions();
   const isDesktop = width >= 900;
@@ -65,7 +70,7 @@ export function FeedMascotasScreen() {
   const renderItem = ({ item }: { item: ReporteMascota }) => (
     <Pressable
       style={styles.card}
-      onPress={() => router.push(`/mascotas/${item.id}`)}
+      onPress={() => (onVerDetalle ? onVerDetalle(item) : router.push(`/mascotas/${item.id}`))}
     >
       <View style={styles.cardHeader}>
         <View

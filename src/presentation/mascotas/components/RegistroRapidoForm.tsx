@@ -426,7 +426,7 @@ const getStyles = (theme: AppTheme, isDesktop: boolean) =>
       flexDirection: "row",
       alignItems: "center",
       gap: 10,
-      padding: 16,
+      padding: 7,
       borderRadius: 16,
       borderWidth: 1,
       borderColor: theme.colors.border,

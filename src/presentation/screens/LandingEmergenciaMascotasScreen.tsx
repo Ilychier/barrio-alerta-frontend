@@ -16,7 +16,10 @@ import { SVGBackground } from "../components/layout/SVGBackground";
 import { useAuth } from "../context/AuthContext";
 import { RegistroRapidoForm } from "../mascotas/components/RegistroRapidoForm";
 import { FeedMascotasScreen } from "../mascotas/screens/FeedMascotasScreen";
+import { DetalleReporteMascotaScreen } from "../mascotas/screens/DetalleReporteMascotaScreen";
+import { ReporteMascota } from "../../domain/mascotas/entities/ReporteMascota";
 import { ultimoRegistroRapido } from "../mascotas/state/ultimoRegistroRapido";
+import { ultimaVistaEmergencia } from "../mascotas/state/ultimaVistaEmergencia";
 import { AppTheme, useAppTheme } from "../theme/ThemeContext";
 
 interface LandingEmergenciaMascotasScreenProps {
@@ -28,7 +31,6 @@ interface LandingEmergenciaMascotasScreenProps {
 
 type Vista = "reportar" | "ver";
 type EstadoRegistro = "idle" | "exito" | "existente";
-
 /**
  * Landing de emergencia (BC Mascotas) — pantalla inicial cuando
  * MODO_EMERGENCIA=true. Reemplaza a la landing de marketing (que queda
@@ -53,8 +55,11 @@ export function LandingEmergenciaMascotasScreen({
   const insets = useSafeAreaInsets();
   const { isAuthenticated, passwordTemporal, autenticarConToken } = useAuth();
 
-  const [vista, setVista] = useState<Vista>("reportar");
+  const [vista, setVista] = useState<Vista>(() => ultimaVistaEmergencia.get());
   const [menuVisible, setMenuVisible] = useState(false);
+  const [detalleReporte, setDetalleReporte] = useState<ReporteMascota | null>(
+    null,
+  );
   const [estadoRegistro, setEstadoRegistro] = useState<EstadoRegistro>(() =>
     ultimoRegistroRapido.get() ? "exito" : "idle",
   );
@@ -122,6 +127,7 @@ export function LandingEmergenciaMascotasScreen({
     setResultado(null);
     ultimoRegistroRapido.clear();
     setVista("reportar");
+    ultimaVistaEmergencia.set("reportar");
   };
 
   return (
@@ -165,7 +171,10 @@ export function LandingEmergenciaMascotasScreen({
             styles.toggleBtn,
             vista === "reportar" && styles.toggleBtnActivo,
           ]}
-          onPress={() => setVista("reportar")}
+          onPress={() => {
+            setVista("reportar");
+            ultimaVistaEmergencia.set("reportar");
+          }}
         >
           <Icon
             name="CirclePlus"
@@ -185,7 +194,10 @@ export function LandingEmergenciaMascotasScreen({
         </Pressable>
         <Pressable
           style={[styles.toggleBtn, vista === "ver" && styles.toggleBtnActivo]}
-          onPress={() => setVista("ver")}
+          onPress={() => {
+            setVista("ver");
+            ultimaVistaEmergencia.set("ver");
+          }}
         >
           <Icon
             name="PawPrint"
@@ -316,8 +328,13 @@ export function LandingEmergenciaMascotasScreen({
               </View>
             </View>
           )
+        ) : detalleReporte ? (
+          <DetalleReporteMascotaScreen
+            reporteId={detalleReporte.id}
+            onBack={() => setDetalleReporte(null)}
+          />
         ) : (
-          <FeedMascotasScreen />
+          <FeedMascotasScreen onVerDetalle={setDetalleReporte} />
         )}
       </View>
 
@@ -360,6 +377,7 @@ export function LandingEmergenciaMascotasScreen({
                 onPress={() => {
                   closeMenu();
                   setVista("reportar");
+                  ultimaVistaEmergencia.set("reportar");
                 }}
                 activeOpacity={0.7}
               >
