@@ -1,3 +1,6 @@
+import { Image } from "expo-image";
+import { useRouter } from "expo-router";
+import { useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -7,21 +10,30 @@ import {
   useWindowDimensions,
   View,
 } from "react-native";
-import { Image } from "expo-image";
-import { useRouter } from "expo-router";
-import { useState } from "react";
 import { useFeedMascotasController } from "../../../application/mascotas/controllers/useFeedMascotasController";
 import { EstadoReporte } from "../../../domain/mascotas/entities/EstadoReporte";
-import { TipoReporte } from "../../../domain/mascotas/entities/TipoReporte";
 import { ReporteMascota } from "../../../domain/mascotas/entities/ReporteMascota";
+import { TipoReporte } from "../../../domain/mascotas/entities/TipoReporte";
 import { resolverUrlFoto } from "../../../infrastructure/mascotas/adapters/mappers";
 import Icon from "../../components/atomic/Icon";
+import { SelectInput, SelectOption } from "../../components/atomic/SelectInput";
 import { AppTheme, useAppTheme } from "../../theme/ThemeContext";
 
 /**
  * Feed público de reportes de mascotas (BC Mascotas).
  * Flujo continuo percibido + paginación real (scroll infinito).
  */
+const TIPO_OPTIONS: SelectOption[] = [
+  { value: "TODOS", label: "Todos" },
+  { value: TipoReporte.LOST, label: "Perdidos" },
+  { value: TipoReporte.FOUND, label: "Encontrados" },
+];
+
+const ESTADO_OPTIONS: SelectOption[] = [
+  { value: "ACTIVOS", label: "Activos" },
+  { value: EstadoReporte.RESCUED, label: "Rescatados" },
+];
+
 export function FeedMascotasScreen() {
   const { theme } = useAppTheme();
   const { width } = useWindowDimensions();
@@ -29,13 +41,21 @@ export function FeedMascotasScreen() {
   const styles = getStyles(theme, isDesktop);
   const router = useRouter();
 
-  const [filtroEstado, setFiltroEstado] = useState<EstadoReporte | undefined>(undefined);
-  const [filtroTipo, setFiltroTipo] = useState<TipoReporte | undefined>(undefined);
+  const [filtroEstado, setFiltroEstado] = useState<EstadoReporte | undefined>(
+    undefined,
+  );
+  const [filtroTipo, setFiltroTipo] = useState<TipoReporte | undefined>(
+    undefined,
+  );
   const [ciudadId, setCiudadId] = useState<number | undefined>(undefined);
 
   const feed = useFeedMascotasController(0);
 
-  const aplicarFiltros = (estado?: EstadoReporte, tipo?: TipoReporte, ciudad?: number) => {
+  const aplicarFiltros = (
+    estado?: EstadoReporte,
+    tipo?: TipoReporte,
+    ciudad?: number,
+  ) => {
     setFiltroEstado(estado);
     setFiltroTipo(tipo);
     setCiudadId(ciudad);
@@ -51,38 +71,68 @@ export function FeedMascotasScreen() {
         <View
           style={[
             styles.tipoBadge,
-            { backgroundColor: item.tipoReporte === TipoReporte.LOST ? theme.colors.redBg : theme.colors.purpleBg },
+            {
+              backgroundColor:
+                item.tipoReporte === TipoReporte.LOST
+                  ? theme.colors.redBg
+                  : theme.colors.purpleBg,
+            },
           ]}
         >
           <Text
             style={[
               styles.tipoBadgeText,
-              { color: item.tipoReporte === TipoReporte.LOST ? theme.colors.red : theme.colors.purple },
+              {
+                color:
+                  item.tipoReporte === TipoReporte.LOST
+                    ? theme.colors.red
+                    : theme.colors.purple,
+              },
             ]}
           >
             {item.tipoReporte === TipoReporte.LOST ? "PERDIDO" : "ENCONTRADO"}
           </Text>
         </View>
         {item.estado === EstadoReporte.RESCUED && (
-          <View style={[styles.estadoBadge, { backgroundColor: theme.colors.greenBg }]}>
-            <Text style={[styles.estadoBadgeText, { color: theme.colors.green }]}>RESCATADO</Text>
+          <View
+            style={[
+              styles.estadoBadge,
+              { backgroundColor: theme.colors.greenBg },
+            ]}
+          >
+            <Text
+              style={[styles.estadoBadgeText, { color: theme.colors.green }]}
+            >
+              RESCATADO
+            </Text>
           </View>
         )}
       </View>
 
       <Text style={styles.cardTipo}>{feed.nombreTipoMascota(item)}</Text>
       {item.fotoUrl ? (
-        <Image source={{ uri: resolverUrlFoto(item.fotoUrl) ?? undefined }} style={styles.cardFoto} contentFit="cover" />
+        <Image
+          source={{ uri: resolverUrlFoto(item.fotoUrl) ?? undefined }}
+          style={styles.cardFoto}
+          contentFit="cover"
+        />
       ) : null}
       <Text style={styles.cardUbicacion}>
-        <Icon name="MapPin" size={12} color={theme.colors.textMuted} /> {item.ubicacion}
+        <Icon name="MapPin" size={12} color={theme.colors.textMuted} />{" "}
+        {item.ubicacion}
       </Text>
       <Text style={styles.cardCiudad}>
         {feed.nombreCiudad(item.ciudadId)}
-        {feed.departamentoCiudad(item.ciudadId) ? `, ${feed.departamentoCiudad(item.ciudadId)}` : ""}
+        {feed.departamentoCiudad(item.ciudadId)
+          ? `, ${feed.departamentoCiudad(item.ciudadId)}`
+          : ""}
       </Text>
-      {item.descripcion ? <Text style={styles.cardDescripcion}>{item.descripcion}</Text> : null}
-      <Text style={styles.cardFecha}>{new Date(item.createdAt).toLocaleString("es-CO")}</Text>
+      {item.descripcion ? (
+        <Text style={styles.cardDescripcion}>{item.descripcion}</Text>
+      ) : null}
+      <Text style={styles.cardFecha}>
+        {new Date(item.createdAt).toLocaleString("es-CO")}
+      </Text>
     </Pressable>
   );
 
@@ -91,51 +141,53 @@ export function FeedMascotasScreen() {
       {/* ── Título ─────────────────────────────────────── */}
       <View style={styles.header}>
         <Text style={styles.title}>Mascotas en Emergencia</Text>
-        <Text style={styles.subtitle}>Reportes de mascotas perdidas y encontradas en tu ciudad</Text>
+        <Text style={styles.subtitle}>
+          Reportes de mascotas perdidas y encontradas en tu ciudad
+        </Text>
       </View>
 
       {/* ── Filtros ────────────────────────────────────── */}
       <View style={styles.filtros}>
-        <View style={styles.filtroGrupo}>
-          <Text style={styles.filtroLabel}>Tipo</Text>
-          <View style={styles.filtroChips}>
-            <Pressable
-              style={[styles.chip, filtroTipo === undefined && styles.chipActivo]}
-              onPress={() => aplicarFiltros(filtroEstado, undefined, ciudadId)}
-            >
-              <Text style={[styles.chipText, filtroTipo === undefined && styles.chipTextActivo]}>Todos</Text>
-            </Pressable>
-            <Pressable
-              style={[styles.chip, filtroTipo === TipoReporte.LOST && styles.chipActivo]}
-              onPress={() => aplicarFiltros(filtroEstado, TipoReporte.LOST, ciudadId)}
-            >
-              <Text style={[styles.chipText, filtroTipo === TipoReporte.LOST && styles.chipTextActivo]}>Perdidos</Text>
-            </Pressable>
-            <Pressable
-              style={[styles.chip, filtroTipo === TipoReporte.FOUND && styles.chipActivo]}
-              onPress={() => aplicarFiltros(filtroEstado, TipoReporte.FOUND, ciudadId)}
-            >
-              <Text style={[styles.chipText, filtroTipo === TipoReporte.FOUND && styles.chipTextActivo]}>Encontrados</Text>
-            </Pressable>
-          </View>
+        <View style={styles.selectWrapper}>
+          <SelectInput
+            label="Tipo"
+            icon="PawPrint"
+            options={TIPO_OPTIONS}
+            selectedValue={filtroTipo ?? "TODOS"}
+            onSelect={(v) =>
+              aplicarFiltros(
+                filtroEstado,
+                v === "TODOS" ? undefined : (v as TipoReporte),
+                ciudadId,
+              )
+            }
+            placeholder="Todos"
+            theme={theme}
+            focused={false}
+            onFocus={() => {}}
+            onBlur={() => {}}
+          />
         </View>
 
-        <View style={styles.filtroGrupo}>
-          <Text style={styles.filtroLabel}>Estado</Text>
-          <View style={styles.filtroChips}>
-            <Pressable
-              style={[styles.chip, filtroEstado === undefined && styles.chipActivo]}
-              onPress={() => aplicarFiltros(undefined, filtroTipo, ciudadId)}
-            >
-              <Text style={[styles.chipText, filtroEstado === undefined && styles.chipTextActivo]}>Activos</Text>
-            </Pressable>
-            <Pressable
-              style={[styles.chip, filtroEstado === EstadoReporte.RESCUED && styles.chipActivo]}
-              onPress={() => aplicarFiltros(EstadoReporte.RESCUED, filtroTipo, ciudadId)}
-            >
-              <Text style={[styles.chipText, filtroEstado === EstadoReporte.RESCUED && styles.chipTextActivo]}>Rescatados</Text>
-            </Pressable>
-          </View>
+        <View style={styles.selectWrapper}>
+          <SelectInput
+            label="Estado"
+            icon="ShieldCheck"
+            options={ESTADO_OPTIONS}
+            selectedValue={filtroEstado ?? "ACTIVOS"}
+            onSelect={(v) =>
+              aplicarFiltros(
+                v === "ACTIVOS" ? undefined : (v as EstadoReporte),
+                filtroTipo,
+                ciudadId,
+              )
+            }
+            placeholder="Activos"
+            theme={theme}
+            focused={false}
+            onFocus={() => {}}
+            onBlur={() => {}}
+          />
         </View>
       </View>
 
@@ -151,7 +203,9 @@ export function FeedMascotasScreen() {
       ) : feed.reportes.length === 0 ? (
         <View style={styles.centro}>
           <Icon name="PawPrint" size={40} color={theme.colors.textDim} />
-          <Text style={styles.vacio}>Aún no hay reportes con estos filtros.</Text>
+          <Text style={styles.vacio}>
+            Aún no hay reportes con estos filtros.
+          </Text>
         </View>
       ) : (
         <FlatList
@@ -164,7 +218,10 @@ export function FeedMascotasScreen() {
           onEndReachedThreshold={0.5}
           ListFooterComponent={
             feed.loadingMore ? (
-              <ActivityIndicator style={styles.loadingMore} color={theme.colors.green} />
+              <ActivityIndicator
+                style={styles.loadingMore}
+                color={theme.colors.green}
+              />
             ) : null
           }
         />
@@ -177,13 +234,14 @@ const getStyles = (theme: AppTheme, isDesktop: boolean) =>
   StyleSheet.create({
     container: {
       flex: 1,
-      padding: isDesktop ? 32 : 20,
+      paddingTop: 0,
+      paddingHorizontal: isDesktop ? 32 : 20,
       maxWidth: isDesktop ? 1000 : undefined,
       alignSelf: "center",
       width: "100%",
     },
     header: {
-      marginBottom: 16,
+      marginBottom: 10,
     },
     title: {
       fontSize: isDesktop ? 32 : 26,
@@ -197,48 +255,14 @@ const getStyles = (theme: AppTheme, isDesktop: boolean) =>
       marginTop: 4,
     },
     filtros: {
-      gap: 12,
-      marginBottom: 16,
-      backgroundColor: theme.colors.surface,
-      borderRadius: 16,
-      borderWidth: 1,
-      borderColor: theme.colors.border,
-      padding: 16,
-    },
-    filtroGrupo: {
-      gap: 6,
-    },
-    filtroLabel: {
-      fontSize: 11,
-      fontWeight: "700",
-      textTransform: "uppercase",
-      letterSpacing: 0.8,
-      color: theme.colors.textMuted,
-    },
-    filtroChips: {
       flexDirection: "row",
-      flexWrap: "wrap",
-      gap: 8,
+      alignItems: "center",
+      gap: 12,
+      marginBottom: 10,
+      width: "100%",
     },
-    chip: {
-      paddingVertical: 6,
-      paddingHorizontal: 14,
-      borderRadius: 20,
-      borderWidth: 1,
-      borderColor: theme.colors.border,
-      backgroundColor: theme.colors.surfaceLight,
-    },
-    chipActivo: {
-      backgroundColor: theme.colors.green,
-      borderColor: theme.colors.green,
-    },
-    chipText: {
-      fontSize: 12,
-      fontWeight: "600",
-      color: theme.colors.textSecondary,
-    },
-    chipTextActivo: {
-      color: theme.colors.white,
+    selectWrapper: {
+      flex: 1,
     },
     lista: {
       gap: 12,

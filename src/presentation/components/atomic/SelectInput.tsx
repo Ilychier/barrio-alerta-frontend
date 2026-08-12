@@ -93,8 +93,6 @@ export function SelectInput({
 
   return (
     <View>
-      {label && <Text style={getLabelStyles(theme)}>{label}</Text>}
-
       <TouchableOpacity
         style={[
           getInputContainerStyles(theme),
@@ -168,11 +166,7 @@ export function SelectInput({
                       {item.label}
                     </Text>
                     {isSelected && (
-                      <Icon
-                        name="Check"
-                        size={18}
-                        color={theme.colors.green}
-                      />
+                      <Icon name="Check" size={18} color={theme.colors.green} />
                     )}
                   </TouchableOpacity>
                 );
@@ -232,7 +226,7 @@ const getInputContainerStyles = (theme: AppTheme) =>
       borderColor: theme.colors.surfaceBorder,
       borderRadius: 16,
       paddingHorizontal: 16,
-      height: 52,
+      height: 35,
     },
   }).container;
 

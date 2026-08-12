@@ -1,10 +1,8 @@
-import { StyleSheet, Text, TextInput, View } from 'react-native';
-import { useState } from 'react';
-import {
-  UbicacionGeografica,
-} from '../../../application/ubicacion/useUbicacionGeografica';
-import { AppTheme } from '../../theme/ThemeContext';
-import { SelectInput } from '../atomic/SelectInput';
+import { useState } from "react";
+import { StyleSheet, Text, TextInput, View } from "react-native";
+import { UbicacionGeografica } from "../../../application/ubicacion/useUbicacionGeografica";
+import { AppTheme } from "../../theme/ThemeContext";
+import { SelectInput } from "../atomic/SelectInput";
 
 interface UbicacionGeograficaPickerProps {
   ubicacion: UbicacionGeografica;
@@ -31,7 +29,9 @@ export function UbicacionGeograficaPicker({
   const [detalleFocused, setDetalleFocused] = useState(false);
 
   if (loading) {
-    return <Text style={getLoadingTextStyles(theme)}>Cargando catálogos...</Text>;
+    return (
+      <Text style={getLoadingTextStyles(theme)}>Cargando catálogos...</Text>
+    );
   }
 
   return (
@@ -59,7 +59,9 @@ export function UbicacionGeograficaPicker({
           onChangeCiudadId(Number(v));
         }}
         placeholder={
-          ubicacion.departamento ? "Elige el municipio..." : "Primero elige el departamento"
+          ubicacion.departamento
+            ? "Elige el municipio..."
+            : "Primero elige el departamento"
         }
         theme={theme}
         focused={false}
@@ -74,7 +76,9 @@ export function UbicacionGeograficaPicker({
         selectedValue={ubicacion.localidadId}
         onSelect={ubicacion.cambiarLocalidad}
         placeholder={
-          ubicacion.municipioId ? "Elige la localidad..." : "Primero elige el municipio"
+          ubicacion.municipioId
+            ? "Elige la localidad..."
+            : "Primero elige el municipio"
         }
         theme={theme}
         focused={false}
@@ -89,7 +93,9 @@ export function UbicacionGeograficaPicker({
         selectedValue={ubicacion.barrioId}
         onSelect={ubicacion.cambiarBarrio}
         placeholder={
-          ubicacion.localidadId ? "Elige el barrio..." : "Primero elige la localidad"
+          ubicacion.localidadId
+            ? "Elige el barrio..."
+            : "Primero elige la localidad"
         }
         theme={theme}
         focused={false}
@@ -100,13 +106,15 @@ export function UbicacionGeograficaPicker({
         loadingMore={ubicacion.barriosLoadingMore}
       />
 
-      <Text style={getDetalleLabelStyles(theme)}>Sector / barrio / lugar (detalle opcional)</Text>
+      <Text style={getDetalleLabelStyles(theme)}>
+        Dirección / indicaciones (opcional)
+      </Text>
       <TextInput
         style={[
           getDetalleInputStyles(theme),
           detalleFocused && getDetalleInputFocusedStyles(theme),
         ]}
-        placeholder="Ej: cerca al parque, casa azul..."
+        placeholder="Ej: dirección, cerca al parque, casa azul..."
         placeholderTextColor={theme.colors.textMuted}
         value={ubicacion.detalle}
         onChangeText={ubicacion.setDetalle}
@@ -135,7 +143,7 @@ const getDetalleLabelStyles = (theme: AppTheme) =>
   StyleSheet.create({
     label: {
       fontSize: 12,
-      fontWeight: '700',
+      fontWeight: "700",
       color: theme.colors.textSecondary,
       marginBottom: -6,
       marginLeft: 4,

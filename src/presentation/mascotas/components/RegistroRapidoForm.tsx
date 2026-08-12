@@ -1,3 +1,6 @@
+import { Image } from "expo-image";
+import * as ImagePicker from "expo-image-picker";
+import { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Pressable,
@@ -8,13 +11,10 @@ import {
   useWindowDimensions,
   View,
 } from "react-native";
-import { useEffect, useMemo, useState } from "react";
-import * as ImagePicker from "expo-image-picker";
-import { Image } from "expo-image";
-import { DependencyContainer } from "../../../infrastructure/config/dependencyContainer";
 import { useReporteMascotaController } from "../../../application/mascotas/controllers/useReporteMascotaController";
 import { useUbicacionGeografica } from "../../../application/ubicacion/useUbicacionGeografica";
 import { ReporteRapidoResult } from "../../../domain/mascotas/ports/IReporteRapidoRepository";
+import { DependencyContainer } from "../../../infrastructure/config/dependencyContainer";
 import Icon from "../../components/atomic/Icon";
 import { UbicacionGeograficaPicker } from "../../components/molecules/UbicacionGeograficaPicker";
 import { AppTheme, useAppTheme } from "../../theme/ThemeContext";
@@ -42,7 +42,9 @@ export function RegistroRapidoForm({ onSuccess }: RegistroRapidoFormProps) {
   const ubicacion = useUbicacionGeografica(controller.ciudades);
 
   const [tipoReporte, setTipoReporte] = useState<"LOST" | "FOUND">("LOST");
-  const [tipoMascotaId, setTipoMascotaId] = useState<number | undefined>(undefined);
+  const [tipoMascotaId, setTipoMascotaId] = useState<number | undefined>(
+    undefined,
+  );
   const [otroTipoMascota, setOtroTipoMascota] = useState("");
   const [ciudadId, setCiudadId] = useState<number | undefined>(undefined);
   const [phonePersonal, setPhonePersonal] = useState("");
@@ -65,18 +67,28 @@ export function RegistroRapidoForm({ onSuccess }: RegistroRapidoFormProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const tipoOtro = controller.tiposMascota.find((t) => t.nombre.toLowerCase() === "otro");
-  const esOtro = tipoMascotaId !== undefined && tipoOtro !== undefined && tipoMascotaId === tipoOtro.id;
+  const tipoOtro = controller.tiposMascota.find(
+    (t) => t.nombre.toLowerCase() === "otro",
+  );
+  const esOtro =
+    tipoMascotaId !== undefined &&
+    tipoOtro !== undefined &&
+    tipoMascotaId === tipoOtro.id;
 
   const validar = (): string | null => {
     if (!phonePersonal.trim() || phonePersonal.trim().length < 7) {
       return "Indica tu celular (WhatsApp) para poder contactarte";
     }
     if (!tipoMascotaId) return "Selecciona el tipo de mascota";
-    if (esOtro && !otroTipoMascota.trim()) return "Especifica qué tipo de mascota es";
+    if (esOtro && !otroTipoMascota.trim())
+      return "Especifica qué tipo de mascota es";
     if (!ciudadId) return "Selecciona el municipio/ciudad";
-    if (!ubicacion.ubicacionCompuesta.trim()) return "Indica el sector o barrio";
-    if (!usarMismoTelefono && (!telefonoContacto.trim() || telefonoContacto.trim().length < 7)) {
+    if (!ubicacion.ubicacionCompuesta.trim())
+      return "Indica el sector o barrio";
+    if (
+      !usarMismoTelefono &&
+      (!telefonoContacto.trim() || telefonoContacto.trim().length < 7)
+    ) {
       return "Indica un teléfono de contacto válido para la mascota";
     }
     return null;
@@ -120,7 +132,9 @@ export function RegistroRapidoForm({ onSuccess }: RegistroRapidoFormProps) {
     try {
       const result = await useCase.execute({
         phonePersonal: phonePersonal.trim(),
-        telefonoContacto: usarMismoTelefono ? phonePersonal.trim() : telefonoContacto.trim(),
+        telefonoContacto: usarMismoTelefono
+          ? phonePersonal.trim()
+          : telefonoContacto.trim(),
         tipoReporte,
         tipoMascotaId: tipoMascotaId!,
         otroTipoMascota: esOtro ? otroTipoMascota.trim() : undefined,
@@ -133,7 +147,9 @@ export function RegistroRapidoForm({ onSuccess }: RegistroRapidoFormProps) {
       });
       onSuccess(result);
     } catch (e: any) {
-      setError(e.message || "No se pudo registrar el reporte. Intenta de nuevo.");
+      setError(
+        e.message || "No se pudo registrar el reporte. Intenta de nuevo.",
+      );
     } finally {
       setEnviando(false);
     }
@@ -151,25 +167,61 @@ export function RegistroRapidoForm({ onSuccess }: RegistroRapidoFormProps) {
         <Text style={styles.label}>¿Qué pasó?</Text>
         <View style={styles.tipoRow}>
           <Pressable
-            style={[styles.tipoCard, tipoReporte === "LOST" && styles.tipoCardActivoLost]}
+            style={[
+              styles.tipoCard,
+              tipoReporte === "LOST" && styles.tipoCardActivoLost,
+            ]}
             onPress={() => setTipoReporte("LOST")}
           >
-            <Icon name="Search" size={20} color={tipoReporte === "LOST" ? theme.colors.red : theme.colors.textMuted} />
-            <Text style={[styles.tipoCardText, tipoReporte === "LOST" && styles.tipoCardTextActivo]}>Se perdió</Text>
+            <Icon
+              name="Search"
+              size={20}
+              color={
+                tipoReporte === "LOST"
+                  ? theme.colors.red
+                  : theme.colors.textMuted
+              }
+            />
+            <Text
+              style={[
+                styles.tipoCardText,
+                tipoReporte === "LOST" && styles.tipoCardTextActivo,
+              ]}
+            >
+              Se perdió
+            </Text>
           </Pressable>
           <Pressable
-            style={[styles.tipoCard, tipoReporte === "FOUND" && styles.tipoCardActivoFound]}
+            style={[
+              styles.tipoCard,
+              tipoReporte === "FOUND" && styles.tipoCardActivoFound,
+            ]}
             onPress={() => setTipoReporte("FOUND")}
           >
-            <Icon name="HeartHandshake" size={20} color={tipoReporte === "FOUND" ? theme.colors.purple : theme.colors.textMuted} />
-            <Text style={[styles.tipoCardText, tipoReporte === "FOUND" && styles.tipoCardTextActivo]}>La encontré / la vi</Text>
+            <Icon
+              name="HeartHandshake"
+              size={20}
+              color={
+                tipoReporte === "FOUND"
+                  ? theme.colors.purple
+                  : theme.colors.textMuted
+              }
+            />
+            <Text
+              style={[
+                styles.tipoCardText,
+                tipoReporte === "FOUND" && styles.tipoCardTextActivo,
+              ]}
+            >
+              La encontré / la vi
+            </Text>
           </Pressable>
         </View>
       </View>
 
       {/* ── Celular personal ───────────────────────────── */}
       <View style={styles.seccion}>
-        <Text style={styles.label}>Tu celular (WhatsApp) *</Text>
+        <Text style={styles.label}>Tu Número personal para registro *</Text>
         <TextInput
           style={styles.input}
           placeholder="+57 300 123 4567"
@@ -178,18 +230,35 @@ export function RegistroRapidoForm({ onSuccess }: RegistroRapidoFormProps) {
           onChangeText={setPhonePersonal}
           keyboardType="phone-pad"
         />
-        <Text style={styles.hint}>Es tu llave de acceso. Con él podrás iniciar sesión y ver tus reportes.</Text>
+        <Text style={styles.hint}>
+          Es tu llave de acceso. Con él podrás iniciar sesión y ver tus
+          reportes.
+        </Text>
       </View>
 
       {/* ── Teléfono de contacto de la mascota ─────────── */}
       <View style={styles.seccion}>
-        <Pressable style={styles.checkRow} onPress={() => setUsarMismoTelefono(!usarMismoTelefono)}>
-          <View style={[styles.checkbox, usarMismoTelefono && styles.checkboxActivo]}>
-            {usarMismoTelefono && <Icon name="Check" size={14} color={theme.colors.white} />}
+        <Pressable
+          style={styles.checkRow}
+          onPress={() => setUsarMismoTelefono(!usarMismoTelefono)}
+        >
+          <View
+            style={[
+              styles.checkbox,
+              usarMismoTelefono && styles.checkboxActivo,
+            ]}
+          >
+            {usarMismoTelefono && (
+              <Icon name="Check" size={14} color={theme.colors.white} />
+            )}
           </View>
-          <Text style={styles.checkLabel}>Usar mi mismo número para contacto</Text>
+          <Text style={styles.checkLabel}>
+            Usar mi mismo número para contacto
+          </Text>
         </Pressable>
-        <Text style={styles.label}>Celular de contacto para esta mascota *</Text>
+        <Text style={styles.label}>
+          Whatsapp de contacto para esta mascota *
+        </Text>
         <TextInput
           style={[styles.input, usarMismoTelefono && styles.inputDisabled]}
           placeholder="+57 300 123 4567"
@@ -200,7 +269,9 @@ export function RegistroRapidoForm({ onSuccess }: RegistroRapidoFormProps) {
           editable={!usarMismoTelefono}
         />
         {usarMismoTelefono && (
-          <Text style={styles.hint}>Se usará tu celular. Desmarca para poner otro número.</Text>
+          <Text style={styles.hint}>
+            Se usará tu celular. Desmarca para poner otro número.
+          </Text>
         )}
       </View>
 
@@ -214,10 +285,20 @@ export function RegistroRapidoForm({ onSuccess }: RegistroRapidoFormProps) {
             {controller.tiposMascota.map((t) => (
               <Pressable
                 key={t.id}
-                style={[styles.chip, tipoMascotaId === t.id && styles.chipActivo]}
+                style={[
+                  styles.chip,
+                  tipoMascotaId === t.id && styles.chipActivo,
+                ]}
                 onPress={() => setTipoMascotaId(t.id)}
               >
-                <Text style={[styles.chipText, tipoMascotaId === t.id && styles.chipTextActivo]}>{t.nombre}</Text>
+                <Text
+                  style={[
+                    styles.chipText,
+                    tipoMascotaId === t.id && styles.chipTextActivo,
+                  ]}
+                >
+                  {t.nombre}
+                </Text>
               </Pressable>
             ))}
           </View>
@@ -265,23 +346,39 @@ export function RegistroRapidoForm({ onSuccess }: RegistroRapidoFormProps) {
         <Text style={styles.label}>Foto (opcional)</Text>
         {fotoUri ? (
           <View style={styles.fotoPreviewBox}>
-            <Image source={{ uri: fotoUri }} style={styles.fotoPreview} contentFit="cover" />
+            <Image
+              source={{ uri: fotoUri }}
+              style={styles.fotoPreview}
+              contentFit="cover"
+            />
             <View style={styles.fotoActions}>
               <Pressable style={styles.fotoBtn} onPress={elegirFoto}>
                 <Icon name="RefreshCw" size={16} color={theme.colors.green} />
                 <Text style={styles.fotoBtnText}>Cambiar</Text>
               </Pressable>
-              <Pressable style={styles.fotoBtn} onPress={() => { setFotoUri(undefined); setFotoFile(undefined); }}>
+              <Pressable
+                style={styles.fotoBtn}
+                onPress={() => {
+                  setFotoUri(undefined);
+                  setFotoFile(undefined);
+                }}
+              >
                 <Icon name="Trash2" size={16} color={theme.colors.red} />
-                <Text style={[styles.fotoBtnText, { color: theme.colors.red }]}>Quitar</Text>
+                <Text style={[styles.fotoBtnText, { color: theme.colors.red }]}>
+                  Quitar
+                </Text>
               </Pressable>
             </View>
           </View>
         ) : (
           <Pressable style={styles.fotoPicker} onPress={elegirFoto}>
             <Icon name="Camera" size={22} color={theme.colors.green} />
-            <Text style={styles.fotoPickerText}>Agregar foto del animalito</Text>
-            <Text style={styles.fotoPickerHint}>JPEG, PNG, HEIC... hasta 8 MB. Ayuda a identificarlo más rápido.</Text>
+            <Text style={styles.fotoPickerText}>
+              Agregar foto del animalito
+            </Text>
+            <Text style={styles.fotoPickerHint}>
+              JPEG, PNG, HEIC... hasta 8 MB. Ayuda a identificarlo más rápido.
+            </Text>
           </Pressable>
         )}
       </View>
@@ -316,63 +413,144 @@ const getStyles = (theme: AppTheme, isDesktop: boolean) =>
     },
     seccion: { gap: 8 },
     label: {
-      fontSize: 12, fontWeight: "700", textTransform: "uppercase",
-      letterSpacing: 0.8, color: theme.colors.textMuted,
+      fontSize: 12,
+      fontWeight: "700",
+      textTransform: "uppercase",
+      letterSpacing: 0.8,
+      color: theme.colors.textMuted,
     },
     hint: { fontSize: 12, color: theme.colors.textDim, lineHeight: 16 },
     tipoRow: { flexDirection: "row", gap: 12 },
     tipoCard: {
-      flex: 1, flexDirection: "row", alignItems: "center", gap: 10,
-      padding: 16, borderRadius: 16, borderWidth: 1,
-      borderColor: theme.colors.border, backgroundColor: theme.colors.surface,
+      flex: 1,
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 10,
+      padding: 16,
+      borderRadius: 16,
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+      backgroundColor: theme.colors.surface,
     },
-    tipoCardActivoLost: { borderColor: theme.colors.red, backgroundColor: theme.colors.redBg },
-    tipoCardActivoFound: { borderColor: theme.colors.purple, backgroundColor: theme.colors.purpleBg },
-    tipoCardText: { fontSize: 14, fontWeight: "600", color: theme.colors.textSecondary },
+    tipoCardActivoLost: {
+      borderColor: theme.colors.red,
+      backgroundColor: theme.colors.redBg,
+    },
+    tipoCardActivoFound: {
+      borderColor: theme.colors.purple,
+      backgroundColor: theme.colors.purpleBg,
+    },
+    tipoCardText: {
+      fontSize: 14,
+      fontWeight: "600",
+      color: theme.colors.textSecondary,
+    },
     tipoCardTextActivo: { color: theme.colors.textPrimary, fontWeight: "700" },
-    checkRow: { flexDirection: "row", alignItems: "center", gap: 10, paddingVertical: 4 },
-    checkbox: {
-      width: 22, height: 22, borderRadius: 6, borderWidth: 2,
-      borderColor: theme.colors.border, backgroundColor: theme.colors.surfaceLight,
-      alignItems: "center", justifyContent: "center",
+    checkRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 10,
+      paddingVertical: 4,
     },
-    checkboxActivo: { backgroundColor: theme.colors.green, borderColor: theme.colors.green },
-    checkLabel: { fontSize: 14, fontWeight: "600", color: theme.colors.textSecondary, flex: 1 },
+    checkbox: {
+      width: 22,
+      height: 22,
+      borderRadius: 6,
+      borderWidth: 2,
+      borderColor: theme.colors.border,
+      backgroundColor: theme.colors.surfaceLight,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    checkboxActivo: {
+      backgroundColor: theme.colors.green,
+      borderColor: theme.colors.green,
+    },
+    checkLabel: {
+      fontSize: 14,
+      fontWeight: "600",
+      color: theme.colors.textSecondary,
+      flex: 1,
+    },
     chips: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
     chip: {
-      paddingVertical: 8, paddingHorizontal: 16, borderRadius: 20,
-      borderWidth: 1, borderColor: theme.colors.border, backgroundColor: theme.colors.surface,
+      paddingVertical: 8,
+      paddingHorizontal: 16,
+      borderRadius: 20,
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+      backgroundColor: theme.colors.surface,
     },
-    chipActivo: { backgroundColor: theme.colors.green, borderColor: theme.colors.green },
-    chipText: { fontSize: 13, fontWeight: "600", color: theme.colors.textSecondary },
+    chipActivo: {
+      backgroundColor: theme.colors.green,
+      borderColor: theme.colors.green,
+    },
+    chipText: {
+      fontSize: 13,
+      fontWeight: "600",
+      color: theme.colors.textSecondary,
+    },
     chipTextActivo: { color: theme.colors.white },
     input: {
-      backgroundColor: theme.colors.surface, borderWidth: 1, borderColor: theme.colors.border,
-      borderRadius: 12, paddingHorizontal: 14, paddingVertical: 12,
-      fontSize: 14, color: theme.colors.textPrimary,
+      backgroundColor: theme.colors.surface,
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+      borderRadius: 12,
+      paddingHorizontal: 14,
+      paddingVertical: 12,
+      fontSize: 14,
+      color: theme.colors.textPrimary,
     },
     inputDisabled: { opacity: 0.5, backgroundColor: theme.colors.surfaceLight },
     inputMultiline: { minHeight: 80, textAlignVertical: "top" },
     fotoPicker: {
-      borderWidth: 1, borderStyle: "dashed", borderColor: theme.colors.green,
-      borderRadius: 14, paddingVertical: 20, alignItems: "center", gap: 6,
+      borderWidth: 1,
+      borderStyle: "dashed",
+      borderColor: theme.colors.green,
+      borderRadius: 14,
+      paddingVertical: 20,
+      alignItems: "center",
+      gap: 6,
       backgroundColor: theme.colors.surfaceLight,
     },
-    fotoPickerText: { fontSize: 14, fontWeight: "700", color: theme.colors.green },
-    fotoPickerHint: { fontSize: 12, color: theme.colors.textDim, textAlign: "center", paddingHorizontal: 16 },
+    fotoPickerText: {
+      fontSize: 14,
+      fontWeight: "700",
+      color: theme.colors.green,
+    },
+    fotoPickerHint: {
+      fontSize: 12,
+      color: theme.colors.textDim,
+      textAlign: "center",
+      paddingHorizontal: 16,
+    },
     fotoPreviewBox: { gap: 8 },
-    fotoPreview: { width: "100%", height: 200, borderRadius: 14, backgroundColor: theme.colors.surfaceLight },
+    fotoPreview: {
+      width: "100%",
+      height: 200,
+      borderRadius: 14,
+      backgroundColor: theme.colors.surfaceLight,
+    },
     fotoActions: { flexDirection: "row", gap: 12 },
     fotoBtn: {
-      flexDirection: "row", alignItems: "center", gap: 6, paddingVertical: 8,
-      paddingHorizontal: 14, borderRadius: 10, borderWidth: 1,
-      borderColor: theme.colors.border, backgroundColor: theme.colors.surface,
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 6,
+      paddingVertical: 8,
+      paddingHorizontal: 14,
+      borderRadius: 10,
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+      backgroundColor: theme.colors.surface,
     },
     fotoBtnText: { fontSize: 13, fontWeight: "600", color: theme.colors.green },
     error: { color: theme.colors.red, fontSize: 13 },
     submitBtn: {
-      backgroundColor: theme.colors.red, borderRadius: 14, paddingVertical: 16,
-      alignItems: "center", marginTop: 4,
+      backgroundColor: theme.colors.red,
+      borderRadius: 14,
+      paddingVertical: 16,
+      alignItems: "center",
+      marginTop: 4,
     },
     submitBtnDisabled: { opacity: 0.6 },
     submitText: { color: theme.colors.white, fontSize: 15, fontWeight: "700" },
