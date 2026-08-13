@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { DependencyContainer } from '../../../infrastructure/config/dependencyContainer';
+import { IContainer } from '../../ports/IContainer';
 import { ReporteMascota } from '../../../domain/mascotas/entities/ReporteMascota';
 
 /**
@@ -8,7 +8,7 @@ import { ReporteMascota } from '../../../domain/mascotas/entities/ReporteMascota
  * El contenedor se inyecta por prop (regla hexagonal).
  */
 export function useDetalleReporteMascotaController(
-  container: DependencyContainer,
+  container: IContainer,
   reporteId: number,
 ) {
   const [reporte, setReporte] = useState<ReporteMascota | null>(null);

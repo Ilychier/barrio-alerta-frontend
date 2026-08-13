@@ -53,14 +53,19 @@ import { ObtenerReferenciasMascotaUseCase } from '../../application/mascotas/use
 import { RegistrarReporteRapidoUseCase } from '../../application/mascotas/usecases/RegistrarReporteRapidoUseCase';
 
 import { getRepositoryType } from '../../constants/env';
+import { IContainer } from '../../application/ports/IContainer';
+import { TokenStorage } from '../adapters/storage/TokenStorage';
+import { ITokenStorage } from '../../domain/ports/ITokenStorage';
+import { HttpGenericService } from '../adapters/api/HttpGenericService';
 
-export class DependencyContainer {
+export class DependencyContainer implements IContainer {
   private static instance: DependencyContainer;
 
   private readonly _alertaRepo: IAlertaRepository;
   private readonly _configRepo: IConfiguracionRepository;
   private readonly _referenciaRepo: ICategoriaRepository & IGeografiaRepository & IUsuarioRepository;
   private readonly _authRepo: IAuthRepository;
+  private readonly _tokenStorage: ITokenStorage;
   private readonly _reporteMascotaRepo: IReporteMascotaRepository;
   private readonly _mascotaReferenciaRepo: IMascotaReferenciaRepository;
   private readonly _reporteRapidoRepo: IReporteRapidoRepository;
@@ -89,6 +94,7 @@ export class DependencyContainer {
         this._reporteRapidoRepo = new InMemoryReporteRapidoRepository();
         break;
     }
+    this._tokenStorage = TokenStorage.instance;
   }
 
   static getInstance(): DependencyContainer {
@@ -113,6 +119,14 @@ export class DependencyContainer {
 
   getAuthRepository(): IAuthRepository {
     return this._authRepo;
+  }
+
+  getTokenStorage(): ITokenStorage {
+    return this._tokenStorage;
+  }
+
+  getBaseUrl(): string {
+    return HttpGenericService.getInstance().getBaseUrl();
   }
 
   // --- BC Mascotas: Repositorios ---

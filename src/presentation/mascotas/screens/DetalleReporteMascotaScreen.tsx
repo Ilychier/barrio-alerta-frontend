@@ -128,7 +128,7 @@ export function DetalleReporteMascotaScreen({
         {reporte.fotoUrl ? (
           <Pressable onPress={() => setFotoVisible(true)}>
             <Image
-              source={{ uri: resolverUrlFoto(reporte.fotoUrl) ?? undefined }}
+              source={{ uri: resolverUrlFoto(reporte.fotoUrl, container.getBaseUrl()) ?? undefined }}
               style={styles.foto}
               contentFit="cover"
             />
@@ -141,7 +141,7 @@ export function DetalleReporteMascotaScreen({
               <Icon name="X" size={24} color={theme.colors.white} />
             </View>
             <Image
-              source={{ uri: resolverUrlFoto(reporte.fotoUrl) ?? undefined }}
+              source={{ uri: resolverUrlFoto(reporte.fotoUrl, container.getBaseUrl()) ?? undefined }}
               style={styles.modalFoto}
               contentFit="contain"
             />

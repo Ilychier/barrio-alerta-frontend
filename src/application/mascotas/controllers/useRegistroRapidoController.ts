@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { DependencyContainer } from '../../../infrastructure/config/dependencyContainer';
+import { IContainer } from '../../ports/IContainer';
 import { ReporteRapidoResult } from '../../../domain/mascotas/ports/IReporteRapidoRepository';
 import { IRegistrarReporteRapidoUseCase } from '../usecases/contracts/IRegistrarReporteRapidoUseCase';
 
@@ -21,7 +21,7 @@ export interface RegistrarRapidoParams {
  * Controller del registro rápido de emergencia (BC Mascotas).
  * Expone el use case de application; el contenedor se inyecta por prop.
  */
-export function useRegistroRapidoController(container: DependencyContainer) {
+export function useRegistroRapidoController(container: IContainer) {
   const useCase: IRegistrarReporteRapidoUseCase = useMemo(
     () => container.getRegistrarReporteRapidoUseCase(),
     [container],

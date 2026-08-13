@@ -149,7 +149,7 @@ export function FeedMascotasScreen({
       <Text style={styles.cardTipo}>{feed.nombreTipoMascota(item)}</Text>
       {item.fotoUrl ? (
         <Image
-          source={{ uri: resolverUrlFoto(item.fotoUrl) ?? undefined }}
+          source={{ uri: resolverUrlFoto(item.fotoUrl, container.getBaseUrl()) ?? undefined }}
           style={styles.cardFoto}
           contentFit="cover"
         />

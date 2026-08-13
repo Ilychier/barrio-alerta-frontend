@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { DependencyContainer } from '../../infrastructure/config/dependencyContainer';
+import { IContainer } from '../ports/IContainer';
 import { AlertaConDatos } from '../../application/usecases/ObtenerAlertasUseCase';
 import { Barrio } from '../../domain/entities/barrio';
 import { IGeografiaRepository } from '../../domain/ports/IGeografiaRepository';
@@ -10,7 +10,7 @@ import { IUsuarioRepository } from '../../domain/ports/IUsuarioRepository';
  * (regla hexagonal: application no importa infrastructure directamente).
  */
 export function useSectorAlertsController(
-  container: DependencyContainer,
+  container: IContainer,
   currentUserId: number,
   refreshTrigger?: number,
 ) {

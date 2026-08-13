@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
-import { DependencyContainer } from '../../infrastructure/config/dependencyContainer';
+import { IContainer } from '../ports/IContainer';
 import { Categoria } from '../../domain/entities/categoria';
 import { CategoriaDescripcion } from '../../domain/entities/categoriaDescripcion';
 import { ICategoriaRepository } from '../../domain/ports/ICategoriaRepository';
@@ -8,7 +8,7 @@ import { ICategoriaRepository } from '../../domain/ports/ICategoriaRepository';
  * Controller del formulario de reporte. El contenedor se inyecta por prop
  * (regla hexagonal: application no importa infrastructure directamente).
  */
-export function useReporteController(container: DependencyContainer, currentUserId: number) {
+export function useReporteController(container: IContainer, currentUserId: number) {
   const [categorias, setCategorias] = useState<Categoria[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
   const [selectedDescription, setSelectedDescription] = useState('');

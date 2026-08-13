@@ -1,12 +1,10 @@
 import { useState, useCallback, useEffect } from 'react';
-import { DependencyContainer } from '../../infrastructure/config/dependencyContainer';
-import { TokenStorage } from '../../infrastructure/adapters/storage/TokenStorage';
+import { IContainer } from '../ports/IContainer';
 import { Usuario } from '../../domain/entities/usuario';
 import { Barrio } from '../../domain/entities/barrio';
 import { Cuadrante } from '../../domain/entities/cuadrante';
 import { Configuracion } from '../../domain/entities/configuracion';
 import { SesionDTO } from '../../domain/entities/sesion';
-import { ITokenStorage } from '../../domain/ports/ITokenStorage';
 
 export interface Sesion {
   user: Usuario | null;
@@ -58,10 +56,8 @@ const SESION_VACIA: Sesion = {
  * como thin wrapper. El contenedor se inyecta por prop; el token storage
  * via el puerto ITokenStorage (DIP).
  */
-export function useAuthController(
-  container: DependencyContainer,
-  tokenStorage: ITokenStorage = TokenStorage.instance,
-) {
+export function useAuthController(container: IContainer) {
+  const tokenStorage = container.getTokenStorage();
   const [sesion, setSesion] = useState<Sesion>(SESION_VACIA);
   const [loading, setLoading] = useState<boolean>(true);
 

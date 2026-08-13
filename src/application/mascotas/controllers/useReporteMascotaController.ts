@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo } from 'react';
-import { DependencyContainer } from '../../../infrastructure/config/dependencyContainer';
+import { IContainer } from '../../ports/IContainer';
 import { ReporteMascota } from '../../../domain/mascotas/entities/ReporteMascota';
 import { Ciudad } from '../../../domain/mascotas/entities/Ciudad';
 import { TipoMascota } from '../../../domain/mascotas/entities/TipoMascota';
@@ -24,7 +24,7 @@ export interface CrearReporteMascotaForm {
  * El contenedor se inyecta por prop (regla hexagonal).
  */
 export function useReporteMascotaController(
-  container: DependencyContainer,
+  container: IContainer,
   currentUserId: number,
   onSuccess?: (reporte: ReporteMascota) => void,
 ) {

@@ -24,6 +24,25 @@ module.exports = defineConfig([
   },
   {
     files: ["src/application/**/*.{ts,tsx}"],
+    ignores: ["src/application/**/__tests__/**"],
+    rules: {
+      "no-restricted-imports": ["error", {
+        patterns: [
+          {
+            group: ["**/presentation/**"],
+            message: "Hexagonal: application no puede depender de presentation.",
+          },
+          {
+            group: ["**/infrastructure/**"],
+            message: "Hexagonal: application no puede depender de infrastructure. Usa IContainer.",
+          },
+        ],
+      }],
+    },
+  },
+  // Los tests de application usan adapters InMemory como harness (composition root de test).
+  {
+    files: ["src/application/**/__tests__/**"],
     rules: {
       "no-restricted-imports": ["error", {
         patterns: [

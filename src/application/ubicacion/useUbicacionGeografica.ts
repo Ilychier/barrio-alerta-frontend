@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useState } from 'react';
-import { DependencyContainer } from '../../infrastructure/config/dependencyContainer';
+import { IContainer } from '../ports/IContainer';
 import { Barrio } from '../../domain/entities/barrio';
 import { Localidad } from '../../domain/entities/localidad';
 import { Ciudad } from '../../domain/mascotas/entities/Ciudad';
@@ -64,7 +64,7 @@ export function componerUbicacion(
   return partes.join(' · ').slice(0, 255);
 }
 
-export function useUbicacionGeografica(container: DependencyContainer, ciudades: Ciudad[]): UbicacionGeografica {
+export function useUbicacionGeografica(container: IContainer, ciudades: Ciudad[]): UbicacionGeografica {
   const referenciasRepo = useMemo(
     () => container.getReferenciaRepository(),
     [container],

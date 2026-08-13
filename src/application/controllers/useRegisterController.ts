@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { DependencyContainer } from '../../infrastructure/config/dependencyContainer';
+import { IContainer } from '../ports/IContainer';
 import { Ciudad } from '../../domain/mascotas/entities/Ciudad';
 import { Localidad } from '../../domain/entities/localidad';
 import { Barrio } from '../../domain/entities/barrio';
@@ -11,7 +11,7 @@ const PAGE_SIZE = 20;
  * (municipios → localidades → barrios paginados).
  * El contenedor se inyecta por prop (regla hexagonal).
  */
-export function useRegisterController(container: DependencyContainer) {
+export function useRegisterController(container: IContainer) {
   const [municipios, setMunicipios] = useState<Ciudad[]>([]);
   const [localidades, setLocalidades] = useState<Localidad[]>([]);
   const [barrios, setBarrios] = useState<Barrio[]>([]);

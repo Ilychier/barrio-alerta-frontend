@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import { DependencyContainer } from '../../../infrastructure/config/dependencyContainer';
+import { IContainer } from '../../ports/IContainer';
 import { ReporteMascota } from '../../../domain/mascotas/entities/ReporteMascota';
 import { Ciudad } from '../../../domain/mascotas/entities/Ciudad';
 import { TipoMascota } from '../../../domain/mascotas/entities/TipoMascota';
@@ -15,7 +15,7 @@ const DEBOUNCE_MS = 350;
  * Carga progresiva: mantiene la lista acumulada y pide la siguiente
  * página al hacer scroll (el usuario percibe un flujo continuo).
  */
-export function useFeedMascotasController(container: DependencyContainer, refreshTrigger?: number) {
+export function useFeedMascotasController(container: IContainer, refreshTrigger?: number) {
   const [reportes, setReportes] = useState<ReporteMascota[]>([]);
   const [page, setPage] = useState(0);
   const [totalPages, setTotalPages] = useState(1);

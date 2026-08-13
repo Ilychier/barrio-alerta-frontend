@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect, useMemo } from 'react';
-import { DependencyContainer } from '../../../infrastructure/config/dependencyContainer';
+import { IContainer } from '../../ports/IContainer';
 import { ReporteMascota } from '../../../domain/mascotas/entities/ReporteMascota';
 import { EstadoReporte } from '../../../domain/mascotas/entities/EstadoReporte';
 
@@ -9,7 +9,7 @@ import { EstadoReporte } from '../../../domain/mascotas/entities/EstadoReporte';
  * y eliminar (soft delete). El contenedor se inyecta por prop (regla hexagonal).
  */
 export function useMisReportesMascotaController(
-  container: DependencyContainer,
+  container: IContainer,
   usuarioId: number,
   refreshTrigger?: number,
 ) {

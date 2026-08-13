@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { DependencyContainer } from '../../infrastructure/config/dependencyContainer';
+import { IContainer } from '../ports/IContainer';
 import { Configuracion } from '../../domain/entities/configuracion';
 
 type CampoConfig = 'recibir_notificaciones' | 'modo_silencioso';
@@ -13,7 +13,7 @@ export interface FeedbackState {
  * Dependencias inyectadas por la presentación (regla hexagonal).
  */
 export interface ConfiguracionControllerDeps {
-  container: DependencyContainer;
+  container: IContainer;
   configuracion: Configuracion | null;
   setConfiguracion: (config: Configuracion | null) => void;
 }

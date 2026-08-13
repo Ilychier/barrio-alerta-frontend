@@ -47,3 +47,5 @@ example
 /.cursor
 package-lock.json
 .env
+
+dist/

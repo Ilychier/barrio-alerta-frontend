@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { DependencyContainer } from '../../infrastructure/config/dependencyContainer';
+import { IContainer } from '../ports/IContainer';
 
 export type SOSStep = 0 | 1 | 2;
 
@@ -8,7 +8,7 @@ export type SOSStep = 0 | 1 | 2;
  * (regla hexagonal: application no importa infrastructure directamente).
  */
 export function useSOSController(
-  container: DependencyContainer,
+  container: IContainer,
   currentUserId: number,
   onSuccess?: () => void,
 ) {

@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { DependencyContainer } from '../../../infrastructure/config/dependencyContainer';
+import { IContainer } from '../../ports/IContainer';
 import { ReporteMascota } from '../../../domain/mascotas/entities/ReporteMascota';
 import { EstadoReporte } from '../../../domain/mascotas/entities/EstadoReporte';
 
@@ -8,7 +8,7 @@ import { EstadoReporte } from '../../../domain/mascotas/entities/EstadoReporte';
  * Carga progresiva (scroll infinito) — el usuario percibe flujo continuo.
  * El contenedor se inyecta por prop (regla hexagonal).
  */
-export function useHistoriasRescateController(container: DependencyContainer, refreshTrigger?: number) {
+export function useHistoriasRescateController(container: IContainer, refreshTrigger?: number) {
   const [reportes, setReportes] = useState<ReporteMascota[]>([]);
   const [page, setPage] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
