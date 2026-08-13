@@ -1,31 +1,36 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { DependencyContainer } from '../../infrastructure/config/dependencyContainer';
-import { Alerta } from '../../domain/entities/alerta';
+import { IContainer } from '../ports/IContainer';
 
 export type SOSStep = 0 | 1 | 2;
 
-export function useSOSController(currentUserId: number, onSuccess?: () => void) {
+/**
+ * Controller del flujo SOS. El contenedor se inyecta por prop
+ * (regla hexagonal: application no importa infrastructure directamente).
+ */
+export function useSOSController(
+  container: IContainer,
+  currentUserId: number,
+  onSuccess?: () => void,
+) {
   const [sosStep, setSosStep] = useState<SOSStep>(0);
   const [sosCountdown, setSosCountdown] = useState(3);
-  const [performanceTracker, setPerformanceTracker] = useState<string | null>(null);
 
-  const useCase = DependencyContainer.getInstance().getDispararSOSUseCase();
+  const useCase = container.getDispararSOSUseCase();
+  const finalizarUseCase = container.getFinalizarEmergenciaUseCase();
 
   // Ref para evitar stale closure en el intervalo (se actualiza en efecto)
   const triggerSOSRef = useRef<() => void>(() => {});
 
   const triggerSOSFinal = useCallback(async () => {
-    const start = Date.now();
     await useCase.execute({ usuarioId: currentUserId });
 
-    const latency = Date.now() - start;
-    setPerformanceTracker(`${latency}ms`);
     setSosStep(2);
     if (onSuccess) {
       onSuccess();
     }
   }, [currentUserId, useCase, onSuccess]);
 
+  // Ref para evitar stale closure en el intervalo (se actualiza en efecto)
   useEffect(() => {
     triggerSOSRef.current = triggerSOSFinal;
   }, [triggerSOSFinal]);
@@ -66,30 +71,20 @@ export function useSOSController(currentUserId: number, onSuccess?: () => void) 
 
   const dismissSOS = useCallback(async () => {
     setSosStep(0);
-    setPerformanceTracker(null);
 
-    const newId = Math.floor(Math.random() * 1000) + 1000;
-    const fineAlert = Alerta.crearDesdeFormulario(
-      newId,
-      '¡Todo está bien ahora! Emergencia finalizada.',
-      new Date().toISOString(),
-      currentUserId,
-      5
-    );
     try {
-      await DependencyContainer.getInstance().getAlertaRepository().crearAlerta(fineAlert);
+      await finalizarUseCase.execute(currentUserId);
       if (onSuccess) {
         onSuccess();
       }
     } catch (err) {
       console.warn('[useSOSController] Failed to create stop emergency alert:', err);
     }
-  }, [currentUserId, onSuccess]);
+  }, [currentUserId, onSuccess, finalizarUseCase]);
 
   return {
     sosStep,
     sosCountdown,
-    performanceTracker,
     startSOS,
     cancelSOS,
     triggerSOSFinal,

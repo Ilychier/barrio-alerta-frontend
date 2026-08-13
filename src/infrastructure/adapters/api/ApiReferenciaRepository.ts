@@ -3,12 +3,18 @@ import { Barrio } from '../../../domain/entities/barrio';
 import { Categoria } from '../../../domain/entities/categoria';
 import { CategoriaDescripcion } from '../../../domain/entities/categoriaDescripcion';
 import { Cuadrante } from '../../../domain/entities/cuadrante';
+import { Localidad } from '../../../domain/entities/localidad';
 import { Usuario } from '../../../domain/entities/usuario';
-import { IReferenciaRepository, PaginatedResult } from '../../../domain/ports/IReferenciaRepository';
+import { ICategoriaRepository } from '../../../domain/ports/ICategoriaRepository';
+import { IGeografiaRepository } from '../../../domain/ports/IGeografiaRepository';
+import { IUsuarioRepository } from '../../../domain/ports/IUsuarioRepository';
+import { PaginatedResult } from '../../../domain/ports/PaginatedResult';
 import { InMemoryReferenciaRepository } from '../memory/InMemoryReferenciaRepository';
 import { HttpGenericService } from './HttpGenericService';
 
-export class ApiReferenciaRepository implements IReferenciaRepository {
+export class ApiReferenciaRepository
+  implements ICategoriaRepository, IGeografiaRepository, IUsuarioRepository
+{
   private readonly fallback = new InMemoryReferenciaRepository();
   private readonly http = HttpGenericService.getInstance().getClient();
 
@@ -43,7 +49,8 @@ export class ApiReferenciaRepository implements IReferenciaRepository {
         return new Barrio(
           response.data.id,
           response.data.nombre,
-          response.data.cuadranteId ?? response.data.cuadrante_id ?? response.data.cuadrante?.id
+          response.data.cuadranteId ?? response.data.cuadrante_id ?? response.data.cuadrante?.id,
+          response.data.localidadId ?? response.data.localidad_id
         );
       }
       return undefined;
@@ -68,7 +75,8 @@ export class ApiReferenciaRepository implements IReferenciaRepository {
           (b) => new Barrio(
             b.id,
             b.nombre,
-            b.cuadranteId ?? b.cuadrante_id ?? b.cuadrante?.id
+            b.cuadranteId ?? b.cuadrante_id ?? b.cuadrante?.id,
+            b.localidadId ?? b.localidad_id
           )
         );
       }
@@ -85,17 +93,18 @@ export class ApiReferenciaRepository implements IReferenciaRepository {
     }
   }
 
-  async getBarriosPaginated(page: number, size: number): Promise<PaginatedResult<Barrio>> {
+  async getBarriosPaginated(page: number, size: number, localidadId?: number): Promise<PaginatedResult<Barrio>> {
     try {
       const response = await this.http.get<any>('/barrios', {
-        params: { page, size },
+        params: { page, size, ...(localidadId ? { localidadId } : {}) },
       });
       const body = response.data;
       const items = (body.content ?? body).map(
         (b: any) => new Barrio(
           b.id,
           b.nombre,
-          b.cuadranteId ?? b.cuadrante_id ?? b.cuadrante?.id
+          b.cuadranteId ?? b.cuadrante_id ?? b.cuadrante?.id,
+          b.localidadId ?? b.localidad_id
         )
       );
       return {
@@ -113,7 +122,35 @@ export class ApiReferenciaRepository implements IReferenciaRepository {
       } else {
         console.warn(`[ApiReferenciaRepository] Failed to getBarriosPaginated(${page}, ${size}). Falling back to local data:`, error);
       }
-      return this.fallback.getBarriosPaginated(page, size);
+      return this.fallback.getBarriosPaginated(page, size, localidadId);
+    }
+  }
+
+  async getLocalidadesByMunicipio(municipioId: number): Promise<Localidad[]> {
+    try {
+      const response = await this.http.get<any>('/public/localidades', {
+        params: { municipioId, page: 0, size: 200 },
+      });
+      const body = response.data;
+      const items = Array.isArray(body?.content)
+        ? body.content
+        : Array.isArray(body)
+          ? body
+          : [];
+      return items.map((l: any) => new Localidad(
+        l.id,
+        l.nombre ?? '',
+        l.municipioId ?? l.municipio_id ?? municipioId
+      ));
+    } catch (error) {
+      if (isAxiosError(error)) {
+        console.warn(
+          `[ApiReferenciaRepository] Failed to getLocalidadesByMunicipio(${municipioId}) [Status: ${error.response?.status}]. Falling back to local data.`
+        );
+      } else {
+        console.warn(`[ApiReferenciaRepository] Failed to getLocalidadesByMunicipio(${municipioId}). Falling back to local data:`, error);
+      }
+      return this.fallback.getLocalidadesByMunicipio(municipioId);
     }
   }
 

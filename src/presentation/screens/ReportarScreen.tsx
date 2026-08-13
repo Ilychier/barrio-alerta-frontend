@@ -12,11 +12,13 @@ import { CategoryButton } from "../components/atomic/CategoryButton";
 import { SectionCard } from "../components/layout/SectionCard";
 import { DescriptionSelector } from "../components/molecules/DescriptionSelector";
 import { useAuth } from "../context/AuthContext";
+import { useDI } from "../context/DIContext";
 import { AppTheme, useAppTheme } from "../theme/ThemeContext";
 
 export function ReportarScreen() {
   const { user } = useAuth();
-  const ctrl = useReporteController(user?.id ?? 0);
+  const container = useDI();
+  const ctrl = useReporteController(container, user?.id ?? 0);
   const { theme } = useAppTheme();
   const styles = getStyles(theme);
   const router = useRouter();
@@ -38,7 +40,7 @@ export function ReportarScreen() {
           <Text style={styles.label}>Selecciona la Categoría de la Alerta</Text>
           <View style={styles.categoriesGrid}>
             {ctrl.categorias
-              .filter((cat) => cat.id !== 4 && cat.id !== 5)
+              .filter((cat) => cat.esReportableEnFormulario())
               .map((cat) => (
                 <CategoryButton
                   key={cat.id}

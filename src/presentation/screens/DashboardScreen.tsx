@@ -10,6 +10,7 @@ import { useSOSController } from "../../application/controllers/useSOSController
 import Icon from "../components/atomic/Icon";
 import { SOSButton } from "../components/molecules/SOSButton";
 import { useAuth } from "../context/AuthContext";
+import { useDI } from "../context/DIContext";
 import { AppTheme, useAppTheme } from "../theme/ThemeContext";
 
 const QUICK_ACTIONS = [
@@ -46,15 +47,20 @@ function getActionColors(theme: AppTheme, colorKey: string) {
 }
 
 export function DashboardScreen() {
-  const { user } = useAuth();
+  const { user, cuadrante: authCuadrante } = useAuth();
   const userId = user?.id ?? 0;
+  const container = useDI();
   const { theme } = useAppTheme();
   const { width } = useWindowDimensions();
   const isDesktop = width >= 900;
   const styles = getStyles(theme, isDesktop);
 
-  const { cuadrante } = useDashboardController();
-  const sos = useSOSController(userId, () => {});
+  const { cuadrante } = useDashboardController({
+    user: user ?? undefined,
+    cuadrante: authCuadrante ?? undefined,
+  });
+
+  const sos = useSOSController(container, userId, () => {});
 
   return (
     <ScrollView
@@ -79,7 +85,6 @@ export function DashboardScreen() {
         <SOSButton
           step={sos.sosStep}
           countdown={sos.sosCountdown}
-          performanceTracker={sos.performanceTracker}
           onStart={sos.startSOS}
           onConfirm={sos.triggerSOSFinal}
           onCancel={sos.cancelSOS}

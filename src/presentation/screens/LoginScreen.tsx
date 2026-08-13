@@ -20,7 +20,10 @@ interface LoginScreenProps {
   onBackPress?: () => void;
 }
 
-export function LoginScreen({ onRegisterPress, onBackPress }: LoginScreenProps) {
+export function LoginScreen({
+  onRegisterPress,
+  onBackPress,
+}: LoginScreenProps) {
   const { login } = useAuth();
   const { theme } = useAppTheme();
   const styles = getStyles(theme);
@@ -36,7 +39,7 @@ export function LoginScreen({ onRegisterPress, onBackPress }: LoginScreenProps) 
 
   const handleLogin = async () => {
     if (!email || !password) {
-      setError("Por favor, ingresa correo y contraseña.");
+      setError("Por favor, ingresa tu correo o celular y contraseña.");
       return;
     }
     setError(null);
@@ -58,8 +61,16 @@ export function LoginScreen({ onRegisterPress, onBackPress }: LoginScreenProps) 
         keyboardShouldPersistTaps="handled"
       >
         {onBackPress && (
-          <TouchableOpacity onPress={onBackPress} style={styles.backButton} activeOpacity={0.7}>
-            <Icon name="ArrowLeft" size={20} color={theme.colors.textSecondary} />
+          <TouchableOpacity
+            onPress={onBackPress}
+            style={styles.backButton}
+            activeOpacity={0.7}
+          >
+            <Icon
+              name="ArrowLeft"
+              size={20}
+              color={theme.colors.textSecondary}
+            />
           </TouchableOpacity>
         )}
         <SectionCard style={styles.card}>
@@ -94,7 +105,7 @@ export function LoginScreen({ onRegisterPress, onBackPress }: LoginScreenProps) 
           )}
 
           <View style={styles.form}>
-            <Text style={styles.label}>Correo Electrónico</Text>
+            <Text style={styles.label}>Correo o Celular</Text>
             <View
               style={[
                 styles.inputContainer,
@@ -113,7 +124,7 @@ export function LoginScreen({ onRegisterPress, onBackPress }: LoginScreenProps) 
                 onChangeText={setEmail}
                 onFocus={() => setEmailFocused(true)}
                 onBlur={() => setEmailFocused(false)}
-                placeholder="correo@ejemplo.com"
+                placeholder="+573001234567 ó Correo"
                 placeholderTextColor={theme.colors.textMuted}
                 keyboardType="email-address"
                 autoCapitalize="none"

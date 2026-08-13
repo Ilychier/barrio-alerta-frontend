@@ -5,12 +5,14 @@ import { useSectorAlertsController } from '../../application/controllers/useSect
 import { SectionCard } from '../components/layout/SectionCard';
 import { AlertCard } from '../components/molecules/AlertCard';
 import { useAuth } from '../context/AuthContext';
+import { useDI } from '../context/DIContext';
 import { AppTheme, useAppTheme } from '../theme/ThemeContext';
 
 export function SectorAlertReportsScreen() {
   const [focusCount, forceUpdate] = useState(0);
   const { user } = useAuth();
   const userId = user?.id ?? 0;
+  const container = useDI();
   const { theme } = useAppTheme();
   const styles = getStyles(theme);
 
@@ -28,7 +30,7 @@ export function SectorAlertReportsScreen() {
     fechaSeleccionada,
     cambiarDia,
     formatearFechaISO,
-  } = useSectorAlertsController(userId, focusCount);
+  } = useSectorAlertsController(container, userId, focusCount);
 
   const esHoy = formatearFechaISO(fechaSeleccionada) === formatearFechaISO(new Date());
 

@@ -1,18 +1,25 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { Animated, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useConfiguracionController } from '../../application/controllers/useConfiguracionController';
-import { useDashboardController } from '../../application/controllers/useDashboardController';
 import { IconRenderer } from '../components/atomic/IconRenderer';
 import { ToggleSwitch } from '../components/atomic/ToggleSwitch';
 import { SectionCard } from '../components/layout/SectionCard';
+import { useAuth } from '../context/AuthContext';
+import { useDI } from '../context/DIContext';
 import { useAppTheme, AppTheme } from '../theme/ThemeContext';
 
 export function ConfigScreen() {
-  const { config, handleUpdate, feedback, clearFeedback } = useConfiguracionController();
-  const { barrio, cuadrante } = useDashboardController();
+  const { barrio, cuadrante, configuracion, setConfiguracion } = useAuth();
+  const container = useDI();
+  const { config, handleUpdate, feedback, clearFeedback } = useConfiguracionController({
+    container,
+    configuracion,
+    setConfiguracion,
+  });
   const { theme, themeType, toggleTheme } = useAppTheme();
   const styles = getStyles(theme);
-  const feedbackOpacity = useRef(new Animated.Value(0)).current;
+  // useState con lazy init: evita acceder a .current de un ref durante render (React 19)
+  const [feedbackOpacity] = useState(() => new Animated.Value(0));
 
   useEffect(() => {
     if (feedback) {

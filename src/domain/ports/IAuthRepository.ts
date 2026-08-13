@@ -11,4 +11,6 @@ export interface IAuthRepository {
     password: string
   ): Promise<SesionDTO>;
   getMe(): Promise<SesionDTO>;
+  /** Cambia la clave. Si el usuario es temporal, passwordActual puede ser null. */
+  cambiarPassword(identificador: string, passwordActual: string | null, passwordNueva: string): Promise<void>;
 }

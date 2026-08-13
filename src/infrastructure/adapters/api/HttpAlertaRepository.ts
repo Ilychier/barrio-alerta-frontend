@@ -2,17 +2,23 @@ import { isAxiosError } from 'axios';
 import { Alerta } from '../../../domain/entities/alerta';
 import { Evidencia } from '../../../domain/entities/evidencia';
 import { IAlertaRepository } from '../../../domain/ports/IAlertaRepository';
+import { CATEGORIA_SOS } from '../../../domain/constants/categoriasReservadas';
 import { HttpGenericService } from './HttpGenericService';
-import { renderAlertaEmail, getSubject } from '../../email/alertaEmailTemplate';
+import { mapAlertaResponse } from './mappers/AlertaMapper';
+import { HttpNotificacionEmailService } from './HttpNotificacionEmailService';
 
+/**
+ * Adaptador HTTP del puerto IAlertaRepository.
+ * Responsabilidad única: CRUD de alertas via REST.
+ * La notificación por email y las evidencias se delegan a servicios propios (SRP).
+ */
 export class HttpAlertaRepository implements IAlertaRepository {
   private readonly http = HttpGenericService.getInstance().getClient();
-  private readonly baseUrl = HttpGenericService.getInstance().getBaseUrl();
-  
+  private readonly notificador = new HttpNotificacionEmailService();
+
   private readonly endpoints = {
     alertas: '/alertas',
     evidencias: '/evidencias',
-    email: '/email/send-email',
   };
 
   private async getCuadranteEmailByUsuarioId(usuarioId: number): Promise<string | undefined> {
@@ -36,58 +42,44 @@ export class HttpAlertaRepository implements IAlertaRepository {
     return undefined;
   }
 
+  private async notificarCuadrante(alerta: Alerta, categoriaId: number, esSos: boolean, toEmail: string): Promise<void> {
+    try {
+      await this.notificador.enviarEmailAlerta({
+        id: alerta.id,
+        descripcion: alerta.descripcion,
+        esSos,
+        fechaHora: alerta.fecha_hora,
+        emailDestino: toEmail,
+        categoriaId,
+        baseUrl: HttpGenericService.getInstance().getBaseUrl(),
+      });
+    } catch (emailError) {
+      console.warn('[HttpAlertaRepository] Failed to send email notification:', emailError);
+    }
+  }
+
   async crearAlerta(alerta: Alerta, evidencias?: Evidencia[]): Promise<Alerta> {
-    let toEmail: string | undefined = await this.getCuadranteEmailByUsuarioId(alerta.usuario_id);
+    const toEmail: string | undefined = await this.getCuadranteEmailByUsuarioId(alerta.usuario_id);
     try {
       const response = await this.http.post<any>(this.endpoints.alertas, {
         descripcion: alerta.descripcion,
         esSos: alerta.es_sos,
         usuarioId: alerta.usuario_id,
-        categoriaId: alerta.es_sos ? 4 : alerta.categoria_id,
+        categoriaId: alerta.es_sos ? CATEGORIA_SOS : alerta.categoria_id,
       });
 
       const isSos = response.data.esSos !== undefined ? response.data.esSos : response.data.es_sos;
-      const createdCategoriaId = response.data.categoria?.id || response.data.categoriaId || response.data.categoria_id || alerta.categoria_id || (isSos ? 4 : 4);
-      const createdAlerta = isSos
-        ? Alerta.crearEmergenciaSOS(
-            response.data.id,
-            response.data.descripcion,
-            response.data.fechaHora || response.data.fecha_hora || new Date().toISOString(),
-            response.data.usuarioId || response.data.usuario_id
-          )
-        : Alerta.crearDesdeFormulario(
-            response.data.id,
-            response.data.descripcion,
-            response.data.fechaHora || response.data.fecha_hora || new Date().toISOString(),
-            response.data.usuarioId || response.data.usuario_id,
-            createdCategoriaId
-          );
+      const createdCategoriaId = response.data.categoria?.id || response.data.categoriaId || response.data.categoria_id || alerta.categoria_id || CATEGORIA_SOS;
+      const createdAlerta = mapAlertaResponse(response.data);
 
       if (toEmail) {
-        const emailData = {
-          id: createdAlerta.id,
-          descripcion: createdAlerta.descripcion,
-          esSos: isSos,
-          fechaHora: createdAlerta.fecha_hora,
-          emailDestino: toEmail,
-          categoriaId: createdCategoriaId,
-          baseUrl: this.baseUrl,
-        };
-        try {
-          await this.http.post(this.endpoints.email, {
-            toEmail,
-            subject: getSubject(emailData),
-            body: renderAlertaEmail(emailData),
-          });
-        } catch (emailError) {
-          console.warn('[HttpAlertaRepository] Failed to send email notification:', emailError);
-        }
+        await this.notificarCuadrante(createdAlerta, createdCategoriaId, isSos, toEmail);
       }
 
       if (evidencias && evidencias.length > 0) {
         for (const ev of evidencias) {
           try {
-            await this.http.post('/evidencias', {
+            await this.http.post(this.endpoints.evidencias, {
               archivoUrl: ev.url_archivo || (ev as any).url || (ev as any).archivoUrl,
               alertaId: createdAlerta.id,
             });
@@ -100,24 +92,12 @@ export class HttpAlertaRepository implements IAlertaRepository {
       return createdAlerta;
     } catch (error) {
       if (alerta.es_sos && toEmail) {
-        const fallbackData = {
-          id: alerta.id,
-          descripcion: alerta.descripcion,
-          esSos: true,
-          fechaHora: alerta.fecha_hora,
-          emailDestino: toEmail,
-          categoriaId: 4,
-          baseUrl: this.baseUrl,
-        };
-        try {
-          await this.http.post(this.endpoints.email, {
-            toEmail,
-            subject: getSubject(fallbackData),
-            body: renderAlertaEmail(fallbackData),
-          });
-        } catch (emailError) {
-          console.warn('[HttpAlertaRepository] Failed to send fallback email notification:', emailError);
-        }
+        await this.notificarCuadrante(
+          alerta,
+          4,
+          true,
+          toEmail,
+        );
       }
 
       if (isAxiosError(error)) {
@@ -136,29 +116,13 @@ export class HttpAlertaRepository implements IAlertaRepository {
       const params: string[] = [];
       if (fecha) params.push(`fecha=${fecha}`);
       if (barrioId !== undefined && barrioId !== null) params.push(`barrioId=${barrioId}`);
-      
+
       const queryString = params.join('&');
       const url = queryString ? `${this.endpoints.alertas}?${queryString}` : this.endpoints.alertas;
       const response = await this.http.get<any>(url);
       const data = response.data && response.data.content ? response.data.content : response.data;
       if (Array.isArray(data)) {
-        return data.map((a) => {
-          const isSos = a.esSos !== undefined ? a.esSos : a.es_sos;
-          return isSos
-            ? Alerta.crearEmergenciaSOS(
-                a.id,
-                a.descripcion,
-                a.fechaHora || a.fecha_hora,
-                a.usuarioId || a.usuario_id
-              )
-            : Alerta.crearDesdeFormulario(
-                a.id,
-                a.descripcion,
-                a.fechaHora || a.fecha_hora,
-                a.usuarioId || a.usuario_id,
-                a.categoria?.id || a.categoriaId || a.categoria_id || 4
-              );
-        });
+        return data.map(mapAlertaResponse);
       }
       return [];
     } catch (error) {
@@ -177,22 +141,7 @@ export class HttpAlertaRepository implements IAlertaRepository {
     try {
       const response = await this.http.get<any>(`${this.endpoints.alertas}/${id}`);
       if (response.data) {
-        const a = response.data;
-        const isSos = a.esSos !== undefined ? a.esSos : a.es_sos;
-        return isSos
-          ? Alerta.crearEmergenciaSOS(
-              a.id,
-              a.descripcion,
-              a.fechaHora || a.fecha_hora,
-              a.usuarioId || a.usuario_id
-            )
-          : Alerta.crearDesdeFormulario(
-              a.id,
-              a.descripcion,
-              a.fechaHora || a.fecha_hora,
-              a.usuarioId || a.usuario_id,
-              a.categoria?.id || a.categoriaId || a.categoria_id || 10
-            );
+        return mapAlertaResponse(response.data);
       }
       return undefined;
     } catch (error) {

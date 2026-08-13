@@ -1,19 +1,23 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, ReactNode } from 'react';
+import { useAuthController } from '../../application/controllers/useAuthController';
+import { useDI } from './DIContext';
 import { Usuario } from '../../domain/entities/usuario';
 import { Barrio } from '../../domain/entities/barrio';
 import { Cuadrante } from '../../domain/entities/cuadrante';
 import { Configuracion } from '../../domain/entities/configuracion';
-import { DependencyContainer } from '../../infrastructure/config/dependencyContainer';
-import { TokenStorage } from '../../infrastructure/adapters/storage/TokenStorage';
 
 interface AuthContextType {
   user: Usuario | null;
   barrio: Barrio | null;
   cuadrante: Cuadrante | null;
   configuracion: Configuracion | null;
+  ciudadNombre: string | null;
+  paisNombre: string | null;
   isAuthenticated: boolean;
   loading: boolean;
-  login: (email: string, password: string) => Promise<void>;
+  /** true si el usuario tiene clave temporal (registro rápido de emergencia) y debe cambiarla. */
+  passwordTemporal: boolean;
+  login: (identificador: string, password: string) => Promise<void>;
   register: (
     nombre: string,
     email: string,
@@ -22,126 +26,45 @@ interface AuthContextType {
     barrioId: number,
     password: string
   ) => Promise<void>;
+  /** Cambia la clave. Si el usuario es temporal, no exige la actual. */
+  cambiarPassword: (identificador: string, passwordActual: string | null, passwordNueva: string) => Promise<void>;
+  /** Auto-login con un JWT recién emitido (registro rápido de emergencia). */
+  autenticarConToken: (token: string) => Promise<void>;
   logout: () => Promise<void>;
   setConfiguracion: (config: Configuracion | null) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+/**
+ * Thin wrapper: delega TODA la lógica al useAuthController (capa application).
+ * Este provider solo conecta el controller de aplicación con el árbol de React.
+ */
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<Usuario | null>(null);
-  const [barrio, setBarrio] = useState<Barrio | null>(null);
-  const [cuadrante, setCuadrante] = useState<Cuadrante | null>(null);
-  const [configuracion, setConfiguracion] = useState<Configuracion | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
+  const container = useDI();
+  const controller = useAuthController(container);
+  const { sesion, loading, isAuthenticated, passwordTemporal } = controller;
 
-  const applySesion = (sesion: {
-    user: Usuario;
-    barrio: Barrio | null;
-    cuadrante: Cuadrante | null;
-    configuracion: Configuracion | null;
-  }) => {
-    setUser(sesion.user);
-    setBarrio(sesion.barrio);
-    setCuadrante(sesion.cuadrante);
-    setConfiguracion(sesion.configuracion);
+  const value: AuthContextType = {
+    user: sesion.user,
+    barrio: sesion.barrio,
+    cuadrante: sesion.cuadrante,
+    configuracion: sesion.configuracion,
+    ciudadNombre: sesion.ciudadNombre,
+    paisNombre: sesion.paisNombre,
+    isAuthenticated,
+    loading,
+    passwordTemporal,
+    login: (identificador, password) => controller.login({ identificador, password }),
+    register: (nombre, email, phone, address, barrioId, password) =>
+      controller.register({ nombre, email, phone, address, barrioId, password }),
+    cambiarPassword: controller.cambiarPassword,
+    autenticarConToken: controller.autenticarConToken,
+    logout: controller.logout,
+    setConfiguracion: controller.setConfiguracion,
   };
 
-  useEffect(() => {
-    async function loadSession() {
-      try {
-        const token = await TokenStorage.getToken();
-        if (token) {
-          const authRepo = DependencyContainer.getInstance().getAuthRepository();
-          const sesion = await authRepo.getMe();
-          applySesion(sesion);
-        }
-      } catch (error) {
-        console.warn('No active session or token expired', error);
-        await TokenStorage.clearToken();
-        setUser(null);
-        setBarrio(null);
-        setCuadrante(null);
-        setConfiguracion(null);
-      } finally {
-        setLoading(false);
-      }
-    }
-    loadSession();
-  }, []);
-
-  const login = async (email: string, password: string) => {
-    setLoading(true);
-    try {
-      const authRepo = DependencyContainer.getInstance().getAuthRepository();
-      const sesion = await authRepo.login(email, password);
-      applySesion(sesion);
-    } catch (error) {
-      setUser(null);
-      setBarrio(null);
-      setCuadrante(null);
-      setConfiguracion(null);
-      throw error;
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const register = async (
-    nombre: string,
-    email: string,
-    phone: string,
-    address: string,
-    barrioId: number,
-    password: string
-  ) => {
-    setLoading(true);
-    try {
-      const authRepo = DependencyContainer.getInstance().getAuthRepository();
-      const sesion = await authRepo.register(nombre, email, phone, address, barrioId, password);
-      applySesion(sesion);
-    } catch (error) {
-      setUser(null);
-      setBarrio(null);
-      setCuadrante(null);
-      setConfiguracion(null);
-      throw error;
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const logout = async () => {
-    setLoading(true);
-    try {
-      await TokenStorage.clearToken();
-      setUser(null);
-      setBarrio(null);
-      setCuadrante(null);
-      setConfiguracion(null);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return (
-    <AuthContext.Provider
-      value={{
-        user,
-        barrio,
-        cuadrante,
-        configuracion,
-        isAuthenticated: !!user,
-        loading,
-        login,
-        register,
-        logout,
-        setConfiguracion,
-      }}
-    >
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
 export const useAuth = () => {

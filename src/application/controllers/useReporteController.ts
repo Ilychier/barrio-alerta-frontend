@@ -1,9 +1,14 @@
 import { useState, useCallback, useEffect } from 'react';
-import { DependencyContainer } from '../../infrastructure/config/dependencyContainer';
+import { IContainer } from '../ports/IContainer';
 import { Categoria } from '../../domain/entities/categoria';
 import { CategoriaDescripcion } from '../../domain/entities/categoriaDescripcion';
+import { ICategoriaRepository } from '../../domain/ports/ICategoriaRepository';
 
-export function useReporteController(currentUserId: number) {
+/**
+ * Controller del formulario de reporte. El contenedor se inyecta por prop
+ * (regla hexagonal: application no importa infrastructure directamente).
+ */
+export function useReporteController(container: IContainer, currentUserId: number) {
   const [categorias, setCategorias] = useState<Categoria[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
   const [selectedDescription, setSelectedDescription] = useState('');
@@ -11,16 +16,15 @@ export function useReporteController(currentUserId: number) {
   const [descripciones, setDescripciones] = useState<CategoriaDescripcion[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const container = DependencyContainer.getInstance();
   const reportarUseCase = container.getReportarIncidenteUseCase();
+  const categoriaRepo: ICategoriaRepository = container.getReferenciaRepository();
 
   useEffect(() => {
     let active = true;
     async function loadCategorias() {
       try {
         setLoading(true);
-        const repo = DependencyContainer.getInstance().getReferenciaRepository();
-        const res = await repo.getCategorias();
+        const res = await categoriaRepo.getCategorias();
         if (active) {
           setCategorias(res);
         }
@@ -36,15 +40,14 @@ export function useReporteController(currentUserId: number) {
     return () => {
       active = false;
     };
-  }, []);
+  }, [categoriaRepo]);
 
   const handleSelectCategory = useCallback(async (catId: number) => {
     setSelectedCategory(catId);
     setDescripcionDetallada('');
 
     try {
-      const repo = DependencyContainer.getInstance().getReferenciaRepository();
-      const list = await repo.getDescripcionesPorCategoria(catId);
+      const list = await categoriaRepo.getDescripcionesPorCategoria(catId);
       setDescripciones(list);
 
       if (list.length > 0) {
@@ -57,7 +60,7 @@ export function useReporteController(currentUserId: number) {
       setDescripciones([]);
       setSelectedDescription('');
     }
-  }, []);
+  }, [categoriaRepo]);
 
   const handleSelectDescription = useCallback((desc: string) => {
     setSelectedDescription(desc);

@@ -1,18 +1,28 @@
-import { IReferenciaRepository, PaginatedResult } from '../../../domain/ports/IReferenciaRepository';
+import { PaginatedResult } from '../../../domain/ports/PaginatedResult';
 import { Usuario } from '../../../domain/entities/usuario';
 import { Barrio } from '../../../domain/entities/barrio';
 import { Cuadrante } from '../../../domain/entities/cuadrante';
 import { Categoria } from '../../../domain/entities/categoria';
 import { CategoriaDescripcion } from '../../../domain/entities/categoriaDescripcion';
+import { Localidad } from '../../../domain/entities/localidad';
+import { ICategoriaRepository } from '../../../domain/ports/ICategoriaRepository';
+import { IGeografiaRepository } from '../../../domain/ports/IGeografiaRepository';
+import { IUsuarioRepository } from '../../../domain/ports/IUsuarioRepository';
 
 const INITIAL_CUADRANTES: Cuadrante[] = [
   new Cuadrante(101, 'CAI Soacha Centro', '+57 310 555 0123', 'cai.soacha.centro@test.com'),
   new Cuadrante(102, 'CAI Compartir', '+57 312 444 9876', 'cai.compartir@test.com'),
 ];
 
+const INITIAL_LOCALIDADES: Localidad[] = [
+  new Localidad(1, 'Castilla', 2),
+  new Localidad(2, 'El Poblado', 2),
+  new Localidad(3, 'Usaquén', 5),
+];
+
 const INITIAL_BARRIOS: Barrio[] = [
-  new Barrio(1, 'Soacha Centro', 101),
-  new Barrio(2, 'Compartir', 102),
+  new Barrio(1, 'Soacha Centro', 101, 1),
+  new Barrio(2, 'Compartir', 102, 2),
 ];
 
 const INITIAL_USUARIOS: Usuario[] = [
@@ -27,8 +37,11 @@ const INITIAL_CATEGORIAS: Categoria[] = [
   new Categoria(13, 'Incendio', 'Flame'),
 ];
 
-export class InMemoryReferenciaRepository implements IReferenciaRepository {
+export class InMemoryReferenciaRepository
+  implements ICategoriaRepository, IGeografiaRepository, IUsuarioRepository
+{
   private readonly cuadrantes: Cuadrante[] = INITIAL_CUADRANTES;
+  private readonly localidades: Localidad[] = INITIAL_LOCALIDADES;
   private readonly barrios: Barrio[] = INITIAL_BARRIOS;
   private readonly usuarios: Usuario[] = INITIAL_USUARIOS;
   private readonly categorias: Categoria[] = INITIAL_CATEGORIAS;
@@ -45,13 +58,18 @@ export class InMemoryReferenciaRepository implements IReferenciaRepository {
     return this.barrios;
   }
 
-  async getBarriosPaginated(page: number, size: number): Promise<PaginatedResult<Barrio>> {
+  async getLocalidadesByMunicipio(municipioId: number): Promise<Localidad[]> {
+    return this.localidades.filter((l) => l.municipioId === municipioId);
+  }
+
+  async getBarriosPaginated(page: number, size: number, localidadId?: number): Promise<PaginatedResult<Barrio>> {
+    const filtrados = localidadId ? this.barrios.filter((b) => b.localidadId === localidadId) : this.barrios;
     const start = page * size;
-    const items = this.barrios.slice(start, start + size);
+    const items = filtrados.slice(start, start + size);
     return {
       items,
-      totalElements: this.barrios.length,
-      totalPages: Math.ceil(this.barrios.length / size),
+      totalElements: filtrados.length,
+      totalPages: Math.ceil(filtrados.length / size),
       page,
       size,
     };

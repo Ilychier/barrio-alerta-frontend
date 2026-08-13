@@ -1,120 +1,188 @@
 import { Slot, usePathname, useRouter } from "expo-router";
-import { useState } from "react";
-import {
-  ActivityIndicator,
-  Animated,
-  Image,
-  Pressable,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  useWindowDimensions,
-  View,
-} from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useEffect, useRef, useState } from "react";
+import { StyleSheet, useWindowDimensions, View } from "react-native";
 
-import Icon from "@/presentation/components/atomic/Icon";
-import { IconRenderer } from "@/presentation/components/atomic/IconRenderer";
+import { getModoEmergencia } from "@/constants/env";
 import { Header } from "@/presentation/components/layout/Header";
+import { AppDrawer, DrawerMode } from "@/presentation/components/layout/AppDrawer";
 import { SVGBackground } from "@/presentation/components/layout/SVGBackground";
+import { AboutDeveloperModal } from "@/presentation/components/molecules/AboutDeveloperModal";
+import { AppLoadingArt } from "@/presentation/components/molecules/AppLoadingArt";
+import { ProximamenteModal } from "@/presentation/components/molecules/ProximamenteModal";
 import { AuthProvider, useAuth } from "@/presentation/context/AuthContext";
+import { DIProvider } from "@/presentation/context/DIContext";
+import { ultimaVistaEmergencia } from "@/presentation/mascotas/state/ultimaVistaEmergencia";
+import { ultimoRegistroRapido } from "@/presentation/mascotas/state/ultimoRegistroRapido";
+import { CambiarPasswordScreen } from "@/presentation/screens/CambiarPasswordScreen";
+import { LandingEmergenciaMascotasScreen } from "@/presentation/screens/LandingEmergenciaMascotasScreen";
 import { LandingScreen } from "@/presentation/screens/LandingScreen";
 import { LoginScreen } from "@/presentation/screens/LoginScreen";
 import { RegisterScreen } from "@/presentation/screens/RegisterScreen";
+import { useDrawerAnimation } from "@/presentation/hooks/useDrawerAnimation";
 import {
   AppTheme,
   ThemeProvider,
   useAppTheme,
 } from "@/presentation/theme/ThemeContext";
 
+/** Tiempo mínimo que el arte de carga permanece visible (splash elegante). */
+const SPLASH_MIN_MS = 1600;
+
 export default function RootLayout() {
   return (
-    <AuthProvider>
-      <ThemeProvider>
-        <TabLayout />
-      </ThemeProvider>
-    </AuthProvider>
+    <DIProvider>
+      <AuthProvider>
+        <ThemeProvider>
+          <TabLayout />
+        </ThemeProvider>
+      </AuthProvider>
+    </DIProvider>
   );
 }
 
 function TabLayout() {
-  const { user, barrio, cuadrante, isAuthenticated, loading, logout } =
-    useAuth();
+  const {
+    user,
+    barrio,
+    ciudadNombre,
+    isAuthenticated,
+    loading,
+    passwordTemporal,
+    logout,
+  } = useAuth();
   const { theme } = useAppTheme();
   const styles = getStyles(theme);
-  const [authView, setAuthView] = useState<"landing" | "login" | "register">(
-    "landing",
-  );
+  const [authView, setAuthView] = useState<
+    "landing" | "login" | "register" | "cambiar-password"
+  >("landing");
+  // Modo del drawer: por defecto "desaparecidos" (BC Mascotas)
+  const [menuMode, setMenuMode] = useState<DrawerMode>("desaparecidos");
+  // Modo emergencia (runtime, frontend): la app abre en la landing de mascotas
+  const modoEmergencia = getModoEmergencia();
+  // Vista activa en modo emergencia: la landing misma o la app normal
+  const [vistaEmergencia, setVistaEmergencia] = useState<
+    "emergencia" | "app-normal"
+  >("emergencia");
+  // Key de la landing de emergencia: al cambiar, React la desmonta y remonta
+  // (resetea todo su estado local). Se incrementa en cada logout.
+  const [landingKey, setLandingKey] = useState(0);
+  // Modal "Próximamente" del módulo Alertas (bloqueado en el drawer).
+  const [proximamenteVisible, setProximamenteVisible] = useState(false);
+  const [aboutModalVisible, setAboutModalVisible] = useState(false);
+
+  // Splash mínimo: el arte de carga se muestra al menos SPLASH_MIN_MS aunque
+  // el auth termine antes (evita el "flash" de milisegundos en conexiones
+  // rápidas y garantiza una entrada elegante y visible).
+  const [splashVisible, setSplashVisible] = useState(true);
+  const splashStart = useRef(0);
+  useEffect(() => {
+    if (splashStart.current === 0) splashStart.current = Date.now();
+    if (!loading && splashVisible) {
+      const restante = Math.max(0, SPLASH_MIN_MS - (Date.now() - splashStart.current));
+      const t = setTimeout(() => setSplashVisible(false), restante);
+      return () => clearTimeout(t);
+    }
+  }, [loading, splashVisible]);
 
   const { width } = useWindowDimensions();
   const isSmallScreen = width < 768;
   const router = useRouter();
   const pathname = usePathname();
-  const insets = useSafeAreaInsets();
 
-  const [visible, setVisible] = useState(false);
+  // Animación del drawer (hook extraído — SRP)
+  const { visible: menuVisible, slideAnim, fadeAnim, openMenu, closeMenu } = useDrawerAnimation();
 
-  // Use state instead of useRef to avoid ESLint rules about accessing ref during render
-  const [slideAnim] = useState(() => new Animated.Value(-280));
-  const [fadeAnim] = useState(() => new Animated.Value(0));
+  // Al iniciar sesión (transición !isAuthenticated → isAuthenticated),
+  // el modo por defecto es "desaparecidos" y navega a su primera opción (/mascotas)
+  // EXCEPTO en modo emergencia: el usuario se queda en la landing de emergencia
+  // hasta que clickee "Ver Dashboard" explícitamente.
+  const wasAuthenticated = useRef(false);
+  useEffect(() => {
+    if (isAuthenticated && !wasAuthenticated.current) {
+      wasAuthenticated.current = true;
+      setMenuMode("desaparecidos");
+      if (modoEmergencia && vistaEmergencia === "emergencia") {
+        // Quedarse en la landing de emergencia (auto-login del registro rápido)
+        return;
+      }
+      router.replace("/mascotas");
+    }
+    if (!isAuthenticated) {
+      wasAuthenticated.current = false;
+    }
+  }, [isAuthenticated, router, modoEmergencia, vistaEmergencia]);
 
-  const openMenu = () => {
-    setVisible(true);
-    Animated.parallel([
-      Animated.timing(fadeAnim, {
-        toValue: 1,
-        duration: 220,
-        useNativeDriver: true,
-      }),
-      Animated.timing(slideAnim, {
-        toValue: 0,
-        duration: 220,
-        useNativeDriver: true,
-      }),
-    ]).start();
+  // Forzar cambio de clave cuando el usuario autenticado tiene clave
+  // temporal (registro rápido de emergencia). Se deriva durante el render
+  // (no en un effect) para evitar renders en cascada.
+  const forzarCambioClave =
+    isAuthenticated &&
+    passwordTemporal &&
+    modoEmergencia &&
+    vistaEmergencia === "emergencia";
+
+  // Logout explícito: vuelve a la landing (de emergencia o de marketing
+  // según el modo) — no a login/register ni al dashboard. Limpia el estado
+  // del BC Mascotas (singletons) y fuerza el remount de la landing para que
+  // arranque en "reportar" con el formulario vacío.
+  const handleLogout = async () => {
+    setAuthView("landing");
+    setVistaEmergencia("emergencia");
+    ultimoRegistroRapido.clear();
+    ultimaVistaEmergencia.set("reportar");
+    setLandingKey((k) => k + 1);
+    await logout();
   };
 
-  const closeMenu = () => {
-    Animated.parallel([
-      Animated.timing(fadeAnim, {
-        toValue: 0,
-        duration: 180,
-        useNativeDriver: true,
-      }),
-      Animated.timing(slideAnim, {
-        toValue: -280,
-        duration: 180,
-        useNativeDriver: true,
-      }),
-    ]).start(() => {
-      setVisible(false);
-    });
-  };
-
-  const handleNavigate = (route: any) => {
-    router.push(route);
+  const handleNavigate = (route: string) => {
+    router.push(route as any);
     closeMenu();
+  };
+
+  // Al cambiar el modo con el toggle, navega a la primera opción de cada menú
+  const handleModeChange = (mode: DrawerMode) => {
+    setMenuMode(mode);
+    if (mode === "desaparecidos") {
+      handleNavigate("/mascotas");
+    } else {
+      handleNavigate("/");
+    }
   };
 
   const isRouteActive = (route: string) => {
     if (route === "/") {
       return pathname === "/" || pathname === "/index" || pathname === "";
     }
+    // El feed de mascotas solo se marca activo en su ruta exacta,
+    // no en sub-rutas (reportar, mis-reportes, historias, detalle)
+    if (route === "/mascotas") {
+      return pathname === "/mascotas" || pathname === "/mascotas/index";
+    }
     return pathname.startsWith(route);
   };
 
-  if (loading) {
+  // Es sub-ruta (ej: /mascotas/1) → muestra flecha "atrás" en el header
+  const isSubRoute =
+    pathname !== "/" &&
+    pathname !== "/mascotas" &&
+    pathname !== "/mascotas/index" &&
+    pathname !== "/index" &&
+    pathname !== "";
+
+  const handleBack = () => {
+    if (router.canGoBack()) {
+      router.back();
+    } else if (pathname.startsWith("/mascotas")) {
+      router.replace("/mascotas" as any);
+    } else {
+      router.replace("/" as any);
+    }
+  };
+
+  if (loading || splashVisible) {
     return (
       <SVGBackground>
-        <View
-          style={{
-            flex: 1,
-            justifyContent: "center",
-            alignItems: "center",
-          }}
-        >
-          <ActivityIndicator size="large" color={theme.colors.green} />
-        </View>
+        <AppLoadingArt theme={theme} />
       </SVGBackground>
     );
   }
@@ -136,6 +204,27 @@ function TabLayout() {
         />
       );
     }
+    if (authView === "cambiar-password") {
+      return (
+        <CambiarPasswordScreen onBackPress={() => setAuthView("landing")} />
+      );
+    }
+    // Modo emergencia: la landing de mascotas reemplaza a la de marketing
+    if (modoEmergencia) {
+      return (
+        <LandingEmergenciaMascotasScreen
+          key={landingKey}
+          onLoginPress={() => setAuthView("login")}
+          onDashboardPress={() => {
+            setVistaEmergencia("app-normal");
+            router.replace("/mascotas" as any);
+          }}
+          onCambiarPasswordPress={() => setAuthView("cambiar-password")}
+          onForzarCambioClave={() => setAuthView("cambiar-password")}
+          onLogoutPress={handleLogout}
+        />
+      );
+    }
     return (
       <LandingScreen
         onLoginPress={() => setAuthView("login")}
@@ -144,15 +233,54 @@ function TabLayout() {
     );
   }
 
+  // Autenticado en modo emergencia: si el usuario aún está en la vista
+  // "emergencia" (auto-login del registro rápido), se queda en la landing
+  // de emergencia en lugar de entrar al dashboard.
+  if (modoEmergencia && vistaEmergencia === "emergencia") {
+    // Flujo forzado (passwordTemporal): CambiarPasswordScreen a nivel de
+    // root, sin flecha atrás — el usuario no puede evadir el cambio.
+    if (forzarCambioClave) {
+      return <CambiarPasswordScreen onSuccess={() => setAuthView("landing")} />;
+    }
+    if (authView === "cambiar-password") {
+      // Flujo voluntario (sin passwordTemporal): con flecha atrás a landing.
+      return (
+        <CambiarPasswordScreen onBackPress={() => setAuthView("landing")} />
+      );
+    }
+    return (
+      <LandingEmergenciaMascotasScreen
+        key={landingKey}
+        onLoginPress={() => setAuthView("login")}
+        onDashboardPress={() => {
+          setVistaEmergencia("app-normal");
+          router.replace("/mascotas" as any);
+        }}
+        onCambiarPasswordPress={() => setAuthView("cambiar-password")}
+        onForzarCambioClave={() => setAuthView("cambiar-password")}
+        onLogoutPress={handleLogout}
+      />
+    );
+  }
+
+  const handleOpenMenu = () => {
+    // Sincroniza el toggle con la ruta activa al abrir el drawer
+    if (pathname.startsWith("/mascotas")) {
+      setMenuMode("desaparecidos");
+    } else {
+      setMenuMode("alertas");
+    }
+    openMenu();
+  };
+
   return (
     <SVGBackground>
       {/* Header with hamburger menu toggle - badges conditionally visible outside based on screen size */}
       <Header
-        barrioNombre={barrio?.nombre}
-        cuadranteNombre={cuadrante?.nombre_unidad}
-        usuarioNombre={user?.nombre}
         isMobile={isSmallScreen}
-        onMenuPress={openMenu}
+        onMenuPress={handleOpenMenu}
+        onBackPress={isSubRoute ? handleBack : undefined}
+        onLogoutPress={handleLogout}
       />
 
       {/* Active Screen Area */}
@@ -161,210 +289,38 @@ function TabLayout() {
       </View>
 
       {/* Hamburger Menu slide-out drawer */}
-      {visible && (
-        <View style={StyleSheet.absoluteFill}>
-          {/* Dark translucent backdrop */}
-          <Pressable style={StyleSheet.absoluteFill} onPress={closeMenu}>
-            <Animated.View style={[styles.backdrop, { opacity: fadeAnim }]} />
-          </Pressable>
+      <AppDrawer
+        visible={menuVisible}
+        slideAnim={slideAnim}
+        fadeAnim={fadeAnim}
+        isSmallScreen={isSmallScreen}
+        user={user}
+        barrio={barrio}
+        ciudadNombre={ciudadNombre}
+        menuMode={menuMode}
+        styles={styles as unknown as Record<string, any>}
+        theme={theme}
+        onClose={closeMenu}
+        onNavigate={handleNavigate}
+        onModeChange={handleModeChange}
+        onLogout={handleLogout}
+        onAboutOpen={() => setAboutModalVisible(true)}
+        onProximamenteOpen={() => setProximamenteVisible(true)}
+        isRouteActive={isRouteActive}
+      />
 
-          {/* Slide-out Panel */}
-          <Animated.View
-            style={[
-              styles.drawerPanel,
-              {
-                paddingTop: Math.max(insets.top, 24) + 12,
-                paddingBottom: Math.max(insets.bottom, 16) + 12,
-                transform: [{ translateX: slideAnim }],
-              },
-            ]}
-          >
-            {/* Header inside Menu */}
-            <View style={styles.drawerHeader}>
-              <View style={styles.drawerLogoContainer}>
-                <Image
-                  source={require("@/assets/images/horizontal-logo.png")}
-                  style={styles.drawerLogoImage}
-                  resizeMode="contain"
-                />
-              </View>
-              <TouchableOpacity
-                onPress={closeMenu}
-                style={styles.closeButton}
-                activeOpacity={0.7}
-              >
-                <IconRenderer
-                  name="X"
-                  size={20}
-                  color={theme.colors.textPrimary}
-                />
-              </TouchableOpacity>
-            </View>
+      <AboutDeveloperModal
+        visible={aboutModalVisible}
+        onClose={() => setAboutModalVisible(false)}
+      />
 
-            {/* Conditionally include username and location badges ONLY on smaller screens */}
-            {isSmallScreen && (
-              <View style={styles.drawerSection}>
-                {user?.nombre && (
-                  <View style={styles.drawerUserBadge}>
-                    <Icon name="User" size={14} color={theme.colors.green} />
-                    <View>
-                      <Text style={styles.drawerUserTitle}>Usuario Activo</Text>
-                      <Text style={styles.drawerUserName}>{user.nombre}</Text>
-                    </View>
-                  </View>
-                )}
-                {barrio?.nombre && cuadrante?.nombre_unidad && (
-                  <View style={styles.drawerLocationBadge}>
-                    <Icon name="MapPin" size={14} color={theme.colors.green} />
-                    <View style={styles.locationTextContainer}>
-                      <Text style={styles.drawerLocationTitle}>
-                        Barrio / CAI
-                      </Text>
-                      <Text style={styles.drawerCuadranteText}>
-                        {barrio.nombre} / {cuadrante.nombre_unidad}
-                      </Text>
-                    </View>
-                  </View>
-                )}
-              </View>
-            )}
-
-            {/* Navigation list */}
-            <View style={styles.navLinks}>
-              <Text style={styles.sectionLabel}>Navegación</Text>
-
-              <TouchableOpacity
-                onPress={() => handleNavigate("/")}
-                style={[
-                  styles.navLink,
-                  isRouteActive("/") && styles.navLinkActive,
-                ]}
-                activeOpacity={0.7}
-              >
-                <IconRenderer
-                  name="Activity"
-                  size={16}
-                  color={
-                    isRouteActive("/")
-                      ? theme.colors.textPrimary
-                      : theme.colors.textMuted
-                  }
-                />
-                <Text
-                  style={[
-                    styles.navLinkText,
-                    isRouteActive("/") && styles.navLinkTextActive,
-                  ]}
-                >
-                  Dashboard
-                </Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                onPress={() => handleNavigate("/alertas-sector")}
-                style={[
-                  styles.navLink,
-                  isRouteActive("/alertas-sector") && styles.navLinkActive,
-                ]}
-                activeOpacity={0.7}
-              >
-                <Icon
-                  name="Bell"
-                  size={16}
-                  color={
-                    isRouteActive("/alertas-sector")
-                      ? theme.colors.textPrimary
-                      : theme.colors.textMuted
-                  }
-                />
-                <Text
-                  style={[
-                    styles.navLinkText,
-                    isRouteActive("/alertas-sector") &&
-                      styles.navLinkTextActive,
-                  ]}
-                >
-                  Alertas del Sector
-                </Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                onPress={() => handleNavigate("/reportar")}
-                style={[
-                  styles.navLink,
-                  isRouteActive("/reportar") && styles.navLinkActive,
-                ]}
-                activeOpacity={0.7}
-              >
-                <Icon
-                  name="ClockAlert"
-                  size={16}
-                  color={
-                    isRouteActive("/reportar")
-                      ? theme.colors.textPrimary
-                      : theme.colors.textMuted
-                  }
-                />
-                <Text
-                  style={[
-                    styles.navLinkText,
-                    isRouteActive("/reportar") && styles.navLinkTextActive,
-                  ]}
-                >
-                  Reportar
-                </Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                onPress={() => handleNavigate("/config")}
-                style={[
-                  styles.navLink,
-                  isRouteActive("/config") && styles.navLinkActive,
-                ]}
-                activeOpacity={0.7}
-              >
-                <Icon
-                  name="Settings"
-                  size={16}
-                  color={
-                    isRouteActive("/config")
-                      ? theme.colors.textPrimary
-                      : theme.colors.textMuted
-                  }
-                />
-                <Text
-                  style={[
-                    styles.navLinkText,
-                    isRouteActive("/config") && styles.navLinkTextActive,
-                  ]}
-                >
-                  Configuración (Notificaciones)
-                </Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                onPress={async () => {
-                  closeMenu();
-                  await logout();
-                }}
-                style={styles.navLink}
-                activeOpacity={0.7}
-              >
-                <Icon name="LogOut" size={16} color={theme.colors.red} />
-                <Text style={[styles.navLinkText, { color: theme.colors.red }]}>
-                  Cerrar Sesión
-                </Text>
-              </TouchableOpacity>
-            </View>
-
-            {/* Footer */}
-            <View style={styles.drawerFooter}>
-              <Text style={styles.footerText}>Barrio Alerta</Text>
-              <Text style={styles.footerSubtext}>v1.0.0 — Ing. Software I</Text>
-            </View>
-          </Animated.View>
-        </View>
-      )}
+      {/* Modal "Próximamente" — módulo Alertas bloqueado */}
+      <ProximamenteModal
+        visible={proximamenteVisible}
+        theme={theme}
+        styles={styles as unknown as Record<string, any>}
+        onClose={() => setProximamenteVisible(false)}
+      />
     </SVGBackground>
   );
 }
@@ -450,11 +406,6 @@ const getStyles = (theme: AppTheme) =>
       color: theme.colors.textMuted,
       fontWeight: "600",
     },
-    drawerLocationText: {
-      fontSize: 12,
-      fontWeight: "600",
-      color: theme.colors.textSecondary,
-    },
     drawerCuadranteText: {
       fontSize: 11,
       color: theme.colors.textTertiary,
@@ -490,6 +441,36 @@ const getStyles = (theme: AppTheme) =>
     navLinkTextActive: {
       color: theme.colors.textPrimary,
     },
+    modeToggle: {
+      flexDirection: "row",
+      backgroundColor: theme.colors.surfaceLight,
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+      padding: 4,
+      marginBottom: 16,
+      gap: 4,
+    },
+    modeBtn: {
+      flex: 1,
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 6,
+      paddingVertical: 8,
+      borderRadius: 9,
+    },
+    modeBtnActive: {
+      backgroundColor: theme.colors.green,
+    },
+    modeBtnText: {
+      fontSize: 12,
+      fontWeight: "700",
+      color: theme.colors.textMuted,
+    },
+    modeBtnTextActive: {
+      color: theme.colors.white,
+    },
     drawerFooter: {
       paddingTop: 16,
       borderTopWidth: 1,
@@ -505,5 +486,46 @@ const getStyles = (theme: AppTheme) =>
     footerSubtext: {
       fontSize: 9,
       color: theme.colors.textMuted,
+    },
+    proximamenteOverlay: {
+      flex: 1,
+      backgroundColor: "rgba(0, 0, 0, 0.6)",
+      justifyContent: "center",
+      alignItems: "center",
+      padding: 24,
+    },
+    proximamenteCard: {
+      backgroundColor: theme.colors.surface,
+      borderRadius: 20,
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+      padding: 24,
+      maxWidth: 420,
+      width: "100%",
+    },
+    proximamenteHeader: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+      marginBottom: 16,
+    },
+    proximamenteTitle: {
+      fontSize: 18,
+      fontWeight: "800",
+      color: theme.colors.textPrimary,
+      flex: 1,
+    },
+    proximamenteClose: {
+      padding: 6,
+    },
+    proximamenteBody: {
+      alignItems: "center",
+      gap: 12,
+    },
+    proximamenteText: {
+      fontSize: 14,
+      color: theme.colors.textSecondary,
+      textAlign: "center",
+      lineHeight: 21,
     },
   });

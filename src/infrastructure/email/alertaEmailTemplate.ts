@@ -7,6 +7,7 @@
  *  - 'reporte'    → Incidente reportado (informativo, verde #2A768A)
  *  - 'finalizada' → Emergencia finalizada (tranquilizadora, verde #2A768A)
  */
+import { CATEGORIA_FIN_EMERGENCIA } from '../../domain/constants/categoriasReservadas';
 
 type EmailTipo = 'sos' | 'reporte' | 'finalizada';
 
@@ -53,7 +54,7 @@ const COLORS = {
 // ─────────────────────────────────────────────────────────────
 
 function resolveTipo(data: AlertaEmailData): EmailTipo {
-  if (data.categoriaId === 5) return 'finalizada';
+  if (data.categoriaId === CATEGORIA_FIN_EMERGENCIA) return 'finalizada';
   if (data.esSos) return 'sos';
   return 'reporte';
 }

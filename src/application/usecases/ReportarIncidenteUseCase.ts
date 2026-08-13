@@ -18,10 +18,9 @@ export class ReportarIncidenteUseCase {
   constructor(private readonly alertaRepo: IAlertaRepository) {}
 
   async execute(request: ReportarIncidenteRequest): Promise<ReportarIncidenteResponse> {
-    const newAlertId = Math.floor(Math.random() * 1000) + 1000;
-
-    const incidentAlert = Alerta.crearDesdeFormulario(
-      newAlertId,
+    // El ID lo asigna el repositorio (backend en producción, in-memory en dev).
+    const draft = Alerta.crearDesdeFormulario(
+      0,
       request.descripcion,
       new Date().toISOString(),
       request.usuarioId,
@@ -31,17 +30,17 @@ export class ReportarIncidenteUseCase {
     let evidencia: Evidencia | undefined;
 
     if (request.evidenciaUrl) {
-      const newEvidenceId = Math.floor(Math.random() * 1000) + 2000;
+      // El ID lo asigna el repositorio (backend en producción).
       evidencia = new Evidencia(
-        newEvidenceId,
-        newAlertId,
+        0,
+        draft.id,
         request.evidenciaUrl,
         'image/jpeg',
       );
     }
 
-    await this.alertaRepo.crearAlerta(incidentAlert, evidencia ? [evidencia] : undefined);
+    const alerta = await this.alertaRepo.crearAlerta(draft, evidencia ? [evidencia] : undefined);
 
-    return { alerta: incidentAlert, evidencia };
+    return { alerta, evidencia };
   }
 }
