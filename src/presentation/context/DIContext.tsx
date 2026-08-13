@@ -1,5 +1,5 @@
 import React, { createContext, useContext, ReactNode } from 'react';
-import { DependencyContainer } from '../../infrastructure/config/dependencyContainer';
+import { DependencyContainer } from '../../composition/dependencyContainer';
 
 /**
  * Composition root: único punto donde la presentación toca infraestructura.
