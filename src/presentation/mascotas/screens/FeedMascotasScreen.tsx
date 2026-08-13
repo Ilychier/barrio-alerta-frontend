@@ -17,8 +17,8 @@ import { EstadoReporte } from "../../../domain/mascotas/entities/EstadoReporte";
 import { ReporteMascota } from "../../../domain/mascotas/entities/ReporteMascota";
 import { TipoReporte } from "../../../domain/mascotas/entities/TipoReporte";
 import Icon from "../../components/atomic/Icon";
-import { useDI } from "../../context/DIContext";
 import { SelectInput, SelectOption } from "../../components/atomic/SelectInput";
+import { useDI } from "../../context/DIContext";
 import { AppTheme, useAppTheme } from "../../theme/ThemeContext";
 
 /**
@@ -149,7 +149,11 @@ export function FeedMascotasScreen({
       <Text style={styles.cardTipo}>{feed.nombreTipoMascota(item)}</Text>
       {item.fotoUrl ? (
         <Image
-          source={{ uri: resolverUrlFoto(item.fotoUrl, container.getBaseUrl()) ?? undefined }}
+          source={{
+            uri:
+              resolverUrlFoto(item.fotoUrl, container.getBaseUrl()) ??
+              undefined,
+          }}
           style={styles.cardFoto}
           contentFit="cover"
         />
@@ -175,14 +179,6 @@ export function FeedMascotasScreen({
 
   return (
     <View style={styles.container}>
-      {/* ── Título ─────────────────────────────────────── */}
-      <View style={styles.header}>
-        <Text style={styles.title}>Mascotas en Emergencia</Text>
-        <Text style={styles.subtitle}>
-          Reportes de mascotas perdidas y encontradas en tu ciudad
-        </Text>
-      </View>
-
       {/* ── Búsqueda por texto ────────────────────────────── */}
       <View style={styles.busquedaContainer}>
         <Icon name="Search" size={16} color={theme.colors.textMuted} />

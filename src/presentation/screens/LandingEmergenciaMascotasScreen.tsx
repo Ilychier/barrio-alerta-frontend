@@ -240,20 +240,6 @@ export function LandingEmergenciaMascotasScreen({
         </Pressable>
       </View>
 
-      {/* ── Hero (solo en vista Reportar) ──────────────── */}
-      {vista === "reportar" && (
-        <View style={styles.hero}>
-          <Text style={styles.heroTitle}>
-            Mascotas desaparecidas por el terremoto
-          </Text>
-          <Text style={styles.heroSubtitle}>
-            Si viste o perdiste un animalito, repórtalo ahora. Tu reporte se
-            publica al instante y cualquiera podrá contactar al dueño del
-            animalito por WhatsApp.
-          </Text>
-        </View>
-      )}
-
       {/* ── Contenido ──────────────────────────────────── */}
       <View style={styles.content}>
         {vista === "reportar" ? (

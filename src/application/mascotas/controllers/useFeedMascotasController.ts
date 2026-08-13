@@ -79,7 +79,11 @@ export function useFeedMascotasController(container: IContainer, refreshTrigger?
         const result = await useCase.execute({ filtros: filtrosAplicados, page: pagina });
         setPage(pagina);
         setTotalPages(result.totalPages);
-        setReportes((prev) => (acumular ? [...prev, ...result.items] : result.items));
+        setReportes((prev) =>
+          acumular
+            ? [...prev, ...result.items.filter((i) => !prev.some((p) => p.id === i.id))]
+            : result.items,
+        );
       } catch (e) {
         setError('No se pudieron cargar los reportes de mascotas');
         console.warn('[useFeedMascotasController] Error cargando feed:', e);
