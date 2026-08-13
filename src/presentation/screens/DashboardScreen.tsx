@@ -85,7 +85,6 @@ export function DashboardScreen() {
         <SOSButton
           step={sos.sosStep}
           countdown={sos.sosCountdown}
-          performanceTracker={sos.performanceTracker}
           onStart={sos.startSOS}
           onConfirm={sos.triggerSOSFinal}
           onCancel={sos.cancelSOS}

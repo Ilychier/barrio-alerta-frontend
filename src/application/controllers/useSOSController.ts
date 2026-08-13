@@ -14,7 +14,6 @@ export function useSOSController(
 ) {
   const [sosStep, setSosStep] = useState<SOSStep>(0);
   const [sosCountdown, setSosCountdown] = useState(3);
-  const [performanceTracker, setPerformanceTracker] = useState<string | null>(null);
 
   const useCase = container.getDispararSOSUseCase();
   const finalizarUseCase = container.getFinalizarEmergenciaUseCase();
@@ -23,11 +22,8 @@ export function useSOSController(
   const triggerSOSRef = useRef<() => void>(() => {});
 
   const triggerSOSFinal = useCallback(async () => {
-    const start = Date.now();
     await useCase.execute({ usuarioId: currentUserId });
 
-    const latency = Date.now() - start;
-    setPerformanceTracker(`${latency}ms`);
     setSosStep(2);
     if (onSuccess) {
       onSuccess();
@@ -75,7 +71,6 @@ export function useSOSController(
 
   const dismissSOS = useCallback(async () => {
     setSosStep(0);
-    setPerformanceTracker(null);
 
     try {
       await finalizarUseCase.execute(currentUserId);
@@ -90,7 +85,6 @@ export function useSOSController(
   return {
     sosStep,
     sosCountdown,
-    performanceTracker,
     startSOS,
     cancelSOS,
     triggerSOSFinal,

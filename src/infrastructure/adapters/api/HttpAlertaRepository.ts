@@ -2,6 +2,7 @@ import { isAxiosError } from 'axios';
 import { Alerta } from '../../../domain/entities/alerta';
 import { Evidencia } from '../../../domain/entities/evidencia';
 import { IAlertaRepository } from '../../../domain/ports/IAlertaRepository';
+import { CATEGORIA_SOS } from '../../../domain/constants/categoriasReservadas';
 import { HttpGenericService } from './HttpGenericService';
 import { mapAlertaResponse } from './mappers/AlertaMapper';
 import { HttpNotificacionEmailService } from './HttpNotificacionEmailService';
@@ -64,11 +65,11 @@ export class HttpAlertaRepository implements IAlertaRepository {
         descripcion: alerta.descripcion,
         esSos: alerta.es_sos,
         usuarioId: alerta.usuario_id,
-        categoriaId: alerta.es_sos ? 4 : alerta.categoria_id,
+        categoriaId: alerta.es_sos ? CATEGORIA_SOS : alerta.categoria_id,
       });
 
       const isSos = response.data.esSos !== undefined ? response.data.esSos : response.data.es_sos;
-      const createdCategoriaId = response.data.categoria?.id || response.data.categoriaId || response.data.categoria_id || alerta.categoria_id || 4;
+      const createdCategoriaId = response.data.categoria?.id || response.data.categoriaId || response.data.categoria_id || alerta.categoria_id || CATEGORIA_SOS;
       const createdAlerta = mapAlertaResponse(response.data);
 
       if (toEmail) {

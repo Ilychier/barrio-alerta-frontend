@@ -1,8 +1,6 @@
 import { Alerta } from '../../domain/entities/alerta';
 import { IAlertaRepository } from '../../domain/ports/IAlertaRepository';
-
-/** Categoría reservada: emergencia finalizada (regla de dominio compartida con el backend). */
-export const CATEGORIA_FIN_EMERGENCIA = 5;
+import { CATEGORIA_FIN_EMERGENCIA } from '../../domain/constants/categoriasReservadas';
 
 /**
  * Registra la alerta de "fin de emergencia" cuando el usuario descarta el SOS.

@@ -6,7 +6,6 @@ import Icon from "../atomic/Icon";
 interface SOSButtonProps {
   step: SOSStep;
   countdown: number;
-  performanceTracker: string | null;
   onStart: () => void;
   onConfirm: () => void;
   onCancel: () => void;
@@ -16,7 +15,6 @@ interface SOSButtonProps {
 export function SOSButton({
   step,
   countdown,
-  performanceTracker,
   onStart,
   onConfirm,
   onCancel,
@@ -236,20 +234,6 @@ const getStyles = (theme: AppTheme) =>
       color: theme.colors.textSecondary,
       textAlign: "center",
       marginTop: 4,
-    },
-    performanceBadge: {
-      marginTop: 12,
-      backgroundColor: "rgba(127, 29, 29, 0.8)",
-      paddingHorizontal: 10,
-      paddingVertical: 2,
-      borderRadius: 4,
-      borderWidth: 1,
-      borderColor: "rgba(220, 38, 38, 0.4)",
-    },
-    performanceText: {
-      fontSize: 10,
-      fontFamily: "monospace",
-      color: theme.colors.red,
     },
     dismissButton: {
       marginTop: 16,

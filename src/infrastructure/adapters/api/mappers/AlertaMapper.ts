@@ -1,4 +1,5 @@
 import { Alerta } from '../../../../domain/entities/alerta';
+import { CATEGORIA_SOS } from '../../../../domain/constants/categoriasReservadas';
 
 /**
  * Mapea responses HTTP crudos a la entidad de dominio Alerta.
@@ -18,6 +19,6 @@ export function mapAlertaResponse(a: any): Alerta {
     a.descripcion,
     fecha,
     usuarioId,
-    a.categoria?.id || a.categoriaId || a.categoria_id || 4,
+    a.categoria?.id || a.categoriaId || a.categoria_id || CATEGORIA_SOS,
   );
 }

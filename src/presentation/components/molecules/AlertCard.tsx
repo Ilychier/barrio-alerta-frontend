@@ -1,5 +1,6 @@
 import { StyleSheet, Text, View } from 'react-native';
 import { AlertaConDatos } from '../../../application/usecases/ObtenerAlertasUseCase';
+import { CATEGORIA_FIN_EMERGENCIA } from '../../../domain/constants/categoriasReservadas';
 import { AppTheme, useAppTheme } from '../../theme/ThemeContext';
 import Icon from '../atomic/Icon';
 
@@ -20,7 +21,7 @@ export function AlertCard({ item }: AlertCardProps) {
     minute: '2-digit',
   });
 
-  const isFine = alerta.categoria_id === 5;
+  const isFine = alerta.categoria_id === CATEGORIA_FIN_EMERGENCIA;
 
   return (
     <View style={[styles.card, isSos ? styles.cardSos : (isFine ? styles.cardFine : styles.cardNormal)]}>
