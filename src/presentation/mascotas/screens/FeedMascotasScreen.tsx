@@ -17,6 +17,7 @@ import { EstadoReporte } from "../../../domain/mascotas/entities/EstadoReporte";
 import { ReporteMascota } from "../../../domain/mascotas/entities/ReporteMascota";
 import { TipoReporte } from "../../../domain/mascotas/entities/TipoReporte";
 import Icon from "../../components/atomic/Icon";
+import { FeedSkeletonList } from "../../components/molecules/FeedSkeletonCard";
 import { SelectInput, SelectOption } from "../../components/atomic/SelectInput";
 import { useDI } from "../../context/DIContext";
 import { AppTheme, useAppTheme } from "../../theme/ThemeContext";
@@ -156,6 +157,7 @@ export function FeedMascotasScreen({
           }}
           style={styles.cardFoto}
           contentFit="cover"
+          placeholder={theme.colors.surfaceLight}
         />
       ) : null}
       <Text style={styles.cardUbicacion}>
@@ -250,10 +252,8 @@ export function FeedMascotasScreen({
       </View>
 
       {/* ── Lista ──────────────────────────────────────── */}
-      {feed.loading ? (
-        <View style={styles.centro}>
-          <ActivityIndicator size="large" color={theme.colors.green} />
-        </View>
+      {feed.initialLoading ? (
+        <FeedSkeletonList theme={theme} />
       ) : feed.error ? (
         <View style={styles.centro}>
           <Text style={styles.error}>{feed.error}</Text>

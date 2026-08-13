@@ -145,6 +145,10 @@ export function useFeedMascotasController(container: IContainer, refreshTrigger?
   const nombreTipoMascota = (reporte: ReporteMascota): string =>
     reporte.otroTipoMascota ?? nombrePorId(referencias?.tipoMascotaMap ?? new Map(), reporte.tipoMascotaId);
 
+  // Carga inicial completa: feed (página 0) + catálogos. Evita el salto de
+  // layout/texto al renderizar cards sin nombres de ciudad/tipo.
+  const initialLoading = loading || referenciasLoading;
+
   return {
     reportes,
     filtros: filtrosAplicados,
@@ -152,6 +156,7 @@ export function useFeedMascotasController(container: IContainer, refreshTrigger?
     busqueda: busquedaPendiente,
     setBusqueda,
     loading,
+    initialLoading,
     loadingMore,
     error,
     hasMore: page + 1 < totalPages,

@@ -16,6 +16,8 @@ import { ReporteRapidoResult } from "../../../domain/mascotas/ports/IReporteRapi
 import Icon from "../../components/atomic/Icon";
 import { useDI } from "../../context/DIContext";
 import { SelectInput } from "../../components/atomic/SelectInput";
+import { SelectSkeleton } from "../../components/molecules/SelectSkeleton";
+import { UbicacionSkeleton } from "../../components/molecules/UbicacionSkeleton";
 import { FotoPicker, FotoSeleccionada } from "./FotoPicker";
 import { UbicacionGeograficaPicker } from "../../components/molecules/UbicacionGeograficaPicker";
 import { AppTheme, useAppTheme } from "../../theme/ThemeContext";
@@ -290,7 +292,7 @@ export function RegistroRapidoForm({ onSuccess }: RegistroRapidoFormProps) {
       <View style={styles.seccion}>
         <Text style={styles.label}>Tipo de mascota</Text>
         {controller.referenciasLoading ? (
-          <ActivityIndicator color={theme.colors.green} />
+          <SelectSkeleton theme={theme} />
         ) : (
           <SelectInput
             label="Tipo de mascota"
@@ -323,13 +325,16 @@ export function RegistroRapidoForm({ onSuccess }: RegistroRapidoFormProps) {
       {/* ── Ubicación (cascada) ─────────────────────────── */}
       <View style={styles.seccion}>
         <Text style={styles.label}>¿Dónde está la mascota?</Text>
-        <UbicacionGeograficaPicker
-          ubicacion={ubicacion}
-          ciudadId={ciudadId}
-          onChangeCiudadId={(municipioId) => setCiudadId(municipioId)}
-          theme={theme}
-          loading={controller.referenciasLoading}
-        />
+        {controller.referenciasLoading ? (
+          <UbicacionSkeleton theme={theme} />
+        ) : (
+          <UbicacionGeograficaPicker
+            ubicacion={ubicacion}
+            ciudadId={ciudadId}
+            onChangeCiudadId={(municipioId) => setCiudadId(municipioId)}
+            theme={theme}
+          />
+        )}
       </View>
 
       {/* ── Descripción ────────────────────────────────── */}
