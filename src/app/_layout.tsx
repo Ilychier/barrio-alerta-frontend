@@ -1,17 +1,13 @@
 import { Slot, usePathname, useRouter } from "expo-router";
 import { useEffect, useRef, useState } from "react";
-import {
-  ActivityIndicator,
-  StyleSheet,
-  useWindowDimensions,
-  View,
-} from "react-native";
+import { StyleSheet, useWindowDimensions, View } from "react-native";
 
 import { getModoEmergencia } from "@/constants/env";
 import { Header } from "@/presentation/components/layout/Header";
 import { AppDrawer, DrawerMode } from "@/presentation/components/layout/AppDrawer";
 import { SVGBackground } from "@/presentation/components/layout/SVGBackground";
 import { AboutDeveloperModal } from "@/presentation/components/molecules/AboutDeveloperModal";
+import { AppLoadingArt } from "@/presentation/components/molecules/AppLoadingArt";
 import { ProximamenteModal } from "@/presentation/components/molecules/ProximamenteModal";
 import { AuthProvider, useAuth } from "@/presentation/context/AuthContext";
 import { DIProvider } from "@/presentation/context/DIContext";
@@ -28,6 +24,9 @@ import {
   ThemeProvider,
   useAppTheme,
 } from "@/presentation/theme/ThemeContext";
+
+/** Tiempo mínimo que el arte de carga permanece visible (splash elegante). */
+const SPLASH_MIN_MS = 1600;
 
 export default function RootLayout() {
   return (
@@ -70,6 +69,20 @@ function TabLayout() {
   // Modal "Próximamente" del módulo Alertas (bloqueado en el drawer).
   const [proximamenteVisible, setProximamenteVisible] = useState(false);
   const [aboutModalVisible, setAboutModalVisible] = useState(false);
+
+  // Splash mínimo: el arte de carga se muestra al menos SPLASH_MIN_MS aunque
+  // el auth termine antes (evita el "flash" de milisegundos en conexiones
+  // rápidas y garantiza una entrada elegante y visible).
+  const [splashVisible, setSplashVisible] = useState(true);
+  const splashStart = useRef(0);
+  useEffect(() => {
+    if (splashStart.current === 0) splashStart.current = Date.now();
+    if (!loading && splashVisible) {
+      const restante = Math.max(0, SPLASH_MIN_MS - (Date.now() - splashStart.current));
+      const t = setTimeout(() => setSplashVisible(false), restante);
+      return () => clearTimeout(t);
+    }
+  }, [loading, splashVisible]);
 
   const { width } = useWindowDimensions();
   const isSmallScreen = width < 768;
@@ -166,12 +179,10 @@ function TabLayout() {
     }
   };
 
-  if (loading) {
+  if (loading || splashVisible) {
     return (
       <SVGBackground>
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={theme.colors.green} />
-        </View>
+        <AppLoadingArt theme={theme} />
       </SVGBackground>
     );
   }
@@ -318,11 +329,6 @@ const getStyles = (theme: AppTheme) =>
   StyleSheet.create({
     content: {
       flex: 1,
-    },
-    loadingContainer: {
-      flex: 1,
-      justifyContent: "center",
-      alignItems: "center",
     },
     backdrop: {
       ...StyleSheet.absoluteFill,

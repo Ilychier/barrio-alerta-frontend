@@ -38,6 +38,10 @@ export function useFeedMascotasController(container: IContainer, refreshTrigger?
   const [filtrosPendientes, setFiltrosPendientes] = useState<FiltrosReporteMascota>({});
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // Set de ids ya cargados: dedup O(1) por item (antes O(n²) con prev.some).
+  // Se resetea al cambiar filtros (carga no acumulada).
+  const idsCargados = useRef(new Set<number>());
+
   // Carga catálogos una vez (los datos geográficos cambian muy rara vez)
   useEffect(() => {
     let active = true;
@@ -79,11 +83,15 @@ export function useFeedMascotasController(container: IContainer, refreshTrigger?
         const result = await useCase.execute({ filtros: filtrosAplicados, page: pagina });
         setPage(pagina);
         setTotalPages(result.totalPages);
-        setReportes((prev) =>
-          acumular
-            ? [...prev, ...result.items.filter((i) => !prev.some((p) => p.id === i.id))]
-            : result.items,
-        );
+        if (acumular) {
+          // Dedup O(1) por item con el Set persistente (evita O(n²) en JS thread)
+          const nuevos = result.items.filter((i) => !idsCargados.current.has(i.id));
+          nuevos.forEach((i) => idsCargados.current.add(i.id));
+          setReportes((prev) => [...prev, ...nuevos]);
+        } else {
+          idsCargados.current = new Set(result.items.map((i) => i.id));
+          setReportes(result.items);
+        }
       } catch (e) {
         setError('No se pudieron cargar los reportes de mascotas');
         console.warn('[useFeedMascotasController] Error cargando feed:', e);
@@ -123,9 +131,9 @@ export function useFeedMascotasController(container: IContainer, refreshTrigger?
 
   const loadMore = useCallback(() => {
     if (loadingMore || loading || page + 1 >= totalPages) return;
-    const next = page + 1;
-    setPage(next);
-    loadPage(next, true);
+    // Sin setPage prematuro: loadPage ya actualiza `page` al llegar la
+    // respuesta. Evita un re-render extra justo durante el scroll.
+    loadPage(page + 1, true);
   }, [loadingMore, loading, page, totalPages, loadPage]);
 
   const aplicarFiltros = useCallback((nuevos: FiltrosReporteMascota) => {
@@ -164,6 +172,10 @@ export function useFeedMascotasController(container: IContainer, refreshTrigger?
     ciudades: referencias?.ciudades ?? ([] as Ciudad[]),
     tiposMascota: referencias?.tiposMascota ?? ([] as TipoMascota[]),
     referenciasLoading,
+    // Mapas estables para lookup en cliente (props de MascotaCard memoizada)
+    ciudadMap: referencias?.ciudadMap ?? new Map<number, string>(),
+    departamentoMap: referencias?.departamentoMap ?? new Map<number, string>(),
+    tipoMascotaMap: referencias?.tipoMascotaMap ?? new Map<number, string>(),
     nombreCiudad,
     departamentoCiudad,
     nombreTipoMascota,

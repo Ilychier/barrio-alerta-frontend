@@ -1,9 +1,8 @@
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import {
   ActivityIndicator,
-  FlatList,
   Pressable,
   StyleSheet,
   Text,
@@ -11,8 +10,8 @@ import {
   useWindowDimensions,
   View,
 } from "react-native";
+import { FlashList } from "@shopify/flash-list";
 import { useFeedMascotasController } from "../../../application/mascotas/controllers/useFeedMascotasController";
-import { resolverUrlFoto } from "../../../application/mascotas/services/UrlResolver";
 import { EstadoReporte } from "../../../domain/mascotas/entities/EstadoReporte";
 import { ReporteMascota } from "../../../domain/mascotas/entities/ReporteMascota";
 import { TipoReporte } from "../../../domain/mascotas/entities/TipoReporte";
@@ -21,6 +20,7 @@ import { FeedSkeletonList } from "../../components/molecules/FeedSkeletonCard";
 import { SelectInput, SelectOption } from "../../components/atomic/SelectInput";
 import { useDI } from "../../context/DIContext";
 import { AppTheme, useAppTheme } from "../../theme/ThemeContext";
+import { MascotaCard } from "../components/MascotaCard";
 
 /**
  * Feed público de reportes de mascotas (BC Mascotas).
@@ -98,85 +98,27 @@ export function FeedMascotasScreen({
     });
   };
 
-  const renderItem = ({ item }: { item: ReporteMascota }) => (
-    <Pressable
-      style={styles.card}
-      onPress={() =>
-        onVerDetalle ? onVerDetalle(item) : router.push(`/mascotas/${item.id}`)
-      }
-    >
-      <View style={styles.cardHeader}>
-        <View
-          style={[
-            styles.tipoBadge,
-            {
-              backgroundColor:
-                item.tipoReporte === TipoReporte.LOST
-                  ? theme.colors.redBg
-                  : theme.colors.purpleBg,
-            },
-          ]}
-        >
-          <Text
-            style={[
-              styles.tipoBadgeText,
-              {
-                color:
-                  item.tipoReporte === TipoReporte.LOST
-                    ? theme.colors.red
-                    : theme.colors.purple,
-              },
-            ]}
-          >
-            {item.tipoReporte === TipoReporte.LOST ? "PERDIDO" : "ENCONTRADO"}
-          </Text>
-        </View>
-        {item.estado === EstadoReporte.RESCUED && (
-          <View
-            style={[
-              styles.estadoBadge,
-              { backgroundColor: theme.colors.greenBg },
-            ]}
-          >
-            <Text
-              style={[styles.estadoBadgeText, { color: theme.colors.green }]}
-            >
-              RESCATADO
-            </Text>
-          </View>
-        )}
-      </View>
+  const handleVerDetalle = useCallback(
+    (item: ReporteMascota) => {
+      if (onVerDetalle) onVerDetalle(item);
+      else router.push(`/mascotas/${item.id}`);
+    },
+    [onVerDetalle, router],
+  );
 
-      <Text style={styles.cardTipo}>{feed.nombreTipoMascota(item)}</Text>
-      {item.fotoUrl ? (
-        <Image
-          source={{
-            uri:
-              resolverUrlFoto(item.fotoUrl, container.getBaseUrl()) ??
-              undefined,
-          }}
-          style={styles.cardFoto}
-          contentFit="cover"
-          placeholder={theme.colors.surfaceLight}
-        />
-      ) : null}
-      <Text style={styles.cardUbicacion}>
-        <Icon name="MapPin" size={12} color={theme.colors.textMuted} />{" "}
-        {item.ubicacion}
-      </Text>
-      <Text style={styles.cardCiudad}>
-        {feed.nombreCiudad(item.ciudadId)}
-        {feed.departamentoCiudad(item.ciudadId)
-          ? `, ${feed.departamentoCiudad(item.ciudadId)}`
-          : ""}
-      </Text>
-      {item.descripcion ? (
-        <Text style={styles.cardDescripcion}>{item.descripcion}</Text>
-      ) : null}
-      <Text style={styles.cardFecha}>
-        {new Date(item.createdAt).toLocaleString("es-CO")}
-      </Text>
-    </Pressable>
+  const renderItem = useCallback(
+    ({ item }: { item: ReporteMascota }) => (
+      <MascotaCard
+        item={item}
+        ciudadMap={feed.ciudadMap}
+        departamentoMap={feed.departamentoMap}
+        tipoMascotaMap={feed.tipoMascotaMap}
+        baseUrl={container.getBaseUrl()}
+        theme={theme}
+        onPress={handleVerDetalle}
+      />
+    ),
+    [feed.ciudadMap, feed.departamentoMap, feed.tipoMascotaMap, container, theme, handleVerDetalle],
   );
 
   return (
@@ -266,7 +208,7 @@ export function FeedMascotasScreen({
           </Text>
         </View>
       ) : (
-        <FlatList
+        <FlashList
           data={feed.reportes}
           keyExtractor={(item) => String(item.id)}
           renderItem={renderItem}
@@ -274,6 +216,10 @@ export function FeedMascotasScreen({
           showsVerticalScrollIndicator={false}
           onEndReached={feed.loadMore}
           onEndReachedThreshold={0.5}
+          // Precarga celdas antes de llegar al fondo: la inserción de la
+          // página siguiente ya viene renderizada → menos trabajo al insertar
+          // (menos micro lag durante el infinity scroll).
+          drawDistance={600}
           ListFooterComponent={
             feed.loadingMore ? (
               <ActivityIndicator
@@ -341,7 +287,6 @@ const getStyles = (theme: AppTheme, isDesktop: boolean) =>
       flex: 1,
     },
     lista: {
-      gap: 12,
       paddingBottom: 32,
     },
     card: {
