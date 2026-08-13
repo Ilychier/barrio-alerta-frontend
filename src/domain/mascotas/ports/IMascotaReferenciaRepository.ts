@@ -1,6 +1,6 @@
 import { Ciudad } from '../entities/Ciudad';
 import { TipoMascota } from '../entities/TipoMascota';
-import { PaginatedResult } from '../../ports/IReferenciaRepository';
+import { PaginatedResult } from '../../ports/PaginatedResult';
 
 /**
  * Catálogos del BC Mascotas (públicos, sin auth).

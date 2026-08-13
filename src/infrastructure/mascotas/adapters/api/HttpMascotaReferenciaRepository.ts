@@ -2,7 +2,7 @@ import { isAxiosError } from 'axios';
 import { Ciudad } from '../../../../domain/mascotas/entities/Ciudad';
 import { TipoMascota } from '../../../../domain/mascotas/entities/TipoMascota';
 import { IMascotaReferenciaRepository } from '../../../../domain/mascotas/ports/IMascotaReferenciaRepository';
-import { PaginatedResult } from '../../../../domain/ports/IReferenciaRepository';
+import { PaginatedResult } from '../../../../domain/ports/PaginatedResult';
 import { HttpGenericService } from '../../../adapters/api/HttpGenericService';
 import { mapCiudad, mapTipoMascota } from '../mappers';
 

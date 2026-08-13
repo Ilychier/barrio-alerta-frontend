@@ -1,6 +1,8 @@
 import { IAlertaRepository } from '../../domain/ports/IAlertaRepository';
 import { IConfiguracionRepository } from '../../domain/ports/IConfiguracionRepository';
-import { IReferenciaRepository } from '../../domain/ports/IReferenciaRepository';
+import { ICategoriaRepository } from '../../domain/ports/ICategoriaRepository';
+import { IGeografiaRepository } from '../../domain/ports/IGeografiaRepository';
+import { IUsuarioRepository } from '../../domain/ports/IUsuarioRepository';
 import { IAuthRepository } from '../../domain/ports/IAuthRepository';
 
 // BC Mascotas
@@ -57,7 +59,7 @@ export class DependencyContainer {
 
   private readonly _alertaRepo: IAlertaRepository;
   private readonly _configRepo: IConfiguracionRepository;
-  private readonly _referenciaRepo: IReferenciaRepository;
+  private readonly _referenciaRepo: ICategoriaRepository & IGeografiaRepository & IUsuarioRepository;
   private readonly _authRepo: IAuthRepository;
   private readonly _reporteMascotaRepo: IReporteMascotaRepository;
   private readonly _mascotaReferenciaRepo: IMascotaReferenciaRepository;
@@ -105,7 +107,7 @@ export class DependencyContainer {
     return this._configRepo;
   }
 
-  getReferenciaRepository(): IReferenciaRepository {
+  getReferenciaRepository(): ICategoriaRepository & IGeografiaRepository & IUsuarioRepository {
     return this._referenciaRepo;
   }
 

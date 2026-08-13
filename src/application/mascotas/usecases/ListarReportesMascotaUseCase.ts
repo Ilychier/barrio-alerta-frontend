@@ -1,6 +1,6 @@
 import { ReporteMascota } from '../../../domain/mascotas/entities/ReporteMascota';
 import { IReporteMascotaRepository, FiltrosReporteMascota } from '../../../domain/mascotas/ports/IReporteMascotaRepository';
-import { PaginatedResult } from '../../../domain/ports/IReferenciaRepository';
+import { PaginatedResult } from '../../../domain/ports/PaginatedResult';
 
 export const PAGE_SIZE_DEFAULT = 30;
 

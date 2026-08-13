@@ -7,7 +7,7 @@ import {
   ActualizarReporteMascotaCommand,
   FiltrosReporteMascota,
 } from '../../../../domain/mascotas/ports/IReporteMascotaRepository';
-import { PaginatedResult } from '../../../../domain/ports/IReferenciaRepository';
+import { PaginatedResult } from '../../../../domain/ports/PaginatedResult';
 
 /**
  * Repositorio en memoria para desarrollo/demo (modo sin API).

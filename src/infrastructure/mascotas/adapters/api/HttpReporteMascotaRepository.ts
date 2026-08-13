@@ -8,7 +8,7 @@ import {
   ActualizarReporteMascotaCommand,
   FiltrosReporteMascota,
 } from '../../../../domain/mascotas/ports/IReporteMascotaRepository';
-import { PaginatedResult } from '../../../../domain/ports/IReferenciaRepository';
+import { PaginatedResult } from '../../../../domain/ports/PaginatedResult';
 import { HttpGenericService } from '../../../adapters/api/HttpGenericService';
 import { mapReporteMascota } from '../mappers';
 

@@ -1,5 +1,5 @@
 import { ReporteMascota } from '../entities/ReporteMascota';
-import { PaginatedResult } from '../../ports/IReferenciaRepository';
+import { PaginatedResult } from '../../ports/PaginatedResult';
 import { TipoReporte } from '../entities/TipoReporte';
 import { EstadoReporte } from '../entities/EstadoReporte';
 

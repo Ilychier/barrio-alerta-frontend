@@ -1,6 +1,6 @@
 import { ReporteMascota } from '../../../../domain/mascotas/entities/ReporteMascota';
 import { EstadoReporte } from '../../../../domain/mascotas/entities/EstadoReporte';
-import { PaginatedResult } from '../../../../domain/ports/IReferenciaRepository';
+import { PaginatedResult } from '../../../../domain/ports/PaginatedResult';
 import { ActualizarReporteMascotaRequest } from '../GestionarMisReportesMascotaUseCase';
 
 /** Contrato del use case (OCP: el container retorna la interfaz, no la clase concreta). */

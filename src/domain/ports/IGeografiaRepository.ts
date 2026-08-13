@@ -1,7 +1,7 @@
 import { Barrio } from '../entities/barrio';
 import { Cuadrante } from '../entities/cuadrante';
 import { Localidad } from '../entities/localidad';
-import { PaginatedResult } from './IReferenciaRepository';
+import { PaginatedResult } from './PaginatedResult';
 
 /** Puerta de salida para la geografía (barrios, cuadrantes, localidades) (ISP). */
 export interface IGeografiaRepository {

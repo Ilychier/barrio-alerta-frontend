@@ -4,7 +4,7 @@ import {
   IReporteMascotaRepository,
   ActualizarReporteMascotaCommand,
 } from '../../../domain/mascotas/ports/IReporteMascotaRepository';
-import { PaginatedResult } from '../../../domain/ports/IReferenciaRepository';
+import { PaginatedResult } from '../../../domain/ports/PaginatedResult';
 
 export interface ActualizarReporteMascotaRequest {
   id: number;

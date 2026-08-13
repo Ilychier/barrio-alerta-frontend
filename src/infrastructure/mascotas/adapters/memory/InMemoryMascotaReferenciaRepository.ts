@@ -1,7 +1,7 @@
 import { Ciudad } from '../../../../domain/mascotas/entities/Ciudad';
 import { TipoMascota } from '../../../../domain/mascotas/entities/TipoMascota';
 import { IMascotaReferenciaRepository } from '../../../../domain/mascotas/ports/IMascotaReferenciaRepository';
-import { PaginatedResult } from '../../../../domain/ports/IReferenciaRepository';
+import { PaginatedResult } from '../../../../domain/ports/PaginatedResult';
 
 const CIUDADES: Ciudad[] = [
   new Ciudad(1, 'Bogotá', 'Bogotá', 'Colombia'),

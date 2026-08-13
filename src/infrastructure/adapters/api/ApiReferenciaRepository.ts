@@ -5,11 +5,16 @@ import { CategoriaDescripcion } from '../../../domain/entities/categoriaDescripc
 import { Cuadrante } from '../../../domain/entities/cuadrante';
 import { Localidad } from '../../../domain/entities/localidad';
 import { Usuario } from '../../../domain/entities/usuario';
-import { IReferenciaRepository, PaginatedResult } from '../../../domain/ports/IReferenciaRepository';
+import { ICategoriaRepository } from '../../../domain/ports/ICategoriaRepository';
+import { IGeografiaRepository } from '../../../domain/ports/IGeografiaRepository';
+import { IUsuarioRepository } from '../../../domain/ports/IUsuarioRepository';
+import { PaginatedResult } from '../../../domain/ports/PaginatedResult';
 import { InMemoryReferenciaRepository } from '../memory/InMemoryReferenciaRepository';
 import { HttpGenericService } from './HttpGenericService';
 
-export class ApiReferenciaRepository implements IReferenciaRepository {
+export class ApiReferenciaRepository
+  implements ICategoriaRepository, IGeografiaRepository, IUsuarioRepository
+{
   private readonly fallback = new InMemoryReferenciaRepository();
   private readonly http = HttpGenericService.getInstance().getClient();
 

@@ -16,7 +16,6 @@ export class HttpGenericService {
     if (!url.endsWith('/api')) {
       url = `${url}/api`;
     }
-    console.log("🚀 URL FINAL CONFIGURADA EN AXIOS:", url);
     this.client = create({
       baseURL: url,
       headers: {

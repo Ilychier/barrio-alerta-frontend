@@ -1,10 +1,13 @@
-import { IReferenciaRepository, PaginatedResult } from '../../../domain/ports/IReferenciaRepository';
+import { PaginatedResult } from '../../../domain/ports/PaginatedResult';
 import { Usuario } from '../../../domain/entities/usuario';
 import { Barrio } from '../../../domain/entities/barrio';
 import { Cuadrante } from '../../../domain/entities/cuadrante';
 import { Categoria } from '../../../domain/entities/categoria';
 import { CategoriaDescripcion } from '../../../domain/entities/categoriaDescripcion';
 import { Localidad } from '../../../domain/entities/localidad';
+import { ICategoriaRepository } from '../../../domain/ports/ICategoriaRepository';
+import { IGeografiaRepository } from '../../../domain/ports/IGeografiaRepository';
+import { IUsuarioRepository } from '../../../domain/ports/IUsuarioRepository';
 
 const INITIAL_CUADRANTES: Cuadrante[] = [
   new Cuadrante(101, 'CAI Soacha Centro', '+57 310 555 0123', 'cai.soacha.centro@test.com'),
@@ -34,7 +37,9 @@ const INITIAL_CATEGORIAS: Categoria[] = [
   new Categoria(13, 'Incendio', 'Flame'),
 ];
 
-export class InMemoryReferenciaRepository implements IReferenciaRepository {
+export class InMemoryReferenciaRepository
+  implements ICategoriaRepository, IGeografiaRepository, IUsuarioRepository
+{
   private readonly cuadrantes: Cuadrante[] = INITIAL_CUADRANTES;
   private readonly localidades: Localidad[] = INITIAL_LOCALIDADES;
   private readonly barrios: Barrio[] = INITIAL_BARRIOS;
