@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { Animated, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useConfiguracionController } from '../../application/controllers/useConfiguracionController';
 import { IconRenderer } from '../components/atomic/IconRenderer';
@@ -18,7 +18,8 @@ export function ConfigScreen() {
   });
   const { theme, themeType, toggleTheme } = useAppTheme();
   const styles = getStyles(theme);
-  const feedbackOpacity = useRef(new Animated.Value(0)).current;
+  // useState con lazy init: evita acceder a .current de un ref durante render (React 19)
+  const [feedbackOpacity] = useState(() => new Animated.Value(0));
 
   useEffect(() => {
     if (feedback) {

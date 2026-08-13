@@ -1,5 +1,6 @@
 import { ReporteMascota } from '../../../domain/mascotas/entities/ReporteMascota';
-import { IReporteMascotaRepository, FiltrosReporteMascota } from '../../../domain/mascotas/ports/IReporteMascotaRepository';
+import { FiltrosReporteMascota } from '../../../domain/mascotas/ports/IReporteMascotaRepository';
+import { IReporteMascotaPublicoRepository } from '../../../domain/mascotas/ports/IReporteMascotaPublicoRepository';
 import { PaginatedResult } from '../../../domain/ports/PaginatedResult';
 
 export const PAGE_SIZE_DEFAULT = 30;
@@ -16,7 +17,7 @@ export interface ListarReportesMascotaRequest {
  * cargando la página siguiente al hacer scroll (carga progresiva).
  */
 export class ListarReportesMascotaUseCase {
-  constructor(private readonly reporteRepo: IReporteMascotaRepository) {}
+  constructor(private readonly reporteRepo: IReporteMascotaPublicoRepository) {}
 
   async execute(request: ListarReportesMascotaRequest): Promise<PaginatedResult<ReporteMascota>> {
     return this.reporteRepo.listarPublico(

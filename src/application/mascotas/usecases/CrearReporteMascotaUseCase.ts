@@ -1,9 +1,9 @@
 import { ReporteMascota } from '../../../domain/mascotas/entities/ReporteMascota';
 import { TipoReporte, tipoReporteFromString } from '../../../domain/mascotas/entities/TipoReporte';
 import {
-  IReporteMascotaRepository,
   CrearReporteMascotaCommand,
 } from '../../../domain/mascotas/ports/IReporteMascotaRepository';
+import { IReporteMascotaGestionRepository } from '../../../domain/mascotas/ports/IReporteMascotaGestionRepository';
 
 export interface CrearReporteMascotaRequest {
   tipoReporte: 'LOST' | 'FOUND';
@@ -24,7 +24,7 @@ export interface CrearReporteMascotaRequest {
  * El backend asigna el id y los timestamps; el frontend no genera IDs.
  */
 export class CrearReporteMascotaUseCase {
-  constructor(private readonly reporteRepo: IReporteMascotaRepository) {}
+  constructor(private readonly reporteRepo: IReporteMascotaGestionRepository) {}
 
   async execute(request: CrearReporteMascotaRequest): Promise<ReporteMascota> {
     const command: CrearReporteMascotaCommand = {

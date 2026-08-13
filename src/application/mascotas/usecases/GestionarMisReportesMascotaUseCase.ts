@@ -1,9 +1,7 @@
 import { ReporteMascota } from '../../../domain/mascotas/entities/ReporteMascota';
 import { EstadoReporte } from '../../../domain/mascotas/entities/EstadoReporte';
-import {
-  IReporteMascotaRepository,
-  ActualizarReporteMascotaCommand,
-} from '../../../domain/mascotas/ports/IReporteMascotaRepository';
+import { ActualizarReporteMascotaCommand } from '../../../domain/mascotas/ports/IReporteMascotaRepository';
+import { IReporteMascotaGestionRepository } from '../../../domain/mascotas/ports/IReporteMascotaGestionRepository';
 import { PaginatedResult } from '../../../domain/ports/PaginatedResult';
 
 export interface ActualizarReporteMascotaRequest {
@@ -18,7 +16,7 @@ export interface ActualizarReporteMascotaRequest {
  * listar, actualizar, cambiar estado (rescate) y eliminar (soft delete).
  */
 export class GestionarMisReportesMascotaUseCase {
-  constructor(private readonly reporteRepo: IReporteMascotaRepository) {}
+  constructor(private readonly reporteRepo: IReporteMascotaGestionRepository) {}
 
   async listarMios(usuarioId: number, page = 0, size = 30): Promise<PaginatedResult<ReporteMascota>> {
     return this.reporteRepo.listarMios(usuarioId, page, size);

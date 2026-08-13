@@ -2,6 +2,8 @@ import { ReporteMascota } from '../entities/ReporteMascota';
 import { PaginatedResult } from '../../ports/PaginatedResult';
 import { TipoReporte } from '../entities/TipoReporte';
 import { EstadoReporte } from '../entities/EstadoReporte';
+import { IReporteMascotaPublicoRepository } from './IReporteMascotaPublicoRepository';
+import { IReporteMascotaGestionRepository } from './IReporteMascotaGestionRepository';
 
 /** Filtros del feed público de reportes de mascotas. Todos opcionales. */
 export interface FiltrosReporteMascota {
@@ -37,17 +39,12 @@ export interface ActualizarReporteMascotaCommand {
   descripcion?: string;
 }
 
-export interface IReporteMascotaRepository {
-  // Públicos (sin auth)
-  listarPublico(filtros: FiltrosReporteMascota, page: number, size: number): Promise<PaginatedResult<ReporteMascota>>;
-  listarRescatados(page: number, size: number): Promise<PaginatedResult<ReporteMascota>>;
-  obtenerPublico(id: number): Promise<ReporteMascota | undefined>;
+/**
+ * Puerto histórico — mantenido por compatibilidad (Strangler Fig).
+ * Extiende los puertos segregados (público + gestión); los consumidores
+ * migran al puerto específico y este se elimina cuando nadie lo use.
+ */
+export interface IReporteMascotaRepository
+  extends IReporteMascotaPublicoRepository,
+    IReporteMascotaGestionRepository {}
 
-  // Autenticados
-  crear(command: CrearReporteMascotaCommand): Promise<ReporteMascota>;
-  listarMios(usuarioId: number, page: number, size: number): Promise<PaginatedResult<ReporteMascota>>;
-  obtenerPorId(id: number): Promise<ReporteMascota | undefined>;
-  actualizar(id: number, command: ActualizarReporteMascotaCommand): Promise<ReporteMascota>;
-  cambiarEstado(id: number, estado: EstadoReporte): Promise<ReporteMascota>;
-  eliminar(id: number): Promise<void>;
-}

@@ -149,49 +149,61 @@ export class DependencyContainer implements IContainer {
   }
 
   // --- Casos de Uso (retornan interfaces — OCP) ---
+  // Cache con ??= : los use cases son stateless, se crean una sola vez
+  // (evita allocation en cada render y estabiliza deps de useCallback/useEffect).
+  private _dispararSOSUseCase?: IDispararSOSUseCase;
   getDispararSOSUseCase(): IDispararSOSUseCase {
-    return new DispararSOSUseCase(this._alertaRepo);
+    return (this._dispararSOSUseCase ??= new DispararSOSUseCase(this._alertaRepo));
   }
 
+  private _reportarIncidenteUseCase?: IReportarIncidenteUseCase;
   getReportarIncidenteUseCase(): IReportarIncidenteUseCase {
-    return new ReportarIncidenteUseCase(this._alertaRepo);
+    return (this._reportarIncidenteUseCase ??= new ReportarIncidenteUseCase(this._alertaRepo));
   }
 
+  private _actualizarConfiguracionUseCase?: IActualizarConfiguracionUseCase;
   getActualizarConfiguracionUseCase(): IActualizarConfiguracionUseCase {
-    return new ActualizarConfiguracionUseCase(this._configRepo);
+    return (this._actualizarConfiguracionUseCase ??= new ActualizarConfiguracionUseCase(this._configRepo));
   }
 
+  private _obtenerAlertasUseCase?: IObtenerAlertasUseCase;
   getObtenerAlertasUseCase(): IObtenerAlertasUseCase {
-    return new ObtenerAlertasUseCase(
+    return (this._obtenerAlertasUseCase ??= new ObtenerAlertasUseCase(
       this._alertaRepo,
       this._configRepo,
       this._referenciaRepo,
       this._referenciaRepo,
-    );
+    ));
   }
 
+  private _finalizarEmergenciaUseCase?: IFinalizarEmergenciaUseCase;
   getFinalizarEmergenciaUseCase(): IFinalizarEmergenciaUseCase {
-    return new FinalizarEmergenciaUseCase(this._alertaRepo);
+    return (this._finalizarEmergenciaUseCase ??= new FinalizarEmergenciaUseCase(this._alertaRepo));
   }
 
   // --- BC Mascotas: Casos de Uso ---
+  private _listarReportesMascotaUseCase?: IListarReportesMascotaUseCase;
   getListarReportesMascotaUseCase(): IListarReportesMascotaUseCase {
-    return new ListarReportesMascotaUseCase(this._reporteMascotaRepo);
+    return (this._listarReportesMascotaUseCase ??= new ListarReportesMascotaUseCase(this._reporteMascotaRepo));
   }
 
+  private _crearReporteMascotaUseCase?: ICrearReporteMascotaUseCase;
   getCrearReporteMascotaUseCase(): ICrearReporteMascotaUseCase {
-    return new CrearReporteMascotaUseCase(this._reporteMascotaRepo);
+    return (this._crearReporteMascotaUseCase ??= new CrearReporteMascotaUseCase(this._reporteMascotaRepo));
   }
 
+  private _gestionarMisReportesMascotaUseCase?: IGestionarMisReportesMascotaUseCase;
   getGestionarMisReportesMascotaUseCase(): IGestionarMisReportesMascotaUseCase {
-    return new GestionarMisReportesMascotaUseCase(this._reporteMascotaRepo);
+    return (this._gestionarMisReportesMascotaUseCase ??= new GestionarMisReportesMascotaUseCase(this._reporteMascotaRepo));
   }
 
+  private _obtenerReferenciasMascotaUseCase?: IObtenerReferenciasMascotaUseCase;
   getObtenerReferenciasMascotaUseCase(): IObtenerReferenciasMascotaUseCase {
-    return new ObtenerReferenciasMascotaUseCase(this._mascotaReferenciaRepo);
+    return (this._obtenerReferenciasMascotaUseCase ??= new ObtenerReferenciasMascotaUseCase(this._mascotaReferenciaRepo));
   }
 
+  private _registrarReporteRapidoUseCase?: IRegistrarReporteRapidoUseCase;
   getRegistrarReporteRapidoUseCase(): IRegistrarReporteRapidoUseCase {
-    return new RegistrarReporteRapidoUseCase(this._reporteRapidoRepo);
+    return (this._registrarReporteRapidoUseCase ??= new RegistrarReporteRapidoUseCase(this._reporteRapidoRepo));
   }
 }
