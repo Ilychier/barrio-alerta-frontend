@@ -11,6 +11,13 @@ import { nombrePorId } from '../services/catalogos';
 const DEBOUNCE_MS = 350;
 
 /**
+ * Delay antes de mostrar el skeleton al cambiar filtros. Si el fetch
+ * termina antes, las cards viejas se reemplazan por las nuevas sin flash
+ * de vacío (transición suave). Solo si tarda más, aparece el skeleton.
+ */
+const SKELETON_DELAY_MS = 300;
+
+/**
  * Semilla de sesión: se genera UNA vez por arranque de la app (módulo).
  * El feed se aleatoriza por sesión — el orden es estable mientras la app
  * esté abierta (navegar y volver NO lo cambia) y distinto en cada arranque.
@@ -146,21 +153,31 @@ export function useFeedMascotasController(container: IContainer, refreshTrigger?
   // Carga inicial del feed (patrón loadData del BC Alertas: async fn dentro del effect)
   useEffect(() => {
     let active = true;
+    let skeletonTimer: ReturnType<typeof setTimeout> | null = null;
+
     async function loadData() {
-      // Limpiar reportes viejos antes de cargar: evita que se vea la lista
-      // anterior durante un frame al re-entrar a la pantalla (el skeleton
-      // debe cubrir el shuffle nuevo, no la data residual).
-      setReportes([]);
-      idsCargados.current = new Set();
-      setLoading(true);
       setError(null);
+      // No limpiar la lista ni mostrar skeleton de inmediato: las cards
+      // viejas siguen visibles mientras carga. Si el fetch termina antes
+      // de SKELETON_DELAY_MS, se reemplazan sin flash (transición suave).
+      // Solo si tarda más, se limpia y aparece el skeleton.
+      skeletonTimer = setTimeout(() => {
+        if (active) {
+          setReportes([]);
+          idsCargados.current = new Set();
+          setLoading(true);
+        }
+      }, SKELETON_DELAY_MS);
+
       try {
         const result = await useCase.execute({ filtros: filtrosAplicados, page: 0 });
         if (!active) return;
+        if (skeletonTimer) clearTimeout(skeletonTimer);
         setPage(0);
         setTotalPages(result.totalPages);
         setReportes(shuffleArray(result.items));
       } catch (e) {
+        if (skeletonTimer) clearTimeout(skeletonTimer);
         if (active) setError('No se pudieron cargar los reportes de mascotas');
         console.warn('[useFeedMascotasController] Error cargando feed:', e);
       } finally {
@@ -170,6 +187,7 @@ export function useFeedMascotasController(container: IContainer, refreshTrigger?
     loadData();
     return () => {
       active = false;
+      if (skeletonTimer) clearTimeout(skeletonTimer);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filtrosAplicados, refreshTrigger]);

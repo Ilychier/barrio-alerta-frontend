@@ -1,8 +1,10 @@
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
+  Animated,
+  Platform,
   Pressable,
   StyleSheet,
   Text,
@@ -55,6 +57,35 @@ export function FeedMascotasScreen({
 
   const feed = useFeedMascotasController(container, 0);
   const conteoReportes = useContarReportesController(container);
+
+  // Fade de la lista al cambiar filtros. Secuencia encadenada:
+  // fade-out (0.4, 150ms) → fade-in (1.0, 180ms). Se dispara cuando
+  // cambian los filtros aplicados. No depende de `refreshing` para el
+  // fade-in: si el fetch es rápido, la secuencia completa se ejecuta
+  // igual (el fade-out no se interrumpe a mitad de camino).
+  // Web: fallback JS (el native driver no está soportado — mismo patrón
+  // que useShimmerOpacity).
+  const listOpacity = useRef(new Animated.Value(1)).current;
+  const useNativeDriver = Platform.OS !== "web";
+  const filtrosPrevios = useRef(feed.filtros);
+
+  useEffect(() => {
+    if (filtrosPrevios.current !== feed.filtros) {
+      filtrosPrevios.current = feed.filtros;
+      Animated.sequence([
+        Animated.timing(listOpacity, {
+          toValue: 0.4,
+          duration: 150,
+          useNativeDriver,
+        }),
+        Animated.timing(listOpacity, {
+          toValue: 1,
+          duration: 180,
+          useNativeDriver,
+        }),
+      ]).start();
+    }
+  }, [feed.filtros, listOpacity, useNativeDriver]);
 
   const aplicarFiltros = (
     estado?: EstadoReporte,
@@ -189,27 +220,29 @@ export function FeedMascotasScreen({
           </Text>
         </View>
       ) : (
-        <FlashList
-          data={feed.reportes}
-          keyExtractor={(item) => String(item.id)}
-          renderItem={renderItem}
-          contentContainerStyle={styles.lista}
-          showsVerticalScrollIndicator={false}
-          onEndReached={feed.loadMore}
-          onEndReachedThreshold={0.5}
-          // Precarga celdas antes de llegar al fondo: la inserción de la
-          // página siguiente ya viene renderizada → menos trabajo al insertar
-          // (menos micro lag durante el infinity scroll).
-          drawDistance={600}
-          ListFooterComponent={
-            feed.loadingMore ? (
-              <ActivityIndicator
-                style={styles.loadingMore}
-                color={theme.colors.green}
-              />
-            ) : null
-          }
-        />
+        <Animated.View style={{ flex: 1, opacity: listOpacity }}>
+          <FlashList
+            data={feed.reportes}
+            keyExtractor={(item) => String(item.id)}
+            renderItem={renderItem}
+            contentContainerStyle={styles.lista}
+            showsVerticalScrollIndicator={false}
+            onEndReached={feed.loadMore}
+            onEndReachedThreshold={0.5}
+            // Precarga celdas antes de llegar al fondo: la inserción de la
+            // página siguiente ya viene renderizada → menos trabajo al insertar
+            // (menos micro lag durante el infinity scroll).
+            drawDistance={600}
+            ListFooterComponent={
+              feed.loadingMore ? (
+                <ActivityIndicator
+                  style={styles.loadingMore}
+                  color={theme.colors.green}
+                />
+              ) : null
+            }
+          />
+        </Animated.View>
       )}
 
       {/* ── Badge flotante: conteo + filtro rápido ──────── */}
