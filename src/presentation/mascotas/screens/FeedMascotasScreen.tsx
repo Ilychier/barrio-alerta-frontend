@@ -18,7 +18,6 @@ import { ReporteMascota } from "../../../domain/mascotas/entities/ReporteMascota
 import { TipoReporte } from "../../../domain/mascotas/entities/TipoReporte";
 import Icon from "../../components/atomic/Icon";
 import { FeedSkeletonList } from "../../components/molecules/FeedSkeletonCard";
-import { SelectInput, SelectOption } from "../../components/atomic/SelectInput";
 import { useDI } from "../../context/DIContext";
 import { AppTheme, useAppTheme } from "../../theme/ThemeContext";
 import { ContadorBadge, FiltroBadge } from "../components/ContadorBadge";
@@ -27,17 +26,9 @@ import { MascotaCard } from "../components/MascotaCard";
 /**
  * Feed público de reportes de mascotas (BC Mascotas).
  * Flujo continuo percibido + paginación real (scroll infinito).
+ * Filtros de tipo/estado: los maneja el badge flotante (ContadorBadge).
+ * Arriba solo queda la búsqueda por texto (descripción/ubicación).
  */
-const TIPO_OPTIONS: SelectOption[] = [
-  { value: "TODOS", label: "Todos" },
-  { value: TipoReporte.LOST, label: "Perdidos" },
-  { value: TipoReporte.FOUND, label: "Encontrados" },
-];
-
-const ESTADO_OPTIONS: SelectOption[] = [
-  { value: "ACTIVOS", label: "Activos" },
-  { value: EstadoReporte.RESCUED, label: "Rescatados" },
-];
 
 interface FeedMascotasScreenProps {
   /** Callback al tocar una tarjeta. Si no se provee, navega a /mascotas/[id]. */
@@ -183,51 +174,6 @@ export function FeedMascotasScreen({
         ) : null}
       </View>
 
-      {/* ── Filtros ────────────────────────────────────── */}
-      <View style={styles.filtros}>
-        <View style={styles.selectWrapper}>
-          <SelectInput
-            label="Tipo"
-            icon="PawPrint"
-            options={TIPO_OPTIONS}
-            selectedValue={filtroTipo ?? "TODOS"}
-            onSelect={(v) =>
-              aplicarFiltros(
-                filtroEstado,
-                v === "TODOS" ? undefined : (v as TipoReporte),
-                ciudadId,
-              )
-            }
-            placeholder="Todos"
-            theme={theme}
-            focused={false}
-            onFocus={() => {}}
-            onBlur={() => {}}
-          />
-        </View>
-
-        <View style={styles.selectWrapper}>
-          <SelectInput
-            label="Estado"
-            icon="ShieldCheck"
-            options={ESTADO_OPTIONS}
-            selectedValue={filtroEstado ?? "ACTIVOS"}
-            onSelect={(v) =>
-              aplicarFiltros(
-                v === "ACTIVOS" ? undefined : (v as EstadoReporte),
-                filtroTipo,
-                ciudadId,
-              )
-            }
-            placeholder="Activos"
-            theme={theme}
-            focused={false}
-            onFocus={() => {}}
-            onBlur={() => {}}
-          />
-        </View>
-      </View>
-
       {/* ── Lista ──────────────────────────────────────── */}
       {feed.initialLoading ? (
         <FeedSkeletonList theme={theme} />
@@ -302,13 +248,6 @@ const getStyles = (theme: AppTheme, isDesktop: boolean) =>
       color: theme.colors.textTertiary,
       marginTop: 4,
     },
-    filtros: {
-      flexDirection: "row",
-      alignItems: "center",
-      gap: 12,
-      marginBottom: 10,
-      width: "100%",
-    },
     busquedaContainer: {
       flexDirection: "row",
       alignItems: "center",
@@ -326,9 +265,6 @@ const getStyles = (theme: AppTheme, isDesktop: boolean) =>
       paddingVertical: 10,
       fontSize: 14,
       color: theme.colors.textPrimary,
-    },
-    selectWrapper: {
-      flex: 1,
     },
     lista: {
       paddingBottom: 32,
