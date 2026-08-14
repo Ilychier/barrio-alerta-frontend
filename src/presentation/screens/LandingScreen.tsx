@@ -8,6 +8,7 @@ import {
   View,
 } from "react-native";
 import Icon from "../components/atomic/Icon";
+import { ThemeToggleButton } from "../components/atomic/ThemeToggleButton";
 import { SVGBackground } from "../components/layout/SVGBackground";
 import { AppTheme, useAppTheme } from "../theme/ThemeContext";
 
@@ -105,6 +106,10 @@ export function LandingScreen({
 
   return (
     <SVGBackground>
+      {/* Toggle de tema flotante (esquina superior derecha) */}
+      <View style={styles.themeToggleFloat}>
+        <ThemeToggleButton />
+      </View>
       <ScrollView style={styles.scroll} showsVerticalScrollIndicator={false}>
         {/* ── HERO ─────────────────────────────────────────── */}
         <View style={styles.heroOuter}>
@@ -442,6 +447,12 @@ const getStyles = (theme: AppTheme, isDesktop: boolean, isMobile: boolean) =>
   StyleSheet.create({
     scroll: {
       flex: 1,
+    },
+    themeToggleFloat: {
+      position: "absolute",
+      top: 16,
+      right: 16,
+      zIndex: 10,
     },
     contentWrapper: {
       width: "100%",

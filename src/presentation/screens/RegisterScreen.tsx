@@ -11,6 +11,7 @@ import {
 } from "react-native";
 import { useRegisterController } from "../../application/controllers/useRegisterController";
 import Icon from "../components/atomic/Icon";
+import { ThemeToggleButton } from "../components/atomic/ThemeToggleButton";
 import { SelectInput, SelectOption } from "../components/atomic/SelectInput";
 import { SectionCard } from "../components/layout/SectionCard";
 import { SVGBackground } from "../components/layout/SVGBackground";
@@ -171,6 +172,10 @@ export function RegisterScreen({
 
   return (
     <SVGBackground>
+      {/* Toggle de tema flotante (esquina superior derecha) */}
+      <View style={styles.themeToggleFloat}>
+        <ThemeToggleButton />
+      </View>
       <ScrollView
         style={styles.container}
         contentContainerStyle={styles.content}
@@ -460,6 +465,12 @@ const getStyles = (theme: AppTheme) =>
     container: {
       flex: 1,
       backgroundColor: "transparent",
+    },
+    themeToggleFloat: {
+      position: "absolute",
+      top: 16,
+      right: 16,
+      zIndex: 10,
     },
     content: {
       padding: 24,

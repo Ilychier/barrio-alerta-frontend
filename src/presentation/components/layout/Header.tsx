@@ -2,6 +2,7 @@ import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { AppTheme, useAppTheme } from "../../theme/ThemeContext";
 import Icon from "../atomic/Icon";
 import { IconRenderer } from "../atomic/IconRenderer";
+import { ThemeToggleButton } from "../atomic/ThemeToggleButton";
 
 interface HeaderProps {
   isMobile?: boolean;
@@ -16,7 +17,7 @@ export function Header({
   onBackPress,
   onLogoutPress,
 }: HeaderProps) {
-  const { theme, themeType, toggleTheme } = useAppTheme();
+  const { theme } = useAppTheme();
   const styles = getStyles(theme);
 
   return (
@@ -58,17 +59,7 @@ export function Header({
       </View>
 
       <View style={styles.rightGroup}>
-        <TouchableOpacity
-          onPress={toggleTheme}
-          style={styles.themeToggle}
-          activeOpacity={0.7}
-        >
-          <Icon
-            name={themeType === "dark" ? "Sun" : "Moon"}
-            size={21}
-            color={theme.colors.textPrimary}
-          />
-        </TouchableOpacity>
+        <ThemeToggleButton />
 
         {onLogoutPress && (
           <TouchableOpacity
@@ -132,13 +123,6 @@ const getStyles = (theme: AppTheme) =>
       flexDirection: "row",
       alignItems: "center",
       gap: 12,
-    },
-    themeToggle: {
-      padding: 6,
-      borderRadius: 32,
-      backgroundColor: theme.colors.surfaceLight,
-      alignItems: "center",
-      justifyContent: "center",
     },
     logoutButton: {
       padding: 6,

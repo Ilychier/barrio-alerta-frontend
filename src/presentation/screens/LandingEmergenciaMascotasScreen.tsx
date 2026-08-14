@@ -13,6 +13,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { ReporteMascota } from "../../domain/mascotas/entities/ReporteMascota";
 import { ReporteRapidoResult } from "../../domain/mascotas/ports/IReporteRapidoRepository";
 import Icon from "../components/atomic/Icon";
+import { ThemeToggleButton } from "../components/atomic/ThemeToggleButton";
 import { SVGBackground } from "../components/layout/SVGBackground";
 import { AboutDeveloperModal } from "../components/molecules/AboutDeveloperModal";
 import { useAuth } from "../context/AuthContext";
@@ -183,6 +184,7 @@ export function LandingEmergenciaMascotasScreen({
             <Text style={styles.dashboardBtnText}>Dashboard</Text>
           </TouchableOpacity>
         )}
+        <ThemeToggleButton />
       </View>
 
       {/* ── Toggle Reportar / Ver Animalitos ───────────── */}
