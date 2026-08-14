@@ -11,6 +11,45 @@ import { nombrePorId } from '../services/catalogos';
 const DEBOUNCE_MS = 350;
 
 /**
+ * Semilla de sesión: se genera UNA vez por arranque de la app (módulo).
+ * El feed se aleatoriza por sesión — el orden es estable mientras la app
+ * esté abierta (navegar y volver NO lo cambia) y distinto en cada arranque.
+ *
+ * OJO: Math.random() devuelve [0,1) — hay que escalarlo a entero de 32 bits
+ * antes de pasarlo al PRNG, porque `seed >>> 0` truncaría el float a 0
+ * (misma secuencia en todas las sesiones).
+ */
+const SESSION_SEED = (Math.random() * 0xffffffff) >>> 0;
+
+/** PRNG determinista (mulberry32): misma semilla → misma secuencia. */
+function seededRandom(seed: number): () => number {
+  let state = seed >>> 0;
+  return () => {
+    state = (state + 0x6d2b79f5) | 0;
+    let t = Math.imul(state ^ (state >>> 15), 1 | state);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+/**
+ * Fisher-Yates shuffle determinista por sesión (copia, no muta).
+ * El feed llega ordenado del backend y se aleatoriza en el cliente:
+ * mismo orden mientras la app está abierta, distinto en cada arranque.
+ * Es presentación pura — la paginación, el dedup por id y la navegación
+ * no dependen de la posición del item.
+ */
+function shuffleArray<T>(arr: T[]): T[] {
+  const copy = [...arr];
+  const rand = seededRandom(SESSION_SEED);
+  for (let i = copy.length - 1; i > 0; i--) {
+    const j = Math.floor(rand() * (i + 1));
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+  }
+  return copy;
+}
+
+/**
  * Controller del feed público de mascotas.
  * Carga progresiva: mantiene la lista acumulada y pide la siguiente
  * página al hacer scroll (el usuario percibe un flujo continuo).
@@ -87,10 +126,11 @@ export function useFeedMascotasController(container: IContainer, refreshTrigger?
           // Dedup O(1) por item con el Set persistente (evita O(n²) en JS thread)
           const nuevos = result.items.filter((i) => !idsCargados.current.has(i.id));
           nuevos.forEach((i) => idsCargados.current.add(i.id));
-          setReportes((prev) => [...prev, ...nuevos]);
+          // Shuffle solo de la página entrante: los items ya en pantalla no se mueven
+          setReportes((prev) => [...prev, ...shuffleArray(nuevos)]);
         } else {
           idsCargados.current = new Set(result.items.map((i) => i.id));
-          setReportes(result.items);
+          setReportes(shuffleArray(result.items));
         }
       } catch (e) {
         setError('No se pudieron cargar los reportes de mascotas');
@@ -107,6 +147,11 @@ export function useFeedMascotasController(container: IContainer, refreshTrigger?
   useEffect(() => {
     let active = true;
     async function loadData() {
+      // Limpiar reportes viejos antes de cargar: evita que se vea la lista
+      // anterior durante un frame al re-entrar a la pantalla (el skeleton
+      // debe cubrir el shuffle nuevo, no la data residual).
+      setReportes([]);
+      idsCargados.current = new Set();
       setLoading(true);
       setError(null);
       try {
@@ -114,7 +159,7 @@ export function useFeedMascotasController(container: IContainer, refreshTrigger?
         if (!active) return;
         setPage(0);
         setTotalPages(result.totalPages);
-        setReportes(result.items);
+        setReportes(shuffleArray(result.items));
       } catch (e) {
         if (active) setError('No se pudieron cargar los reportes de mascotas');
         console.warn('[useFeedMascotasController] Error cargando feed:', e);

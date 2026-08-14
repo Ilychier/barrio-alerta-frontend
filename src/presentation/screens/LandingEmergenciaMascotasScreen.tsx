@@ -242,85 +242,95 @@ export function LandingEmergenciaMascotasScreen({
 
       {/* ── Contenido ──────────────────────────────────── */}
       <View style={styles.content}>
-        {vista === "reportar" ? (
-          estadoRegistro === "idle" ? (
-            <RegistroRapidoForm onSuccess={handleRegistroExitoso} />
-          ) : estadoRegistro === "exito" ? (
-            <View style={styles.graciasCard}>
-              <View style={styles.graciasIcon}>
-                <Icon
-                  name="HeartHandshake"
-                  size={40}
-                  color={theme.colors.green}
-                />
-              </View>
-              <Text style={styles.graciasTitle}>¡Gracias por reportar! 🐾</Text>
-              <Text style={styles.graciasBody}>
-                Tu reporte de{" "}
-                {resultado?.reporte.tipoReporte === "LOST"
-                  ? "mascota perdida"
-                  : "mascota encontrada"}{" "}
-                quedó publicado. Quien la vea podrá contactarte por WhatsApp.
-              </Text>
-              {autologinError && (
-                <Text style={styles.error}>{autologinError}</Text>
-              )}
-              <View style={styles.graciasActions}>
-                <TouchableOpacity
-                  style={styles.secondaryBtn}
-                  onPress={volverAReportar}
-                  activeOpacity={0.7}
-                >
-                  <Text style={styles.secondaryBtnText}>
-                    Reportar otro animalito
-                  </Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={styles.linkBtn}
-                  onPress={onDashboardPress}
-                  activeOpacity={0.7}
-                >
-                  <Text style={styles.linkBtnText}>Ver Dashboard →</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
+        {/* Feed público SIEMPRE montado: se oculta con display:none al
+            estar en "reportar". Evita el parpadeo al alternar — el
+            re-montaje re-cargaba catálogos + feed + fotos (11 requests
+            por toggle). KISS: un solo montaje, cero parpadeo. */}
+        <View style={[styles.panel, vista !== "ver" && styles.panelOculto]}>
+          {detalleReporte ? (
+            <DetalleReporteMascotaScreen
+              reporteId={detalleReporte.id}
+              onBack={() => setDetalleReporte(null)}
+            />
           ) : (
-            <View style={styles.graciasCard}>
-              <View style={styles.graciasIcon}>
-                <Icon name="CircleCheck" size={40} color={theme.colors.green} />
+            <FeedMascotasScreen onVerDetalle={setDetalleReporte} />
+          )}
+        </View>
+
+        {vista === "reportar" && (
+          <View style={styles.panel}>
+            {estadoRegistro === "idle" ? (
+              <RegistroRapidoForm onSuccess={handleRegistroExitoso} />
+            ) : estadoRegistro === "exito" ? (
+              <View style={styles.graciasCard}>
+                <View style={styles.graciasIcon}>
+                  <Icon
+                    name="HeartHandshake"
+                    size={40}
+                    color={theme.colors.green}
+                  />
+                </View>
+                <Text style={styles.graciasTitle}>¡Gracias por reportar! 🐾</Text>
+                <Text style={styles.graciasBody}>
+                  Tu reporte de{" "}
+                  {resultado?.reporte.tipoReporte === "LOST"
+                    ? "mascota perdida"
+                    : "mascota encontrada"}{" "}
+                  quedó publicado. Quien la vea podrá contactarte por WhatsApp.
+                </Text>
+                {autologinError && (
+                  <Text style={styles.error}>{autologinError}</Text>
+                )}
+                <View style={styles.graciasActions}>
+                  <TouchableOpacity
+                    style={styles.secondaryBtn}
+                    onPress={volverAReportar}
+                    activeOpacity={0.7}
+                  >
+                    <Text style={styles.secondaryBtnText}>
+                      Reportar otro animalito
+                    </Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={styles.linkBtn}
+                    onPress={onDashboardPress}
+                    activeOpacity={0.7}
+                  >
+                    <Text style={styles.linkBtnText}>Ver Dashboard →</Text>
+                  </TouchableOpacity>
+                </View>
               </View>
-              <Text style={styles.graciasTitle}>¡Reporte agregado!</Text>
-              <Text style={styles.graciasBody}>
-                Ya tienes una cuenta con este celular, así que agregamos el
-                reporte a tu perfil. Inicia sesión para verlo y gestionarlo.
-              </Text>
-              <View style={styles.graciasActions}>
-                <TouchableOpacity
-                  style={styles.primaryBtn}
-                  onPress={onLoginPress}
-                  activeOpacity={0.8}
-                >
-                  <Text style={styles.primaryBtnText}>Iniciar sesión</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={styles.linkBtn}
-                  onPress={volverAReportar}
-                  activeOpacity={0.7}
-                >
-                  <Text style={styles.linkBtnText}>
-                    Reportar otro animalito
-                  </Text>
-                </TouchableOpacity>
+            ) : (
+              <View style={styles.graciasCard}>
+                <View style={styles.graciasIcon}>
+                  <Icon name="CircleCheck" size={40} color={theme.colors.green} />
+                </View>
+                <Text style={styles.graciasTitle}>¡Reporte agregado!</Text>
+                <Text style={styles.graciasBody}>
+                  Ya tienes una cuenta con este celular, así que agregamos el
+                  reporte a tu perfil. Inicia sesión para verlo y gestionarlo.
+                </Text>
+                <View style={styles.graciasActions}>
+                  <TouchableOpacity
+                    style={styles.primaryBtn}
+                    onPress={onLoginPress}
+                    activeOpacity={0.8}
+                  >
+                    <Text style={styles.primaryBtnText}>Iniciar sesión</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={styles.linkBtn}
+                    onPress={volverAReportar}
+                    activeOpacity={0.7}
+                  >
+                    <Text style={styles.linkBtnText}>
+                      Reportar otro animalito
+                    </Text>
+                  </TouchableOpacity>
+                </View>
               </View>
-            </View>
-          )
-        ) : detalleReporte ? (
-          <DetalleReporteMascotaScreen
-            reporteId={detalleReporte.id}
-            onBack={() => setDetalleReporte(null)}
-          />
-        ) : (
-          <FeedMascotasScreen onVerDetalle={setDetalleReporte} />
+            )}
+          </View>
         )}
       </View>
 
@@ -578,6 +588,14 @@ const getStyles = (theme: AppTheme, isDesktop: boolean) =>
     content: {
       flex: 1,
       marginTop: 16,
+    },
+    // Panel de vista: el feed queda montado y se oculta con display:none
+    // (evita re-montaje y parpadeo al alternar Reportar/Ver Animalitos).
+    panel: {
+      flex: 1,
+    },
+    panelOculto: {
+      display: "none",
     },
     graciasCard: {
       backgroundColor: theme.colors.surface,

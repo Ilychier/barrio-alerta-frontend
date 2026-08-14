@@ -12,6 +12,7 @@ import {
 } from "react-native";
 import { FlashList } from "@shopify/flash-list";
 import { useFeedMascotasController } from "../../../application/mascotas/controllers/useFeedMascotasController";
+import { useContarReportesController } from "../../../application/mascotas/controllers/useContarReportesController";
 import { EstadoReporte } from "../../../domain/mascotas/entities/EstadoReporte";
 import { ReporteMascota } from "../../../domain/mascotas/entities/ReporteMascota";
 import { TipoReporte } from "../../../domain/mascotas/entities/TipoReporte";
@@ -20,6 +21,7 @@ import { FeedSkeletonList } from "../../components/molecules/FeedSkeletonCard";
 import { SelectInput, SelectOption } from "../../components/atomic/SelectInput";
 import { useDI } from "../../context/DIContext";
 import { AppTheme, useAppTheme } from "../../theme/ThemeContext";
+import { ContadorBadge } from "../components/ContadorBadge";
 import { MascotaCard } from "../components/MascotaCard";
 
 /**
@@ -61,6 +63,7 @@ export function FeedMascotasScreen({
   const [ciudadId, setCiudadId] = useState<number | undefined>(undefined);
 
   const feed = useFeedMascotasController(container, 0);
+  const conteoReportes = useContarReportesController(container);
 
   const aplicarFiltros = (
     estado?: EstadoReporte,
@@ -230,6 +233,13 @@ export function FeedMascotasScreen({
           }
         />
       )}
+
+      {/* ── Badge flotante: conteo de reportes ──────────── */}
+      <ContadorBadge
+        conteo={conteoReportes.conteo}
+        loading={conteoReportes.loading}
+        theme={theme}
+      />
     </View>
   );
 }
