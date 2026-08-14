@@ -21,7 +21,7 @@ import { FeedSkeletonList } from "../../components/molecules/FeedSkeletonCard";
 import { SelectInput, SelectOption } from "../../components/atomic/SelectInput";
 import { useDI } from "../../context/DIContext";
 import { AppTheme, useAppTheme } from "../../theme/ThemeContext";
-import { ContadorBadge } from "../components/ContadorBadge";
+import { ContadorBadge, FiltroBadge } from "../components/ContadorBadge";
 import { MascotaCard } from "../components/MascotaCard";
 
 /**
@@ -100,6 +100,38 @@ export function FeedMascotasScreen({
       busqueda: "",
     });
   };
+
+  /**
+   * Click en el badge: aplica el filtro correspondiente en el feed.
+   * - registrados → sin filtros (todos los activos)
+   * - perdidos → tipoReporte LOST
+   * - encontrados → tipoReporte FOUND
+   * - rescatados → estado RESCUED
+   * Tocar el item ya activo lo desactiva (vuelve a "todos").
+   */
+  const seleccionarFiltroBadge = (filtro: FiltroBadge) => {
+    if (filtro === "registrados") {
+      aplicarFiltros(undefined, undefined, ciudadId);
+    } else if (filtro === "perdidos") {
+      aplicarFiltros(undefined, TipoReporte.LOST, ciudadId);
+    } else if (filtro === "encontrados") {
+      aplicarFiltros(undefined, TipoReporte.FOUND, ciudadId);
+    } else {
+      aplicarFiltros(EstadoReporte.RESCUED, undefined, ciudadId);
+    }
+  };
+
+  /** Item del badge que coincide con el filtro activo del feed (null = ninguno). */
+  const filtroBadgeActivo: FiltroBadge | null =
+    filtroEstado === EstadoReporte.RESCUED
+      ? "rescatados"
+      : filtroTipo === TipoReporte.LOST
+        ? "perdidos"
+        : filtroTipo === TipoReporte.FOUND
+          ? "encontrados"
+          : filtroEstado === undefined && filtroTipo === undefined
+            ? "registrados"
+            : null;
 
   const handleVerDetalle = useCallback(
     (item: ReporteMascota) => {
@@ -234,11 +266,13 @@ export function FeedMascotasScreen({
         />
       )}
 
-      {/* ── Badge flotante: conteo de reportes ──────────── */}
+      {/* ── Badge flotante: conteo + filtro rápido ──────── */}
       <ContadorBadge
         conteo={conteoReportes.conteo}
         loading={conteoReportes.loading}
         theme={theme}
+        filtroActivo={filtroBadgeActivo}
+        onSeleccionar={seleccionarFiltroBadge}
       />
     </View>
   );

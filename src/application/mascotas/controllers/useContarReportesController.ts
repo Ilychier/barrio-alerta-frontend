@@ -5,12 +5,13 @@ import { TipoReporte } from '../../../domain/mascotas/entities/TipoReporte';
 
 /**
  * Resultado del conteo de reportes para el badge flotante del feed.
- * Los tres conteos son independientes (no se suman: "perdidos" y
- * "rescatados" son subconjuntos de "registrados").
+ * Los cuatro conteos son independientes (no se suman: "perdidos",
+ * "encontrados" y "rescatados" son subconjuntos de "registrados").
  */
 export interface ConteoReportes {
   registrados: number;
   perdidos: number;
+  encontrados: number;
   rescatados: number;
 }
 
@@ -28,6 +29,7 @@ export function useContarReportesController(container: IContainer) {
   const [conteo, setConteo] = useState<ConteoReportes>({
     registrados: 0,
     perdidos: 0,
+    encontrados: 0,
     rescatados: 0,
   });
   const [loading, setLoading] = useState(true);
@@ -39,11 +41,12 @@ export function useContarReportesController(container: IContainer) {
     async function cargar() {
       setLoading(true);
       try {
-        // 3 peticiones paralelas, cada una trae 1 solo item pero con
+        // 4 peticiones paralelas, cada una trae 1 solo item pero con
         // totalElements exacto. size=1 minimiza payload.
-        const [todos, perdidos, rescatados] = await Promise.all([
+        const [todos, perdidos, encontrados, rescatados] = await Promise.all([
           useCase.execute({ filtros: {}, page: 0, size: 1 }).catch(() => null),
           useCase.execute({ filtros: { tipoReporte: TipoReporte.LOST }, page: 0, size: 1 }).catch(() => null),
+          useCase.execute({ filtros: { tipoReporte: TipoReporte.FOUND }, page: 0, size: 1 }).catch(() => null),
           useCase.execute({ filtros: { estado: EstadoReporte.RESCUED }, page: 0, size: 1 }).catch(() => null),
         ]);
 
@@ -51,6 +54,7 @@ export function useContarReportesController(container: IContainer) {
         setConteo({
           registrados: todos?.totalElements ?? 0,
           perdidos: perdidos?.totalElements ?? 0,
+          encontrados: encontrados?.totalElements ?? 0,
           rescatados: rescatados?.totalElements ?? 0,
         });
       } finally {
